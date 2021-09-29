@@ -1,0 +1,271 @@
+﻿<Window x:Class="BravoLights.UI.LightsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:BravoLights.UI"
+        d:DataContext="{d:DesignInstance Type=local:CombinedDataContext}"
+        mc:Ignorable="d"
+        Title="Bravo Lights Monitor" Height="380" Width="900"
+        Closing="Window_Closing"
+        Topmost="True">
+    <Window.Resources>
+        <local:RedBrushConverter x:Key="brushConverter" />
+        <local:MultiBrushConverter x:Key="multiBrushConverter" />
+    </Window.Resources>
+
+    <Grid RadioButton.Checked="Checkbox_Checked">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="128" />
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="32" />
+            <RowDefinition MinHeight="60" MaxHeight="60" />
+            <RowDefinition />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0" Grid.ColumnSpan="2">
+            <TextBlock Margin="8">
+                Select a light to show its simulation variables.
+            </TextBlock>
+            <DockPanel HorizontalAlignment="Right" Margin="0,0,8,0" VerticalAlignment="Center">
+                <TextBlock DockPanel.Dock="Right" Text="{Binding Path=MainState.Aircraft}" />
+                <TextBlock DockPanel.Dock="Right" Text="Aircraft:" />
+            </DockPanel>
+        </Grid>
+        <Grid Grid.Row="2" Grid.Column="0">
+            <Border BorderBrush="Black" HorizontalAlignment="Right" VerticalAlignment="Stretch" BorderThickness="0 0 1 0" />
+
+        </Grid>
+        <Grid Grid.Row="1" Grid.Column="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="97*" />
+                <ColumnDefinition Width="97*" />
+                <ColumnDefinition Width="97*" />
+                <ColumnDefinition Width="97*" />
+                <ColumnDefinition Width="97*" />
+                <ColumnDefinition Width="97*" />
+                <ColumnDefinition Width="97*" />
+                <ColumnDefinition Width="65*" />
+                <ColumnDefinition Width="32*"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition MinHeight="36" MaxHeight="36" />
+            </Grid.RowDefinitions>
+
+            <RadioButton Grid.Row="0" Grid.Column="0" GroupName="Monitor" Tag="HDG">
+                <RadioButton.Content>
+                    <TextBlock Text="HDG" TextWrapping="WrapWithOverflow" Foreground="{Binding Path=MainState.HDG, Converter={StaticResource brushConverter}}" />
+                </RadioButton.Content>
+            </RadioButton>
+            <RadioButton Grid.Row="0" GroupName="Monitor" Tag="NAV" Grid.ColumnSpan="2" Margin="96,0,0,0">
+                <RadioButton.Content>
+                    <TextBlock Text="NAV" TextWrapping="WrapWithOverflow" Foreground="{Binding Path=MainState.NAV, Converter={StaticResource brushConverter}}" />
+                </RadioButton.Content>
+            </RadioButton>
+            <RadioButton Grid.Row="0" Grid.Column="2" GroupName="Monitor" Tag="APR" Grid.ColumnSpan="2" Margin="0,0,96,0">
+                <RadioButton.Content>
+                    <TextBlock Text="APR" TextWrapping="WrapWithOverflow" Foreground="{Binding Path=MainState.APR, Converter={StaticResource brushConverter}}" />
+                </RadioButton.Content>
+            </RadioButton>
+            <RadioButton Grid.Row="0" Grid.Column="3" GroupName="Monitor" Tag="REV">
+                <RadioButton.Content>
+                    <TextBlock Text="REV" TextWrapping="WrapWithOverflow" Foreground="{Binding Path=MainState.REV, Converter={StaticResource brushConverter}}"/>
+                </RadioButton.Content>
+            </RadioButton>
+            <RadioButton Grid.Row="0" Grid.Column="4" GroupName="Monitor" Tag="ALT">
+                <RadioButton.Content>
+                    <TextBlock Text="ALT" TextWrapping="WrapWithOverflow" Foreground="{Binding Path=MainState.ALT, Converter={StaticResource brushConverter}}" />
+                </RadioButton.Content>
+            </RadioButton>
+            <RadioButton Grid.Row="0" Grid.Column="4" GroupName="Monitor" Tag="VS" Grid.ColumnSpan="2" Margin="96,0,0,0">
+                <RadioButton.Content>
+                    <TextBlock Text="VS" TextWrapping="WrapWithOverflow" Foreground="{Binding Path=MainState.VS, Converter={StaticResource brushConverter}}" />
+                </RadioButton.Content>
+            </RadioButton>
+            <RadioButton Grid.Row="0" Grid.Column="6" GroupName="Monitor" Tag="IAS" Grid.ColumnSpan="2" Margin="0,0,64,0">
+                <RadioButton.Content>
+                    <TextBlock Text="IAS" TextWrapping="WrapWithOverflow" Foreground="{Binding Path=MainState.IAS, Converter={StaticResource brushConverter}}" />
+                </RadioButton.Content>
+            </RadioButton>
+            <RadioButton Grid.Row="0" Grid.Column="7" GroupName="Monitor" Tag="AUTOPILOT" Grid.ColumnSpan="2">
+                <RadioButton.Content>
+                    <TextBlock Text="AUTO PILOT" TextWrapping="WrapWithOverflow" Foreground="{Binding Path=MainState.AUTOPILOT, Converter={StaticResource brushConverter}}" />
+                </RadioButton.Content>
+            </RadioButton>
+        </Grid>
+
+        <Grid Grid.Row="2" Grid.Column="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition MinHeight="36" MaxHeight="36" />
+                <RowDefinition MinHeight="36" MaxHeight="36"/>
+            </Grid.RowDefinitions>
+
+            <RadioButton Grid.Row="0" Grid.Column="0" HorizontalAlignment="Stretch" GroupName="Monitor" Tag="MasterWarning">
+                <RadioButton.Content>
+                    <TextBlock Text="MASTER WARNING" TextWrapping="WrapWithOverflow" Foreground="{Binding Path=MainState.MasterWarning, Converter={StaticResource brushConverter}}" />
+                </RadioButton.Content>
+            </RadioButton>
+            <RadioButton Grid.Row="0" Grid.Column="1" HorizontalAlignment="Stretch" GroupName="Monitor" Tag="EngineFire">
+                <RadioButton.Content>
+                    <TextBlock Text="ENGINE FIRE" TextWrapping="WrapWithOverflow" Foreground="{Binding Path=MainState.EngineFire, Converter={StaticResource brushConverter}}" />
+                </RadioButton.Content>
+            </RadioButton>
+            <RadioButton Grid.Row="0" Grid.Column="2" HorizontalAlignment="Stretch" GroupName="Monitor" Tag="LowOilPressure">
+                <RadioButton.Content>
+                    <TextBlock Text="LOW OIL PRESSURE" TextWrapping="WrapWithOverflow" Foreground="{Binding Path=MainState.LowOilPressure, Converter={StaticResource brushConverter}}" />
+                </RadioButton.Content>
+            </RadioButton>
+            <RadioButton Grid.Row="0" Grid.Column="3" HorizontalAlignment="Stretch" GroupName="Monitor" Tag="LowFuelPressure">
+                <RadioButton.Content>
+                    <TextBlock Text="LOW FUEL PRESSURE" TextWrapping="WrapWithOverflow"  Foreground="{Binding Path=MainState.LowFuelPressure, Converter={StaticResource brushConverter}}"/>
+                </RadioButton.Content>
+            </RadioButton>
+            <RadioButton Grid.Row="0" Grid.Column="4" HorizontalAlignment="Stretch" GroupName="Monitor" Tag="AntiIce">
+                <RadioButton.Content>
+                    <TextBlock Text="ANTI ICE" TextWrapping="WrapWithOverflow" Foreground="{Binding Path=MainState.AntiIce, Converter={StaticResource brushConverter}}" />
+                </RadioButton.Content>
+            </RadioButton>
+            <RadioButton Grid.Row="0" Grid.Column="5" HorizontalAlignment="Stretch" GroupName="Monitor" Tag="StarterEngaged">
+                <RadioButton.Content>
+                    <TextBlock Text="STARTER ENGAGED" TextWrapping="WrapWithOverflow" Foreground="{Binding Path=MainState.StarterEngaged, Converter={StaticResource brushConverter}}" />
+                </RadioButton.Content>
+            </RadioButton>
+            <RadioButton Grid.Row="0" Grid.Column="6" HorizontalAlignment="Stretch" GroupName="Monitor" Tag="APU">
+                <RadioButton.Content>
+                    <TextBlock Text="APU" TextWrapping="WrapWithOverflow" Foreground="{Binding Path=MainState.APU, Converter={StaticResource brushConverter}}" />
+                </RadioButton.Content>
+            </RadioButton>
+
+            <RadioButton Grid.Row="1" Grid.Column="0" HorizontalAlignment="Stretch" GroupName="Monitor" Tag="MasterCaution">
+                <RadioButton.Content>
+                    <TextBlock Text="MASTER CAUTION" TextWrapping="WrapWithOverflow" Foreground="{Binding Path=MainState.MasterCaution, Converter={StaticResource brushConverter}}" />
+                </RadioButton.Content>
+            </RadioButton>
+            <RadioButton Grid.Row="1" Grid.Column="1" HorizontalAlignment="Stretch" GroupName="Monitor" Tag="Vacuum">
+                <RadioButton.Content>
+                    <TextBlock Text="VACUUM" TextWrapping="WrapWithOverflow" Foreground="{Binding Path=MainState.Vacuum, Converter={StaticResource brushConverter}}" />
+                </RadioButton.Content>
+            </RadioButton>
+            <RadioButton Grid.Row="1" Grid.Column="2" HorizontalAlignment="Stretch" GroupName="Monitor" Tag="LowHydPressure">
+                <RadioButton.Content>
+                    <TextBlock Text="LOW HYD PRESSURE" TextWrapping="WrapWithOverflow" Foreground="{Binding Path=MainState.LowHydPressure, Converter={StaticResource brushConverter}}" />
+                </RadioButton.Content>
+            </RadioButton>
+            <RadioButton Grid.Row="1" Grid.Column="3" HorizontalAlignment="Stretch" GroupName="Monitor" Tag="AuxFuelPump">
+                <RadioButton.Content>
+                    <TextBlock Text="AUX FUEL PUMP" TextWrapping="WrapWithOverflow" Foreground="{Binding Path=MainState.AuxFuelPump, Converter={StaticResource brushConverter}}" />
+                </RadioButton.Content>
+            </RadioButton>
+            <RadioButton Grid.Row="1" Grid.Column="4" HorizontalAlignment="Stretch" GroupName="Monitor" Tag="ParkingBrake">
+                <RadioButton.Content>
+                    <TextBlock Text="PARKING BRAKE" TextWrapping="WrapWithOverflow" Foreground="{Binding Path=MainState.ParkingBrake, Converter={StaticResource brushConverter}}" />
+                </RadioButton.Content>
+            </RadioButton>
+            <RadioButton Grid.Row="1" Grid.Column="5" HorizontalAlignment="Stretch" GroupName="Monitor" Tag="LowVolts">
+                <RadioButton.Content>
+                    <TextBlock Text="LOW VOLTS" TextWrapping="WrapWithOverflow" Foreground="{Binding Path=MainState.LowVolts, Converter={StaticResource brushConverter}}" />
+                </RadioButton.Content>
+            </RadioButton>
+            <RadioButton Grid.Row="1" Grid.Column="6" HorizontalAlignment="Stretch" GroupName="Monitor" Tag="Door">
+                <RadioButton.Content>
+                    <TextBlock Text="DOOR" TextWrapping="WrapWithOverflow" Foreground="{Binding Path=MainState.Door, Converter={StaticResource brushConverter}}" />
+                </RadioButton.Content>
+            </RadioButton>
+        </Grid>
+        <Grid HorizontalAlignment="Center" Grid.Row="2" Margin="0,4,0,0" Height="60" VerticalAlignment="Top">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="20" />
+                <RowDefinition Height="20" />
+                <RowDefinition Height="20" />
+            </Grid.RowDefinitions>
+
+            <TextBlock Text="Gear N">
+                <TextBlock.Foreground>
+                    <MultiBinding Converter="{StaticResource multiBrushConverter}">
+                        <Binding Path="MainState.GearCRed" />
+                        <Binding Path="MainState.GearCGreen" />
+                    </MultiBinding>
+                </TextBlock.Foreground>
+            </TextBlock>
+            <RadioButton Grid.Row="1" GroupName="Monitor" Tag="GearCRed">
+                <RadioButton.Content>
+                    <TextBlock>Red</TextBlock>
+                </RadioButton.Content>
+            </RadioButton>
+            <RadioButton Grid.Row="2" GroupName="Monitor" Tag="GearCGreen">
+                <RadioButton.Content>
+                    <TextBlock>Green</TextBlock>
+                </RadioButton.Content>
+            </RadioButton>
+        </Grid>
+        <Grid Grid.Row="2" HorizontalAlignment="Left" Width="66" Height="60" VerticalAlignment="Top" Margin="8,65,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="20" />
+                <RowDefinition Height="20" />
+                <RowDefinition Height="20" />
+            </Grid.RowDefinitions>
+
+            <TextBlock Text="Gear L">
+                <TextBlock.Foreground>
+                    <MultiBinding Converter="{StaticResource multiBrushConverter}">
+                        <Binding Path="MainState.GearLRed" />
+                        <Binding Path="MainState.GearLGreen" />
+                    </MultiBinding>
+                </TextBlock.Foreground>
+            </TextBlock>
+
+            <RadioButton Grid.Row="1" GroupName="Monitor" Tag="GearLRed">
+                <RadioButton.Content>
+                    <TextBlock>Red</TextBlock>
+                </RadioButton.Content>
+            </RadioButton>
+            <RadioButton Grid.Row="2" GroupName="Monitor" Tag="GearLGreen">
+                <RadioButton.Content>
+                    <TextBlock>Green</TextBlock>
+                </RadioButton.Content>
+            </RadioButton>
+        </Grid>
+
+        <Grid Grid.Row="2" HorizontalAlignment="Right" Width="66" Height="60" VerticalAlignment="Top" Margin="0,65,8,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="20" />
+                <RowDefinition Height="20" />
+                <RowDefinition Height="20" />
+            </Grid.RowDefinitions>
+
+            <TextBlock HorizontalAlignment="Right" Text="Gear R">
+                <TextBlock.Foreground>
+                    <MultiBinding Converter="{StaticResource multiBrushConverter}">
+                        <Binding Path="MainState.GearRRed" />
+                        <Binding Path="MainState.GearRGreen" />
+                    </MultiBinding>
+                </TextBlock.Foreground>
+            </TextBlock>
+
+            <RadioButton Grid.Row="1" HorizontalAlignment="Right" GroupName="Monitor" Tag="GearRRed">
+                <RadioButton.Content>
+                    <TextBlock>Red</TextBlock>
+                </RadioButton.Content>
+            </RadioButton>
+            <RadioButton Grid.Row="2" HorizontalAlignment="Right" GroupName="Monitor" Tag="GearRGreen">
+                <RadioButton.Content>
+                    <TextBlock>Green</TextBlock>
+                </RadioButton.Content>
+            </RadioButton>
+        </Grid>
+        <Grid Grid.Row="3" Grid.ColumnSpan="2" Margin="8">
+            <TextBlock Text="{Binding Path=MonitoringState.Text}" />
+        </Grid>
+    </Grid>
+</Window>
