@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using System.Xml.Linq;
@@ -21,16 +22,29 @@ namespace BravoLights.Installation
             get
             {
                 var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-                var localCache = Path.Join(localAppData, "Packages", "Microsoft.FlightSimulator_8wekyb3d8bbwe", "LocalCache");
+                var windowsStoreLocation = Path.Join(localAppData, "Packages", "Microsoft.FlightSimulator_8wekyb3d8bbwe", "LocalCache");
 
-                var exeXmlPath = Path.Join(localCache, "exe.xml");
+                var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+                var steamLocation = Path.Join(appData, "Microsoft Flight Simulator");
 
-                if (!File.Exists(exeXmlPath))
+                var pathsToTry = new[]
                 {
-                    throw new Exception($"Could not locate exe.xml file. Tried {exeXmlPath}");
+                    windowsStoreLocation,
+                    steamLocation
+                };
+
+                foreach (var path in pathsToTry)
+                {
+                    var exeXmlPath = Path.Join(path, "exe.xml");
+
+                    if (File.Exists(exeXmlPath))
+                    {
+                        return exeXmlPath;
+                    }
                 }
 
-                return exeXmlPath;
+                var pathsTried = String.Join(", ", pathsToTry);
+                throw new Exception($"Could not locate exe.xml file. Paths tried: {pathsTried}");
             }
         }
 
