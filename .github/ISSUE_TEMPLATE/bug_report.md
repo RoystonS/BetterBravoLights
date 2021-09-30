@@ -1,5 +1,5 @@
 ---
-name: \U0001F41B Bug Report
+name: "🐛 Bug Report"
 about: Create a problem report to help us improve
 title: ""
 labels: needs-triage
