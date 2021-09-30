@@ -1,7 +1,7 @@
 ---
-name: Bug report
-about: Create a report to help us improve
-title: "\U0001F41B Bug Report"
+name: \U0001F41B Bug Report
+about: Create a problem report to help us improve
+title: ""
 labels: needs-triage
 assignees: RoystonS
 
@@ -20,7 +20,7 @@ If you don't have the latest version, it's worth giving that a try. -->
 **Describe the bug**
 <!-- A clear and concise description of what the bug is. -->
 
-**To Reproduce**
+**To reproduce**
 <!-- If you can indicate how to reproduce the problem it's much easier to fix! -->
 Steps to reproduce the behavior:
 1. Go to '...'
@@ -35,6 +35,7 @@ Steps to reproduce the behavior:
 If applicable, add screenshots to help explain your problem.
 
 **Other software**
+<!-- Which of these do you have installed? -->
 - MSFS: Windows Store edition or Steam?
 - FSUIPC: Do you use FSUIPC?
 

@@ -1,7 +1,7 @@
 ---
-name: Feature request
+name: \U0001F4A1 Feature Request
 about: Suggest an idea for this project
-title: "\U0001F4A1 Feature Request"
+title: ""
 labels: needs-triage
 assignees: RoystonS
 
@@ -9,7 +9,11 @@ assignees: RoystonS
 
 <!--
 * Please fill out this template with all the relevant information to help us figure out how to improve the software.
+  We appreciate all suggestions!
 -->
+
+**Software version**
+<!-- Please indicate which version of BetterBravoLights you have. -->
 
 **Is your feature request related to a problem? Please describe.**
 <!-- A clear and concise description of what the problem is. Ex. I'm always frustrated when [...] -->
