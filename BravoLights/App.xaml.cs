@@ -76,6 +76,8 @@ namespace BravoLights
             SimConnectConnection.Connection.OnSimStateChanged += Connection_OnSimStateChanged;
 
             var toolStrip = new Forms.ContextMenuStrip();
+            toolStrip.Items.Add(new Forms.ToolStripLabel { Text = ProgramInfo.ProductNameAndVersion });
+
             var btnDebug = new Forms.ToolStripButton(BravoLights.Properties.Resources.TrayIconMenuDebugger)
             {
                 Dock = Forms.DockStyle.Fill,
@@ -176,7 +178,9 @@ namespace BravoLights
 
         private void UpdateTrayIconText()
         {
-            notifyIcon.Text = viewModel.SimState == SimState.SimRunning ? BravoLights.Properties.Resources.TrayIconConnectedToSim : BravoLights.Properties.Resources.TrayIconWaitingForSim;
+            var format = viewModel.SimState == SimState.SimRunning ? BravoLights.Properties.Resources.TrayIconConnectedToSimFormat : BravoLights.Properties.Resources.TrayIconWaitingForSimFormat;
+
+            notifyIcon.Text = String.Format(format, ProgramInfo.ProductNameAndVersion);
         }
 
         private void Connection_OnAircraftLoaded(object sender, AircraftEventArgs e)

@@ -91,11 +91,11 @@ namespace BravoLights.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Better Bravo Lights - Connected to simulator.
+        ///   Looks up a localized string similar to {0} - Connected to simulator.
         /// </summary>
-        internal static string TrayIconConnectedToSim {
+        internal static string TrayIconConnectedToSimFormat {
             get {
-                return ResourceManager.GetString("TrayIconConnectedToSim", resourceCulture);
+                return ResourceManager.GetString("TrayIconConnectedToSimFormat", resourceCulture);
             }
         }
         
@@ -118,11 +118,11 @@ namespace BravoLights.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Better Bravo Lights - Waiting for simulator.
+        ///   Looks up a localized string similar to {0} - Waiting for simulator.
         /// </summary>
-        internal static string TrayIconWaitingForSim {
+        internal static string TrayIconWaitingForSimFormat {
             get {
-                return ResourceManager.GetString("TrayIconWaitingForSim", resourceCulture);
+                return ResourceManager.GetString("TrayIconWaitingForSimFormat", resourceCulture);
             }
         }
     }

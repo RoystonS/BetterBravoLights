@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:BravoLights.UI"
         d:DataContext="{d:DesignInstance Type=local:CombinedDataContext}"
         mc:Ignorable="d"
-        Title="Bravo Lights Monitor" Height="380" Width="900"
+        Height="380" Width="900"
         Closing="Window_Closing"
         Topmost="True">
     <Window.Resources>

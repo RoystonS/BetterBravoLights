@@ -19,6 +19,12 @@ namespace BravoLights.UI
             InitializeComponent();
         }
 
+        protected override void OnInitialized(EventArgs e)
+        {
+            base.OnInitialized(e);
+            Title = $"{ProgramInfo.ProductNameAndVersion} - Lights Monitor";
+        }
+
         private MainViewModel viewModel;
 
         public MainViewModel ViewModel
