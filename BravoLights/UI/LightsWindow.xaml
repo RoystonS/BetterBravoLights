@@ -30,8 +30,8 @@
                 Select a light to show its simulation variables.
             </TextBlock>
             <DockPanel HorizontalAlignment="Right" Margin="0,0,8,0" VerticalAlignment="Center">
-                <TextBlock DockPanel.Dock="Right" Text="{Binding Path=MainState.Aircraft}" />
-                <TextBlock DockPanel.Dock="Right" Text="Aircraft:" />
+                <TextBox DockPanel.Dock="Right" Text="{Binding Path=MainState.Aircraft}" IsReadOnly="True"  HorizontalAlignment="Center" />
+                <TextBlock DockPanel.Dock="Right" Text="Aircraft:" HorizontalAlignment="Center" />
             </DockPanel>
         </Grid>
         <Grid Grid.Row="2" Grid.Column="0">
