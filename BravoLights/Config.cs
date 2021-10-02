@@ -7,7 +7,7 @@ using System.Timers;
 
 namespace BravoLights
 {
-    class Config
+    public class Config
     {
         /// <summary>
         /// A cooloff timer to prevent us reading the config file as soon as it changes.
@@ -87,13 +87,18 @@ namespace BravoLights
             try
             {
                 configLines = File.ReadAllLines(Path.Join(System.Windows.Forms.Application.StartupPath, "Config.ini"));
-            } catch
+                LoadConfig(configLines);
+            }
+            catch
             {
                 Debug.WriteLine("Failed to read file");
                 return;
             }
+        }
 
-            IniSection currentSection = null;
+        public void LoadConfig(string[] configLines)
+        {
+            ICollection<IniSection> currentSections = new List<IniSection>();
 
             var sections = new Dictionary<string, IniSection>();
 
@@ -115,9 +120,21 @@ namespace BravoLights
                 var sectionMatch = sectionRegex.Match(line);
                 if (sectionMatch.Success)
                 {
-                    var sectionName = sectionMatch.Groups[1].Value;
-                    currentSection = new IniSection(sectionName);
-                    sections.Add(sectionName, currentSection);
+                    var sectionNamesString = sectionMatch.Groups[1].Value;
+                    var sectionNames = sectionNamesString.Split(',');
+                    currentSections.Clear();
+
+                    foreach (var sectionName in sectionNames)
+                    {
+                        var trimmedSectionName = sectionName.Trim();
+                        IniSection section;
+                        if (!sections.TryGetValue(trimmedSectionName, out section))
+                        {
+                            section = new IniSection(trimmedSectionName);
+                            sections[trimmedSectionName] = section;
+                        }
+                        currentSections.Add(section);
+                    }
                     continue;
                 }
 
@@ -127,7 +144,10 @@ namespace BravoLights
                 {
                     var key = keyValueMatch.Groups[1].Value;
                     var value = keyValueMatch.Groups[2].Value;
-                    currentSection.Add(key, value);
+                    foreach (var section in currentSections)
+                    {
+                        section.Set(key, value);
+                    }
                 }
             }
 
@@ -149,8 +169,9 @@ namespace BravoLights
         {
             SectionName = sectionName;
         }
-
-        public void Add(string key, string value)
+        
+        
+        public void Set(string key, string value)
         {
             storage[key] = value;
         }
