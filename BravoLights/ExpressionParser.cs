@@ -60,7 +60,7 @@ namespace BravoLights
             var text = offsetToken.Value;
 
             // TODO: error handling
-            var value = double.Parse(text);
+            var value = double.Parse(text, CultureInfo.InvariantCulture);
             return new LiteralNumericNode(value);
         }
 

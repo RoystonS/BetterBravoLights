@@ -1,4 +1,6 @@
 using System;
+using System.Globalization;
+using System.Threading;
 using Xunit;
 
 namespace BravoLights.Tests
@@ -57,6 +59,27 @@ namespace BravoLights.Tests
             Assert.Null(parsed.ErrorText);
 
             Assert.Equal("((1 < 2) AND ((1 <= 2) AND ((1 == 2) AND ((1 >= 2) AND ((1 > 2) AND (1 != 2))))))", parsed.ToString());
+        }
+
+        [Fact]
+        public void ParserUsesUsEnglishLocaleForParsingNumbers()
+        {
+            var thread = Thread.CurrentThread;
+            var originalCulture = thread.CurrentCulture;
+
+            try
+            {
+                // Switch into Italian and check that parsing still works correctly
+                thread.CurrentCulture = new CultureInfo("it-IT");
+
+                var parsed = ExpressionParser.Parse("1 < 2.5 && 3.0 < 4");
+                Assert.Null(parsed.ErrorText);
+                Assert.Equal("((1 < 2.5) AND (3 < 4))", parsed.ToString());
+            }
+            finally
+            {
+                thread.CurrentCulture = originalCulture;
+            }
         }
 
         [Theory]
