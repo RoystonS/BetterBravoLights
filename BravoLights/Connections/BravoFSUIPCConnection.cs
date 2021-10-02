@@ -16,6 +16,7 @@ namespace BravoLights.Connections
             reconnectTimer.Elapsed += ReconnectTimer_Elapsed; ;
         }
 
+        private bool connectedToFSUIPC = false;
         private readonly Dictionary<string, double> lastReportedValue = new Dictionary<string, double>();
         private readonly Dictionary<string, ISet<EventHandler<ValueChangedEventArgs>>> variableHandlers =
             new Dictionary<string, ISet<EventHandler<ValueChangedEventArgs>>>();
@@ -68,7 +69,7 @@ namespace BravoLights.Connections
         public void AddListener(IVariable variable, EventHandler<ValueChangedEventArgs> handler)
         {
             var lvar = (FSUIPCLvarExpression)variable;
-            var name = lvar.Name;
+            var name = lvar.Identifier;
 
             if (variableHandlers.Count == 0)
             {
@@ -90,18 +91,25 @@ namespace BravoLights.Connections
         public void SendLastValue(IVariable variable, object sender, EventHandler<ValueChangedEventArgs> handler)
         {
             var simvar = (FSUIPCLvarExpression)variable;
-            var name = simvar.Name;
+            var name = simvar.Identifier;
             double lastValue;
-            if (lastReportedValue.TryGetValue(name, out lastValue))
+            if (connectedToFSUIPC)
             {
-                handler(sender, new ValueChangedEventArgs { NewValue = lastValue });
+                if (lastReportedValue.TryGetValue(name, out lastValue))
+                {
+                    handler(sender, new ValueChangedEventArgs { NewValue = lastValue });
+                }
+            }
+            else
+            {
+                handler(sender, new ValueChangedEventArgs { NewValue = new Exception("Could not connect to FSUIPC, which is needed for LVAR support") });
             }
         }
 
         public void RemoveListener(IVariable variable, EventHandler<ValueChangedEventArgs> handler)
         {
             var lvar = (FSUIPCLvarExpression)variable;
-            var name = lvar.Name;
+            var name = lvar.Identifier;
 
             var handlers = this.variableHandlers[name];
             handlers.Remove(handler);
@@ -121,16 +129,20 @@ namespace BravoLights.Connections
             {
                 FSUIPCConnection.Open(FlightSim.MSFS);
                 readTimer.Start();
+                connectedToFSUIPC = true;
             } catch
             {
                 // Sim not running?
                 // Try again soon
                 reconnectTimer.Start();
+                connectedToFSUIPC = false;
             }
         }
 
         private void StopFSUIPC()
         {
+            connectedToFSUIPC = false;
+
             readTimer.Stop();
             FSUIPCConnection.Close();
         }

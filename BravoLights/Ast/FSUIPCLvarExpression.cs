@@ -8,11 +8,11 @@ namespace BravoLights.Ast
 
         public override IConnection Connection => BravoFSUIPCConnection.Connection;
 
-        public override string Name => $"L:{LVarName}";
+        public override string Identifier => $"L:{LVarName}";
 
         public override string ToString()
         {
-            return Name;
+            return Identifier;
         }
     }
 }

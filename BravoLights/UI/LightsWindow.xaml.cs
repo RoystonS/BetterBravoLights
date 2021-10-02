@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 
 namespace BravoLights.UI
 {
@@ -12,8 +14,6 @@ namespace BravoLights.UI
     /// </summary>
     public partial class LightsWindow : Window
     {
-        private readonly MonitoringState monitoringState = new MonitoringState();
-
         public LightsWindow()
         {
             InitializeComponent();
@@ -40,7 +40,7 @@ namespace BravoLights.UI
                 DataContext = new CombinedDataContext
                 {
                     MainState = value,
-                    MonitoringState = monitoringState
+                    ExpressionAndVariablesViewModel = eavVM
                 };
             }
         }
@@ -53,9 +53,7 @@ namespace BravoLights.UI
             }
         }
 
-        private string monitoredLight;
-        private LightExpression monitoredLightExpression;
-        private Dictionary<string, double> monitoredVariableValues = new Dictionary<string, double>();
+        private string monitoredLight = "EngineFire";
 
         private void Checkbox_Checked(object sender, RoutedEventArgs e)
         {            
@@ -64,68 +62,17 @@ namespace BravoLights.UI
             UpdateMonitor();
         }
 
+        private readonly ExpressionAndVariablesViewModel eavVM = new ExpressionAndVariablesViewModel();
+
         private void UpdateMonitor()
         {
             LightExpression lightExpression = null;
 
-            if (monitoredLight != null)
+            if (monitoredLight != null && viewModel != null)
             {
                 viewModel.LightExpressions.TryGetValue(monitoredLight, out lightExpression);
             }
-
-            if (monitoredLightExpression != lightExpression || !this.IsVisible)
-            {
-                if (monitoredLightExpression != null)
-                {
-                    foreach (var variable in monitoredLightExpression.Expression.Variables)
-                    {
-                        variable.ValueChanged -= Variable_ValueChanged;
-                    }
-                }
-
-                if (!IsVisible)
-                {
-                    return;
-                }
-
-                monitoringState.Text = "";
-                monitoredLightExpression = lightExpression;
-                monitoredVariableValues.Clear();
-
-                UpdateMonitorText();
-
-                if (lightExpression != null)
-                {
-                    foreach (var variable in lightExpression.Expression.Variables)
-                    {
-                        variable.ValueChanged += Variable_ValueChanged;
-                    }
-                }
-            }
-        }
-
-        private void Variable_ValueChanged(object sender, ValueChangedEventArgs e)
-        {
-            var variable = sender as IVariable;
-            monitoredVariableValues[variable.Name] = (double)e.NewValue;
-
-            UpdateMonitorText();
-        }
-
-        private void UpdateMonitorText() {
-            var text = new StringBuilder();
-            text.AppendLine("Expression:");
-            text.AppendLine(monitoredLightExpression.Expression.ToString());
-
-            text.AppendLine();
-            text.AppendLine("Values:");
-
-            foreach (var kvp in monitoredVariableValues)
-            {
-                text.AppendFormat("{0} = {1}", kvp.Key, kvp.Value);
-                text.AppendLine();
-            }
-            monitoringState.Text = text.ToString();
+            eavVM.Monitor(lightExpression);
         }
 
         private void Window_Closing(object sender, CancelEventArgs e)
@@ -139,31 +86,6 @@ namespace BravoLights.UI
         }
     }
 
-    class MonitoringState : INotifyPropertyChanged
-    {
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        private string text = "";
-
-        public string Text
-        {
-            get { return text; }
-            set
-            {
-                text = value;
-                RaisePropertyChanged("Text");
-            }
-        }
-
-        private void RaisePropertyChanged(string propertyName)
-        {
-            if (PropertyChanged != null)
-            {
-                PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
-            }
-        }
-    }
-
     class CombinedDataContext
     {
         private MainViewModel mainState;
@@ -173,12 +95,52 @@ namespace BravoLights.UI
             set { mainState = value; }
         }
 
-        private MonitoringState monitoringState;
+        private ExpressionAndVariablesViewModel eavVM;
 
-        public MonitoringState MonitoringState
+        public ExpressionAndVariablesViewModel ExpressionAndVariablesViewModel
         {
-            get { return monitoringState; }
-            set { monitoringState = value; }
+            get { return eavVM; }
+            set { eavVM = value; }
         }
+    }
+
+    public class VariableState : INotifyPropertyChanged
+    {
+        public string Name { get; set; }
+
+        private string val;
+        public string Value
+        {
+            get { return val; }
+            set
+            {
+                if (value != val)
+                {
+                    val = value;
+                    RaisePropertyChanged("Value");
+                }
+            }
+        }
+
+        private bool isError;
+        public bool IsError
+        {
+            get { return isError; }
+            set
+            {
+                if (value != isError)
+                {
+                    isError = value;
+                    RaisePropertyChanged("IsError");
+                }
+            }
+        }
+
+        private void RaisePropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
     }
 }

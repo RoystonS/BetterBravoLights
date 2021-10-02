@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
 using BravoLights.Connections;
+using BravoLights.UI;
 
 namespace BravoLights
 {
-    public class MainViewModel : INotifyPropertyChanged
+    public class MainViewModel : ViewModelBase
     {
         private readonly ISet<string> litLights = new HashSet<string>();
 
@@ -46,7 +45,9 @@ namespace BravoLights
             var lightExpression = (LightExpression)sender;
             var lightName = lightExpression.LightName;
 
-            var lit = (bool)e.NewValue;
+
+            var lit = e.NewValue is Exception ? false : (bool)e.NewValue;
+
             bool changed;
             if (lit)
             {
@@ -58,7 +59,7 @@ namespace BravoLights
 
             if (changed)
             {
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(lightName));
+                RaisePropertyChanged(lightName);
             }
         }
 
@@ -118,16 +119,5 @@ namespace BravoLights
         public bool GearLGreen { get { return IsLit(LightNames.GearLGreen); } }
         public bool GearRRed { get { return IsLit(LightNames.GearRRed); } }
         public bool GearRGreen { get { return IsLit(LightNames.GearRGreen); } }
-
-        private void SetProperty<T>(ref T field, T value, [CallerMemberName]string propertyName = null)
-        {
-            if ((field == null && value != null) || (field != null && !field.Equals(value)))
-            {
-                field = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-            }
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
     }
 }

@@ -14,7 +14,7 @@ namespace BravoLights.Ast
         }
 
         public abstract IConnection Connection { get; }
-        public abstract string Name { get; }
+        public abstract string Identifier { get; }
 
         private EventHandler<ValueChangedEventArgs> handlers;
 
@@ -45,13 +45,21 @@ namespace BravoLights.Ast
             }
         }
 
-
         private void OnVariableChanged(object sender, ValueChangedEventArgs e)
         {
             if (handlers != null)
             {
                 handlers(this, e);
             }
+        }
+
+        public bool Equals(IVariable other)
+        {
+            return Identifier.Equals(other.Identifier);
+        }
+        public override int GetHashCode()
+        {
+            return Identifier.GetHashCode();
         }
     }
 }

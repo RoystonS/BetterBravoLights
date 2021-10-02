@@ -1,12 +1,13 @@
-﻿using BravoLights.Ast;
-using BravoLights.Connections;
+﻿using System;
+using BravoLights.Ast;
 
 namespace BravoLights
 {
-    public interface IVariable : IAstNode
+    public interface IVariable : IAstNode, IEquatable<IVariable>
     {
-        string Name { get; }
-
-        IConnection Connection { get; }
+        /// <summary>
+        /// Gets the identifier for this variable.  For an lvar this would be the simple name; for a sim var, it would be the name plus units.
+        /// </summary>
+        string Identifier { get; }
     }
 }

@@ -13,11 +13,11 @@ namespace BravoLights.Ast
 
         public override string ToString()
         {
-            return Name;
+            return Identifier;
         }
 
         public override IConnection Connection => SimConnectConnection.Connection;
 
-        public override string Name => $"A:{this.NameAndUnits.Name}, {this.NameAndUnits.Units}";
+        public override string Identifier => $"A:{this.NameAndUnits.Name}, {this.NameAndUnits.Units}";
     }
 }

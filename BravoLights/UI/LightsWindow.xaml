@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:BravoLights.UI"
         d:DataContext="{d:DesignInstance Type=local:CombinedDataContext}"
         mc:Ignorable="d"
-        Height="380" Width="900"
+        Height="380" Width="680"
         Closing="Window_Closing"
         Topmost="True">
     <Window.Resources>
@@ -16,14 +16,15 @@
 
     <Grid RadioButton.Checked="Checkbox_Checked">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="128" />
+            <ColumnDefinition Width="132" />
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="32" />
-            <RowDefinition MinHeight="60" MaxHeight="60" />
-            <RowDefinition />
-            <RowDefinition />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto"/>
+
         </Grid.RowDefinitions>
         <Grid Grid.Row="0" Grid.ColumnSpan="2">
             <TextBlock Margin="8">
@@ -34,21 +35,19 @@
                 <TextBlock DockPanel.Dock="Right" Text="Aircraft:" HorizontalAlignment="Center" />
             </DockPanel>
         </Grid>
-        <Grid Grid.Row="2" Grid.Column="0">
+        <Grid Grid.Row="1" Grid.RowSpan="2" Grid.Column="0">
             <Border BorderBrush="Black" HorizontalAlignment="Right" VerticalAlignment="Stretch" BorderThickness="0 0 1 0" />
-
         </Grid>
-        <Grid Grid.Row="1" Grid.Column="1">
+        <Grid Grid.Row="1" Grid.Column="1" Margin="8,0,0,0">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="97*" />
-                <ColumnDefinition Width="97*" />
-                <ColumnDefinition Width="97*" />
-                <ColumnDefinition Width="97*" />
-                <ColumnDefinition Width="97*" />
-                <ColumnDefinition Width="97*" />
-                <ColumnDefinition Width="97*" />
-                <ColumnDefinition Width="65*" />
-                <ColumnDefinition Width="32*"/>
+                <ColumnDefinition Width="1*" />
+                <ColumnDefinition Width="1*" />
+                <ColumnDefinition Width="1*" />
+                <ColumnDefinition Width="1*" />
+                <ColumnDefinition Width="1*" />
+                <ColumnDefinition Width="1*" />
+                <ColumnDefinition Width="1*" />
+                <ColumnDefinition Width="1*" />
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
                 <RowDefinition MinHeight="36" MaxHeight="36" />
@@ -59,12 +58,12 @@
                     <TextBlock Text="HDG" TextWrapping="WrapWithOverflow" Foreground="{Binding Path=MainState.HDG, Converter={StaticResource brushConverter}}" />
                 </RadioButton.Content>
             </RadioButton>
-            <RadioButton Grid.Row="0" GroupName="Monitor" Tag="NAV" Grid.ColumnSpan="2" Margin="96,0,0,0">
+            <RadioButton Grid.Row="0" Grid.Column="1" GroupName="Monitor" Tag="NAV">
                 <RadioButton.Content>
                     <TextBlock Text="NAV" TextWrapping="WrapWithOverflow" Foreground="{Binding Path=MainState.NAV, Converter={StaticResource brushConverter}}" />
                 </RadioButton.Content>
             </RadioButton>
-            <RadioButton Grid.Row="0" Grid.Column="2" GroupName="Monitor" Tag="APR" Grid.ColumnSpan="2" Margin="0,0,96,0">
+            <RadioButton Grid.Row="0" Grid.Column="2" GroupName="Monitor" Tag="APR">
                 <RadioButton.Content>
                     <TextBlock Text="APR" TextWrapping="WrapWithOverflow" Foreground="{Binding Path=MainState.APR, Converter={StaticResource brushConverter}}" />
                 </RadioButton.Content>
@@ -79,24 +78,24 @@
                     <TextBlock Text="ALT" TextWrapping="WrapWithOverflow" Foreground="{Binding Path=MainState.ALT, Converter={StaticResource brushConverter}}" />
                 </RadioButton.Content>
             </RadioButton>
-            <RadioButton Grid.Row="0" Grid.Column="4" GroupName="Monitor" Tag="VS" Grid.ColumnSpan="2" Margin="96,0,0,0">
+            <RadioButton Grid.Row="0" Grid.Column="5" GroupName="Monitor" Tag="VS">
                 <RadioButton.Content>
                     <TextBlock Text="VS" TextWrapping="WrapWithOverflow" Foreground="{Binding Path=MainState.VS, Converter={StaticResource brushConverter}}" />
                 </RadioButton.Content>
             </RadioButton>
-            <RadioButton Grid.Row="0" Grid.Column="6" GroupName="Monitor" Tag="IAS" Grid.ColumnSpan="2" Margin="0,0,64,0">
+            <RadioButton Grid.Row="0" Grid.Column="6" GroupName="Monitor" Tag="IAS">
                 <RadioButton.Content>
                     <TextBlock Text="IAS" TextWrapping="WrapWithOverflow" Foreground="{Binding Path=MainState.IAS, Converter={StaticResource brushConverter}}" />
                 </RadioButton.Content>
             </RadioButton>
-            <RadioButton Grid.Row="0" Grid.Column="7" GroupName="Monitor" Tag="AUTOPILOT" Grid.ColumnSpan="2">
+            <RadioButton Grid.Row="0" Grid.Column="7" GroupName="Monitor" Tag="AUTOPILOT">
                 <RadioButton.Content>
                     <TextBlock Text="AUTO PILOT" TextWrapping="WrapWithOverflow" Foreground="{Binding Path=MainState.AUTOPILOT, Converter={StaticResource brushConverter}}" />
                 </RadioButton.Content>
             </RadioButton>
         </Grid>
 
-        <Grid Grid.Row="2" Grid.Column="1">
+        <Grid Grid.Row="2" Grid.Column="1" Margin="8,0,0,0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition />
                 <ColumnDefinition />
@@ -116,7 +115,7 @@
                     <TextBlock Text="MASTER WARNING" TextWrapping="WrapWithOverflow" Foreground="{Binding Path=MainState.MasterWarning, Converter={StaticResource brushConverter}}" />
                 </RadioButton.Content>
             </RadioButton>
-            <RadioButton Grid.Row="0" Grid.Column="1" HorizontalAlignment="Stretch" GroupName="Monitor" Tag="EngineFire">
+            <RadioButton Grid.Row="0" Grid.Column="1" HorizontalAlignment="Stretch" GroupName="Monitor" Tag="EngineFire" IsChecked="True">
                 <RadioButton.Content>
                     <TextBlock Text="ENGINE FIRE" TextWrapping="WrapWithOverflow" Foreground="{Binding Path=MainState.EngineFire, Converter={StaticResource brushConverter}}" />
                 </RadioButton.Content>
@@ -183,7 +182,7 @@
                 </RadioButton.Content>
             </RadioButton>
         </Grid>
-        <Grid HorizontalAlignment="Center" Grid.Row="2" Margin="0,4,0,0" Height="60" VerticalAlignment="Top">
+        <Grid Grid.Row="1" Grid.RowSpan="2" HorizontalAlignment="Center" Margin="0,4,0,0" Height="60" VerticalAlignment="Top">
             <Grid.RowDefinitions>
                 <RowDefinition Height="20" />
                 <RowDefinition Height="20" />
@@ -209,7 +208,7 @@
                 </RadioButton.Content>
             </RadioButton>
         </Grid>
-        <Grid Grid.Row="2" HorizontalAlignment="Left" Width="66" Height="60" VerticalAlignment="Top" Margin="8,65,0,0">
+        <Grid Grid.Row="1" Grid.RowSpan="2" HorizontalAlignment="Left" Width="66" Height="60" VerticalAlignment="Top" Margin="8,65,0,0">
             <Grid.RowDefinitions>
                 <RowDefinition Height="20" />
                 <RowDefinition Height="20" />
@@ -237,7 +236,7 @@
             </RadioButton>
         </Grid>
 
-        <Grid Grid.Row="2" HorizontalAlignment="Right" Width="66" Height="60" VerticalAlignment="Top" Margin="0,65,8,0">
+        <Grid Grid.Row="1" Grid.RowSpan="2" HorizontalAlignment="Right" Width="66" Height="60" VerticalAlignment="Top" Margin="0,65,8,0">
             <Grid.RowDefinitions>
                 <RowDefinition Height="20" />
                 <RowDefinition Height="20" />
@@ -264,8 +263,6 @@
                 </RadioButton.Content>
             </RadioButton>
         </Grid>
-        <Grid Grid.Row="3" Grid.ColumnSpan="2" Margin="8">
-            <TextBlock Text="{Binding Path=MonitoringState.Text}" />
-        </Grid>
+        <local:ExpressionAndVariables Grid.Row="3" Grid.ColumnSpan="2" Margin="8" DataContext="{Binding Path=ExpressionAndVariablesViewModel}" />
     </Grid>
 </Window>

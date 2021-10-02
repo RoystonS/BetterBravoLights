@@ -59,7 +59,20 @@ namespace BravoLights.Ast
                 return;
             }
 
-            var newValue = ComputeValue((TChildren)lastLhsValue, (TChildren)lastRhsValue);
+            object newValue;
+            if (lastLhsValue is Exception)
+            {
+                newValue = lastLhsValue;
+            }
+            else if (lastRhsValue is Exception)
+            {
+                newValue = lastRhsValue;
+            }
+            else
+            {
+                newValue = ComputeValue((TChildren)lastLhsValue, (TChildren)lastRhsValue);
+            }
+
             if (lastReportedValue == null || !lastReportedValue.Equals(newValue)) // N.B. We must unbox before doing the comparison otherwise we'll be comparing boxed pointers
             {
                 lastReportedValue = newValue;

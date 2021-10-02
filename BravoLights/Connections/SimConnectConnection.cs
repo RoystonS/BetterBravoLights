@@ -23,6 +23,7 @@ namespace BravoLights.Connections
         public static SimConnectConnection Connection = new SimConnectConnection();
 
         private readonly Timer reconnectTimer = new Timer();
+        private SimState simState = SimState.SimStopped;
 
         private SimConnectConnection()
         {
@@ -90,7 +91,7 @@ namespace BravoLights.Connections
                 if (this.simconnect != null)
                 {
                     SubscribeToSimConnect(nau);
-                } else
+                } else if (!reconnectTimer.Enabled)
                 {
                     ConnectNow();
                 }
@@ -106,9 +107,20 @@ namespace BravoLights.Connections
             var simvar = (SimVarExpression)variable;
             var nau = simvar.NameAndUnits;
             double lastValue;
-            if (lastReportedValue.TryGetValue(nau, out lastValue))
+            if (simState == SimState.SimRunning)
             {
-                handler(sender, new ValueChangedEventArgs { NewValue = lastValue });
+                if (lastReportedValue.TryGetValue(nau, out lastValue))
+                {
+                    handler(sender, new ValueChangedEventArgs { NewValue = lastValue });
+                }
+                else
+                {
+                    handler(sender, new ValueChangedEventArgs { NewValue = new Exception("No value yet received from simulator") });
+                }
+            }
+            else
+            {
+                handler(sender, new ValueChangedEventArgs { NewValue = new Exception("No connection to simulator") });
             }
         }
 
@@ -215,6 +227,8 @@ namespace BravoLights.Connections
 
         private void RaiseSimStateChanged(SimState state)
         {
+            simState = state;
+
             if (OnSimStateChanged != null)
             {
                 OnSimStateChanged(this, new SimStateEventArgs { SimState = state });
