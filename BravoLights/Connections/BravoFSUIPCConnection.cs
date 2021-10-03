@@ -88,7 +88,7 @@ namespace BravoLights.Connections
             SendLastValue(variable, this, handler);
         }
 
-        public void SendLastValue(IVariable variable, object sender, EventHandler<ValueChangedEventArgs> handler)
+        private void SendLastValue(IVariable variable, object sender, EventHandler<ValueChangedEventArgs> handler)
         {
             var simvar = (FSUIPCLvarExpression)variable;
             var name = simvar.Identifier;

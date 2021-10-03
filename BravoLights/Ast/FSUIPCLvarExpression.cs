@@ -6,7 +6,7 @@ namespace BravoLights.Ast
     {
         public string LVarName { get; set; }
 
-        public override IConnection Connection => BravoFSUIPCConnection.Connection;
+        protected override IConnection Connection => BravoFSUIPCConnection.Connection;
 
         public override string Identifier => $"L:{LVarName}";
 

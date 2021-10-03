@@ -6,6 +6,7 @@ using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using BravoLights.Connections;
 
 namespace BravoLights.UI
 {
@@ -53,7 +54,7 @@ namespace BravoLights.UI
             }
         }
 
-        private string monitoredLight = "EngineFire";
+        private string monitoredLight = "";
 
         private void Checkbox_Checked(object sender, RoutedEventArgs e)
         {            
@@ -62,7 +63,7 @@ namespace BravoLights.UI
             UpdateMonitor();
         }
 
-        private readonly ExpressionAndVariablesViewModel eavVM = new ExpressionAndVariablesViewModel();
+        private readonly ExpressionAndVariablesViewModel eavVM = new();
 
         private void UpdateMonitor()
         {
@@ -104,21 +105,23 @@ namespace BravoLights.UI
         }
     }
 
-    public class VariableState : INotifyPropertyChanged
+    public class VariableState : ViewModelBase
     {
+        public VariableState()
+        {
+            ValueText = "No value received yet";
+            IsError = true;
+        }
+
         public string Name { get; set; }
 
         private string val;
-        public string Value
+        public string ValueText
         {
             get { return val; }
-            set
+            private set
             {
-                if (value != val)
-                {
-                    val = value;
-                    RaisePropertyChanged("Value");
-                }
+                SetProperty(ref val, value);
             }
         }
 
@@ -126,21 +129,33 @@ namespace BravoLights.UI
         public bool IsError
         {
             get { return isError; }
-            set
+            private set
             {
-                if (value != isError)
-                {
-                    isError = value;
-                    RaisePropertyChanged("IsError");
-                }
+                SetProperty(ref isError, value);
             }
         }
 
-        private void RaisePropertyChanged(string propertyName)
+        private object valueObject;
+        public object Value
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
+            get { return valueObject; }
+            set
+            {
+                SetProperty(ref valueObject, value);
 
-        public event PropertyChangedEventHandler PropertyChanged;
+                var exception = value as Exception;
+             
+                IsError = exception != null;
+                
+                if (exception != null)
+                {
+                    ValueText = exception.Message;
+                }
+                else
+                {
+                    ValueText = value.ToString();
+                }
+            }
+        }
     }
 }

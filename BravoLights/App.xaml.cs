@@ -166,13 +166,16 @@ namespace BravoLights
                     break;
                 case SimState.SimExited:
                     usbLogic.LightsEnabled = false;
-                    viewModel.RegisterLights(new LightExpression[0]);
                     if (Installer.IsSetToRunOnStartup)
                     {
                         // We're set to run at sim startup, so now the sim is exiting, we should exit too.
 
                         notifyIcon.Dispose();
                         Environment.Exit(0);
+                    } else
+                    {
+                        // Attempt to reconnect when the sim starts again
+                        SimConnectConnection.Connection.Start();
                     }
 
                     break;

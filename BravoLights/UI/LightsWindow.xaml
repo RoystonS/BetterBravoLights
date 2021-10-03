@@ -6,7 +6,8 @@
         xmlns:local="clr-namespace:BravoLights.UI"
         d:DataContext="{d:DesignInstance Type=local:CombinedDataContext}"
         mc:Ignorable="d"
-        Height="380" Width="680"
+        Height="420" Width="700"
+        MinHeight="420" MinWidth="700"
         Closing="Window_Closing"
         Topmost="True">
     <Window.Resources>
@@ -115,7 +116,7 @@
                     <TextBlock Text="MASTER WARNING" TextWrapping="WrapWithOverflow" Foreground="{Binding Path=MainState.MasterWarning, Converter={StaticResource brushConverter}}" />
                 </RadioButton.Content>
             </RadioButton>
-            <RadioButton Grid.Row="0" Grid.Column="1" HorizontalAlignment="Stretch" GroupName="Monitor" Tag="EngineFire" IsChecked="True">
+            <RadioButton Grid.Row="0" Grid.Column="1" HorizontalAlignment="Stretch" GroupName="Monitor" Tag="EngineFire">
                 <RadioButton.Content>
                     <TextBlock Text="ENGINE FIRE" TextWrapping="WrapWithOverflow" Foreground="{Binding Path=MainState.EngineFire, Converter={StaticResource brushConverter}}" />
                 </RadioButton.Content>

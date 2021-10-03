@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
@@ -20,9 +19,9 @@ namespace BravoLights.Connections
 
     class SimConnectConnection : IConnection
     {
-        public static SimConnectConnection Connection = new SimConnectConnection();
+        public static SimConnectConnection Connection = new();
 
-        private readonly Timer reconnectTimer = new Timer();
+        private readonly Timer reconnectTimer = new();
         private SimState simState = SimState.SimStopped;
 
         private SimConnectConnection()
@@ -38,11 +37,11 @@ namespace BravoLights.Connections
 
         private uint nextVariableId = (uint)Ids.DynamicStart;
 
-        private readonly Dictionary<uint, NameAndUnits> idToName = new Dictionary<uint, NameAndUnits>();
-        private readonly Dictionary<NameAndUnits, uint> nameToId = new Dictionary<NameAndUnits, uint>(new NameAndUnitsComparer());
+        private readonly Dictionary<uint, NameAndUnits> idToName = new();
+        private readonly Dictionary<NameAndUnits, uint> nameToId = new(new NameAndUnitsComparer());
         private readonly Dictionary<NameAndUnits, ISet<EventHandler<ValueChangedEventArgs>>> variableHandlers =
-            new Dictionary<NameAndUnits, ISet<EventHandler<ValueChangedEventArgs>>>(new NameAndUnitsComparer());
-        private readonly Dictionary<NameAndUnits, double> lastReportedValue = new Dictionary<NameAndUnits, double>(new NameAndUnitsComparer());
+            new(new NameAndUnitsComparer());
+        private readonly Dictionary<NameAndUnits, double> lastReportedValue = new(new NameAndUnitsComparer());
 
         private void SubscribeToSimConnect(NameAndUnits nameAndUnits)
         {
@@ -74,13 +73,18 @@ namespace BravoLights.Connections
             }
         }
 
+
+        public void SimulateExit()
+        {
+            this.RaiseSimStateChanged(SimState.SimExited);
+        }
+
         public void AddListener(IVariable variable, EventHandler<ValueChangedEventArgs> handler)
         {
             var simvar = (SimVarExpression)variable;
             var nau = simvar.NameAndUnits;
 
-            ISet<EventHandler<ValueChangedEventArgs>> handlers;
-            if (!this.variableHandlers.TryGetValue(nau, out handlers))
+            if (!variableHandlers.TryGetValue(nau, out ISet<EventHandler<ValueChangedEventArgs>> handlers))
             {
                 handlers = new HashSet<EventHandler<ValueChangedEventArgs>>();
                 variableHandlers.Add(nau, handlers);
@@ -91,7 +95,8 @@ namespace BravoLights.Connections
                 if (this.simconnect != null)
                 {
                     SubscribeToSimConnect(nau);
-                } else if (!reconnectTimer.Enabled)
+                }
+                else if (!reconnectTimer.Enabled)
                 {
                     ConnectNow();
                 }
@@ -99,29 +104,44 @@ namespace BravoLights.Connections
 
             handlers.Add(handler);
 
-            SendLastValue(variable, this, handler);
+            SendLastValue(variable, handler);
         }
 
-        public void SendLastValue(IVariable variable, object sender, EventHandler<ValueChangedEventArgs> handler)
+        private void SendLastValue(IVariable variable, EventHandler<ValueChangedEventArgs> handler)
         {
             var simvar = (SimVarExpression)variable;
             var nau = simvar.NameAndUnits;
-            double lastValue;
             if (simState == SimState.SimRunning)
             {
-                if (lastReportedValue.TryGetValue(nau, out lastValue))
+                if (lastReportedValue.TryGetValue(nau, out double lastValue))
                 {
-                    handler(sender, new ValueChangedEventArgs { NewValue = lastValue });
+                    handler(this, new ValueChangedEventArgs { NewValue = lastValue });
                 }
                 else
                 {
-                    handler(sender, new ValueChangedEventArgs { NewValue = new Exception("No value yet received from simulator") });
+                    SendNoValueError(handler);
                 }
             }
             else
             {
-                handler(sender, new ValueChangedEventArgs { NewValue = new Exception("No connection to simulator") });
+                SendNoConnectionError(handler);
             }
+        }
+
+        /// <summary>
+        /// Reports that, whilst we are connected to the server, we haven't yet received a value for this variable.
+        /// </summary>
+        private void SendNoValueError(EventHandler<ValueChangedEventArgs> handler)
+        {
+            handler(this, new ValueChangedEventArgs { NewValue = new Exception("No value yet received from simulator") });
+        }
+
+        /// <summary>
+        /// Reports that a variable doesn't have a value because the simulator isn't connected.
+        /// </summary>
+        private void SendNoConnectionError(EventHandler<ValueChangedEventArgs> handler)
+        {
+            handler(this, new ValueChangedEventArgs { NewValue = new Exception("No connection to simulator") });
         }
 
         public void RemoveListener(IVariable variable, EventHandler<ValueChangedEventArgs> handler)
@@ -129,7 +149,7 @@ namespace BravoLights.Connections
             var simvar = (SimVarExpression)variable;
             var nau = simvar.NameAndUnits;
 
-            var handlers = this.variableHandlers[nau];
+            var handlers = variableHandlers[nau];
             handlers.Remove(handler);
             if (handlers.Count == 0)
             {
@@ -170,6 +190,11 @@ namespace BravoLights.Connections
                 reconnectTimer.Stop();
             }
 
+            if (simconnect != null)
+            {
+                return;
+            }
+
             try
             {
                 simconnect = new SimConnect("BravoLights", HWnd, WM_USER_SIMCONNECT, null, 0);
@@ -189,7 +214,11 @@ namespace BravoLights.Connections
             catch (Exception)
             {
                 reconnectTimer.Start();
-                RaiseSimStateChanged(SimState.SimStopped);
+
+                if (simState == SimState.SimRunning)
+                {
+                    RaiseSimStateChanged(SimState.SimStopped);
+                }
             }
         }
 
@@ -227,15 +256,43 @@ namespace BravoLights.Connections
 
         private void RaiseSimStateChanged(SimState state)
         {
+            if (simState == state)
+            {
+                // State is unchanged
+                return;
+            }
+
             simState = state;
 
-            if (OnSimStateChanged != null)
+            if (simState == SimState.SimExited)
             {
-                OnSimStateChanged(this, new SimStateEventArgs { SimState = state });
+                // The sim has exited. We're likely to be exiting soon, but in
+                // case we don't, we should tidy up.
+
+                // Any previous values are now not valid.
+                lastReportedValue.Clear();
+
+                // SimConnect has gone away; presumably MSFS has exited.
+                // BetterBravoLights itself might not be exiting (if it's being run without install),
+                // but we need to clean up these registrations.
+                this.idToName.Clear();
+                this.nameToId.Clear();
+                simconnect = null;
+
+                // Tell all existing subscribers that we have no connection.
+                foreach (var variableHandlers in variableHandlers.Values)
+                {
+                    foreach (var handler in variableHandlers)
+                    {
+                        SendNoConnectionError(handler);
+                    }
+                }
             }
+
+            OnSimStateChanged?.Invoke(this, new SimStateEventArgs { SimState = state });
         }
 
-        private static readonly Regex AircraftPathRegex = new Regex("Airplanes\\\\(.*)\\\\");
+        private static readonly Regex AircraftPathRegex = new("Airplanes\\\\(.*)\\\\");
 
         private void RaiseAircraftChanged(string aircraftPath)
         {
@@ -256,8 +313,6 @@ namespace BravoLights.Connections
         private void Simconnect_OnRecvQuit(SimConnect sender, SIMCONNECT_RECV data)
         {
             RaiseSimStateChanged(SimState.SimExited);
-
-            simconnect = null;
         }
 
         private void RegisterCurrentVariables()
@@ -270,17 +325,14 @@ namespace BravoLights.Connections
 
         private void Simconnect_OnRecvSimobjectData(SimConnect sender, SIMCONNECT_RECV_SIMOBJECT_DATA data)
         {
-            NameAndUnits nau;
-
-            if (idToName.TryGetValue(data.dwRequestID, out nau))
+            if (idToName.TryGetValue(data.dwRequestID, out NameAndUnits nau))
             {
                 var dataContainer = data.dwData[0] as ContainerStruct?;
                 var newValue = dataContainer.Value.doubleValue;
 
                 var handlers = this.variableHandlers[nau];
 
-                double lastValue;
-                if (lastReportedValue.TryGetValue(nau, out lastValue))
+                if (lastReportedValue.TryGetValue(nau, out double lastValue))
                 {
                     if (newValue == lastValue)
                     {
@@ -294,6 +346,16 @@ namespace BravoLights.Connections
                 foreach (var handler in handlers)
                 {
                     handler(this, e);
+                }
+            }
+            else
+            {
+                // We're receiving data we don't currently have entries for,
+                // probably from previous runs of the sim if the app has
+                // been running during multiple sim runs. Unsubscribe.
+                if (simconnect != null)
+                {
+                    simconnect.ClearClientDataDefinition((Ids)data.dwRequestID);
                 }
             }
         }

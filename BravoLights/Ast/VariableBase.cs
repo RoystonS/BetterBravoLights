@@ -4,6 +4,9 @@ using BravoLights.Connections;
 
 namespace BravoLights.Ast
 {
+    /// <summary>
+    /// Base class for a variable.
+    /// </summary>
     abstract class VariableBase : IVariable
     {
         public string ErrorText { get { return null; } }
@@ -13,46 +16,35 @@ namespace BravoLights.Ast
             get { yield return this; }
         }
 
-        public abstract IConnection Connection { get; }
+        protected abstract IConnection Connection { get; }
         public abstract string Identifier { get; }
 
-        private EventHandler<ValueChangedEventArgs> handlers;
+        private readonly Dictionary<EventHandler<ValueChangedEventArgs>, EventHandler<ValueChangedEventArgs>> handlerMappings
+            = new();
 
         public event EventHandler<ValueChangedEventArgs> ValueChanged
         {
             add
             {
-                var subscribe = handlers == null;
-
-                // It's important that we add the listener before subscribing to children
-                // because the subscription may fire immediately
-                handlers += value;
-                if (subscribe)
+                // For this incoming subscription we're just going to subscribe to the
+                // underlying connection but with a callback that changes the sender
+                // to be this variable.
+                void mappedDelegate(object sender, ValueChangedEventArgs e)
                 {
-                    Connection.AddListener(this, OnVariableChanged);
-                } else
-                {
-                    Connection.SendLastValue(this, this, value);
+                    value(this, e);
                 }
+
+                handlerMappings[value] = mappedDelegate;
+                Connection.AddListener(this, mappedDelegate);
             }
             remove
             {
-                handlers -= value;
-                if (handlers == null)
-                {
-                    Connection.RemoveListener(this, OnVariableChanged);
-                }
+                var mappedDelegate = handlerMappings[value];
+                handlerMappings.Remove(value);
+                Connection.RemoveListener(this, mappedDelegate);
             }
         }
-
-        private void OnVariableChanged(object sender, ValueChangedEventArgs e)
-        {
-            if (handlers != null)
-            {
-                handlers(this, e);
-            }
-        }
-
+        
         public bool Equals(IVariable other)
         {
             return Identifier.Equals(other.Identifier);

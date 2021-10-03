@@ -6,9 +6,10 @@
              xmlns:local="clr-namespace:BravoLights.UI"
              mc:Ignorable="d" 
              d:DataContext="{d:DesignInstance Type=local:ExpressionAndVariablesViewModel}"
-             d:DesignHeight="450" d:DesignWidth="840">
+             d:DesignHeight="500" d:DesignWidth="800">
     <UserControl.Resources>
         <local:RedBrushConverter x:Key="errorBrushConverter" />
+        <local:CountToVisibilityConverter x:Key="visibilityConverter" />
     </UserControl.Resources>
     <Grid>
         <Grid.RowDefinitions>
@@ -22,9 +23,10 @@
                  Foreground="{Binding ExpressionErrored, Converter={StaticResource errorBrushConverter}}"
                  IsReadOnly="True" TextWrapping="Wrap" />
 
-        <TextBlock Grid.Row="2" FontWeight="Medium" Margin="0,8,0,0">Variables referenced by expression</TextBlock>
-        <DataGrid Grid.Row="3" ItemsSource="{Binding Path=Variables}" AutoGenerateColumns="False" IsReadOnly="True"
-                      AlternatingRowBackground="WhiteSmoke" AlternationCount="2" GridLinesVisibility="None">
+        <TextBlock Grid.Row="2" FontWeight="Medium" Margin="0,8,0,0" Visibility="{Binding Path=Variables.Count, Converter={StaticResource visibilityConverter}}">Variables referenced by expression</TextBlock>
+        <DataGrid Grid.Row="3" Visibility="{Binding Path=Variables.Count, Converter={StaticResource visibilityConverter}}"
+                  ItemsSource="{Binding Path=Variables}" AutoGenerateColumns="False" IsReadOnly="True"
+                  AlternatingRowBackground="WhiteSmoke" AlternationCount="2" GridLinesVisibility="None">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Name" Binding="{Binding Name}"
                                         FontFamily="Courier New"
@@ -36,7 +38,7 @@
                                             Width="*">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <TextBlock FontFamily="Courier New" Text="{Binding Value}" Foreground="{Binding IsError, Converter={StaticResource errorBrushConverter}}" />
+                            <TextBlock FontFamily="Courier New" Text="{Binding ValueText}" Foreground="{Binding IsError, Converter={StaticResource errorBrushConverter}}" />
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>

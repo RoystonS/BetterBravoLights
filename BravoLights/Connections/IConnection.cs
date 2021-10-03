@@ -7,7 +7,5 @@ namespace BravoLights.Connections
     {
         void AddListener(IVariable variable, EventHandler<ValueChangedEventArgs> handler);
         void RemoveListener(IVariable variable, EventHandler<ValueChangedEventArgs> handler);
-
-        void SendLastValue(IVariable variable, object sender, EventHandler<ValueChangedEventArgs> handler);
     }
 }

@@ -64,10 +64,6 @@ namespace BravoLights
             return new LiteralNumericNode(value);
         }
 
-        public IAstNode NumericParens(Token<ExpressionToken> lhs, IAstNode exp, Token<ExpressionToken> rhs) { 
-            return exp;
-        }
-
         [Production("numericExpression: term PLUS numericExpression")]
         [Production("numericExpression: term MINUS numericExpression")]
         [Production("term: factor TIMES term")]

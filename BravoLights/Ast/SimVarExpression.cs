@@ -16,7 +16,7 @@ namespace BravoLights.Ast
             return Identifier;
         }
 
-        public override IConnection Connection => SimConnectConnection.Connection;
+        protected override IConnection Connection => SimConnectConnection.Connection;
 
         public override string Identifier => $"A:{this.NameAndUnits.Name}, {this.NameAndUnits.Units}";
     }

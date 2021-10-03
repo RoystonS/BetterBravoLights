@@ -1,13 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
-
 
 namespace BravoLights.UI
 {
     public class ExpressionAndVariablesViewModel : ViewModelBase
     {
-        private ObservableCollection<VariableState> variables;
+        private ObservableCollection<VariableState> variables = new();
         public ObservableCollection<VariableState> Variables
         {
             get { return variables; }
@@ -37,23 +35,22 @@ namespace BravoLights.UI
             }
         }
 
-        private LightExpression monitoredExpression;
+        private ISet<IVariable> monitoredVariables;
 
         public void Monitor(LightExpression lightExpression)
         {
-            if (monitoredExpression != null)
+            if (monitoredVariables != null)
             {
-                foreach (var variable in monitoredExpression.Expression.Variables)
+                foreach (var variable in monitoredVariables)
                 {
                     variable.ValueChanged -= Variable_ValueChanged;
                 }
             }
+            monitoredVariables = null;
 
             Variables = null;
             ExpressionText = "";
             ExpressionErrored = false;
-
-            monitoredExpression = lightExpression;
 
             if (lightExpression != null)
             {
@@ -63,16 +60,17 @@ namespace BravoLights.UI
                 var variables = new ObservableCollection<VariableState>();
                 Variables = variables;
 
-                var expressionVariablesDeduped = new HashSet<IVariable>(lightExpression.Expression.Variables);
-                foreach (var variable in expressionVariablesDeduped)
+                monitoredVariables = new HashSet<IVariable>(lightExpression.Expression.Variables);
+                foreach (var variable in monitoredVariables)
                 {
-                    var variableState = new VariableState { Name = variable.Identifier, Value = "Waiting for value...", IsError = true };
+                    var variableState = new VariableState { Name = variable.Identifier };
                     variables.Add(variableState);
 
                     variable.ValueChanged += Variable_ValueChanged;
                 }
             }
         }
+
         private void Variable_ValueChanged(object sender, ValueChangedEventArgs e)
         {
             var variable = sender as IVariable;
@@ -81,16 +79,7 @@ namespace BravoLights.UI
             {
                 if (variableState.Name == variable.Identifier)
                 {
-                    var exception = e.NewValue as Exception;
-                    variableState.IsError = exception != null;
-                    if (exception != null)
-                    {
-                        variableState.Value = exception.Message;
-                    }
-                    else
-                    {
-                        variableState.Value = e.NewValue.ToString();
-                    }
+                    variableState.Value = e.NewValue;
                 }
             }
         }
