@@ -1,12 +1,31 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using System.Xml;
 using System.Xml.Linq;
 
 namespace BravoLights.Installation
 {
+    public class CorruptExeXmlException : Exception
+    {
+        private readonly string exeXmlPath;
+
+        public CorruptExeXmlException(string exeXmlPath, Exception innerException)
+            :base("Existing exe.xml file is corrupt", innerException)
+        {
+            this.exeXmlPath = exeXmlPath;
+        }
+
+        public string ExeXmlPath
+        {
+            get
+            {
+                return exeXmlPath;
+            }
+        }
+    }
+
     static class Installer
     {
         private static readonly string AFCBridgeAddonName = "AFCBridge";
@@ -70,9 +89,22 @@ namespace BravoLights.Installation
             }
         }
 
+
+        private static XDocument LoadExeXml()
+        {
+            try
+            {
+                return XDocument.Load(ExeXmlPath);
+            }
+            catch (XmlException ex)
+            {
+                throw new CorruptExeXmlException(ExeXmlPath, ex);
+            }
+        }
+
         public static string Install()
         {
-            var xdoc = XDocument.Load(ExeXmlPath);
+            var xdoc = LoadExeXml();
 
             var afcBridgeEl = FindAddon(xdoc, AFCBridgeAddonName);
             if (afcBridgeEl != null)
@@ -102,7 +134,7 @@ namespace BravoLights.Installation
 
         public static string Uninstall()
         {
-            var xdoc = XDocument.Load(ExeXmlPath);
+            var xdoc = LoadExeXml();
 
             var afcBridgeEl = FindAddon(xdoc, AFCBridgeAddonName);
             if (afcBridgeEl != null)

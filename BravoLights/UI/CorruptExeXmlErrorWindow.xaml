@@ -1,0 +1,42 @@
+﻿<Window x:Class="BravoLights.UI.CorruptExeXmlErrorWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:BravoLights.UI"
+        mc:Ignorable="d"
+        Title="Better Bravo Lights - Installation Aborted" Height="420" Width="500"
+        WindowStartupLocation="CenterScreen"
+        DataContext="{Binding RelativeSource={RelativeSource Self}}">
+    <DockPanel>
+        <StackPanel DockPanel.Dock="Bottom" VerticalAlignment="Bottom" Margin="8">
+            <Button HorizontalAlignment="Right" Height="Auto" Padding="8" Click="Button_Click">OK</Button>
+        </StackPanel>
+        <StackPanel DockPanel.Dock="Top" Margin="16" Hyperlink.RequestNavigate="Hyperlink_RequestNavigate">
+            <TextBlock TextWrapping="Wrap">We've found an existing problem with one of your Flight Simulator configuration files.</TextBlock>
+        
+            <TextBlock Margin="0,8" TextWrapping="Wrap">In order to install Better Bravo Lights we would need to modify that file, but because it's already corrupt we can't safely do that.
+            </TextBlock>
+            <TextBlock TextWrapping="Wrap">
+            The file needs to be repaired before Better Bravo Lights - or any other similar tool - can be installed.
+            </TextBlock>
+
+            <TextBlock Margin="0,8,0,0">The file in question is the <Run FontFamily="Courier New">exe.xml</Run> file at:</TextBlock>
+            <TextBox IsReadOnly="True" Text="{Binding Path=XmlFilename}" TextWrapping="Wrap" />
+            <TextBlock><Hyperlink NavigateUri="OPEN" RequestNavigate="ShowExeXmlLocation">Show me that folder</Hyperlink></TextBlock>
+
+            <TextBlock Margin="0,8" TextWrapping="Wrap">
+                This <Run FontFamily="Courier New">exe.xml</Run> file needs to be a valid XML file but is currently not valid.
+            </TextBlock>
+            <TextBlock Margin="0,8" TextWrapping="Wrap">If you're not sure how to repair an XML file, please raise a question at our
+                <Hyperlink NavigateUri="https://github.com/RoystonS/BetterBravoLights/issues/new/choose">GitHub</Hyperlink> 
+                and we'll try to help you fix it. Please post the entire contents of your <Run FontFamily="Courier New">exe.xml</Run> file
+                in the question.
+            </TextBlock>
+            <TextBlock TextWrapping="Wrap">
+                You can also find <Hyperlink NavigateUri="http://www.youtube.com">more details at our GitHub</Hyperlink> if you want to know more.
+            </TextBlock>
+
+        </StackPanel>
+    </DockPanel>
+</Window>

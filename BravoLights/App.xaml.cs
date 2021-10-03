@@ -51,10 +51,15 @@ namespace BravoLights
                                 break;
                             }
                     }
-                } catch (Exception ex)
+                }
+                catch (CorruptExeXmlException ex)
+                {
+                    var window = new CorruptExeXmlErrorWindow() { XmlFilename = ex.ExeXmlPath };
+                    window.ShowDialog();
+                }                
+                catch (Exception ex)
                 {
                     MessageBox.Show($"Operation failed: {ex.Message}. Please report this to the application author.", "Better Bravo Lights", MessageBoxButton.OK, MessageBoxImage.Error);
-
                 }
                 Environment.Exit(0);
             }
