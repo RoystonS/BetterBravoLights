@@ -54,7 +54,7 @@ namespace BravoLights
                 }
                 catch (CorruptExeXmlException ex)
                 {
-                    var window = new CorruptExeXmlErrorWindow() { XmlFilename = ex.ExeXmlPath };
+                    var window = new CorruptExeXmlErrorWindow() { XmlFilename = ex.ExeXmlPath, Exception = ex };
                     window.ShowDialog();
                 }                
                 catch (Exception ex)

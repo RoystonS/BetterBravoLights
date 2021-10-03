@@ -8,8 +8,15 @@ namespace BravoLights.UI
         {
             get
             {
+                return $"Better Bravo Lights {VersionString}";
+            }
+        }
+
+        public static string VersionString
+        {
+            get {
                 var version = Assembly.GetExecutingAssembly().GetName().Version;
-                return $"Better Bravo Lights {version.Major}.{version.Minor}.{version.Build}";
+                return $"{version.Major}.{version.Minor}.{version.Build}";
             }
         }
     }

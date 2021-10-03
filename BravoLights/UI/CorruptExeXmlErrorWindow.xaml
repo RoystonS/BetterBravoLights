@@ -15,9 +15,7 @@
         <StackPanel DockPanel.Dock="Top" Margin="16" Hyperlink.RequestNavigate="Hyperlink_RequestNavigate">
             <TextBlock TextWrapping="Wrap">We've found an existing problem with one of your Flight Simulator configuration files.</TextBlock>
         
-            <TextBlock Margin="0,8" TextWrapping="Wrap">In order to install Better Bravo Lights we would need to modify that file, but because it's already corrupt we can't safely do that.
-            </TextBlock>
-            <TextBlock TextWrapping="Wrap">
+            <TextBlock Margin="0,8" TextWrapping="Wrap">In order to install Better Bravo Lights we would need to modify that file, but because it's already corrupted we can't safely do that.
             The file needs to be repaired before Better Bravo Lights - or any other similar tool - can be installed.
             </TextBlock>
 
@@ -25,16 +23,15 @@
             <TextBox IsReadOnly="True" Text="{Binding Path=XmlFilename}" TextWrapping="Wrap" />
             <TextBlock><Hyperlink NavigateUri="OPEN" RequestNavigate="ShowExeXmlLocation">Show me that folder</Hyperlink></TextBlock>
 
-            <TextBlock Margin="0,8" TextWrapping="Wrap">
-                This <Run FontFamily="Courier New">exe.xml</Run> file needs to be a valid XML file but is currently not valid.
+            <TextBlock Margin="0,32,0,0" TextWrapping="Wrap">
+                Your file is unfortunately not a valid XML file. You can find <Hyperlink NavigateUri="http://www.youtube.com">full details at our GitHub</Hyperlink> if you want to know more.
             </TextBlock>
-            <TextBlock Margin="0,8" TextWrapping="Wrap">If you're not sure how to repair an XML file, please raise a question at our
-                <Hyperlink NavigateUri="https://github.com/RoystonS/BetterBravoLights/issues/new/choose">GitHub</Hyperlink> 
-                and we'll try to help you fix it. Please post the entire contents of your <Run FontFamily="Courier New">exe.xml</Run> file
-                in the question.
-            </TextBlock>
-            <TextBlock TextWrapping="Wrap">
-                You can also find <Hyperlink NavigateUri="http://www.youtube.com">more details at our GitHub</Hyperlink> if you want to know more.
+                                  
+            <TextBlock Margin="0,8" TextWrapping="Wrap"><Run FontWeight="Medium">If you're not sure how to repair the file, we may be able to help you:</Run>
+                <LineBreak />
+                Please <Hyperlink NavigateUri="FIX" RequestNavigate="RaiseExeXmlIssue">raise a support question at our GitHub</Hyperlink> and
+                we'll see if we can help you fix it. You'll need a GitHub account to raise the issue, but that link will automatically populate
+                the entire issue for you, complete with the error details and contents of your file.
             </TextBlock>
 
         </StackPanel>
