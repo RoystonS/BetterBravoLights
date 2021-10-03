@@ -13,6 +13,8 @@ In order for Better Bravo Lights to install itself properly - by arranging for i
 
 That's certainly an option BUT this corrupted file will prevent other programs - not just Better Bravo Lights - from installing into MSFS correctly, and may indeed already have broken some installations. You need to fix it whether or not you're installing Better Bravo Lights.
 
+(Also, you _can_ run BetterBravoLights without installing it, but you'd need to start it manually.)
+
 ## So what do I do?
 
 You've a few options to fix your `exe.xml` file:

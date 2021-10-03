@@ -68,11 +68,38 @@ If you make some useful configuration entries, please send submit an issue/PR an
 
 The configuration file is a standard [.ini file](https://en.wikipedia.org/wiki/INI_file).
 
-- Lines starting with a semicolon (;) are treated as comments and are ignored
-- Each section is delimited with a section name in square brackets, e.g. `[Default]`
+### Comments
+
+- Lines starting with a semicolon (`;`) are treated as comments and are ignored
+
+### Sections
+
+- The configuration file is broken up into sections, each delimited with a section name in square brackets, e.g. `[Default]`
 - Configuration for an aircraft is in a section named `[Aircraft.<aircraftname>]`
-  - e.g. `[Aircraft.Asobo_TBM930]` or `[Aircraft.Asobo_Pitts]`
-- Light configurations in the `[Default]` section apply to every aircraft unless an aircraft overrides a light
+  - For instance: `[Aircraft.Asobo_TBM930]` or `[Aircraft.Asobo_Pitts]`
+- (New in v0.3.0) In an extension to standard `.ini` syntax, you can define multiple sections at the same time, to reduce duplication, by comma-separating the section names.
+
+  For instance:
+
+  ```ini
+  [Aircraft.Aircraft1, Aircraft.Aircraft2]
+  Light1 = A:SOME VARIABLE, bool == 1
+  Light2 = A:OTHER VARIABLE, bool == 1
+  ```
+
+  is the same as writing
+
+  ```ini
+  [Aircraft.Aircraft1]
+  Light1 = A:SOME VARIABLE, bool == 1
+  Light2 = A:OTHER VARIABLE, bool == 1
+  [Aircraft.Aircraft2]
+  Light1 = A:SOME VARIABLE, bool == 1
+  Light2 = A:OTHER VARIABLE, bool == 1
+  ```
+
+- (New in v0.3.0) The same section name can appear multiple times. Sections with the same name will be merged.
+- Configuration in the section named `[Default]` automatically apply to every aircraft unless an aircraft overrides a light
 - Each light setting line is of the format
   - `lightname = expression`
 - Expression types:
@@ -159,9 +186,10 @@ In the above picture we can see:
 
 - several autopilot and annunciator lights are lit
 - all of the gear lights are green
-- we've selected the LOW VOLTS light to find out what's driving that light
-  - we can see the light is using the expression `(A:ELECTRICAL MAIN BUS VOLTAGE, volts < 24.5)`
-  - we can see the current value of `A:ELECTRICAL MAIN BUS VOLTAGE, volts` is 22.96. This is less than 24.5, which is why the light is lit
+- we've selected the LOW OIL PRESSURE light to find out why the light is lit
+  - we can see the light is using the expression `(A:ENG OIL PRESSURE:1, psi <= 60) OR (A:ENG OIL PRESSURE:2, psi <= 60)`
+  - we can see the current value of `A:ENG OIL PRESSURE:1, psi` is 37.18. This is less than 60, which is why the light is lit
+  - (that is, engine 2's oil is fine but we have a leak on engine 1, so we want the light lit)
 
 # FAQ
 
