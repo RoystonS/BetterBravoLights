@@ -1,6 +1,6 @@
 ---
-name: "🔨 Configuration Contribution"
-about: Submit your configuration
+name: "🔨 Share configuration"
+about: I've developed some cool BetterBravoLights configuration and would like to share it with the world.
 title: ""
 labels: needs-triage
 assignees: RoystonS
@@ -42,7 +42,7 @@ for examples.
 -->
 
 ```ini
-Please paste the relevant parts of the configuration in here
+Please paste the relevant parts of the configuration here
 ```
 
 **Additional context**

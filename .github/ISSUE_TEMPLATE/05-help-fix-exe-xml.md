@@ -1,6 +1,6 @@
 ---
-name: "🧑‍🔧 Please help me fix my corrupt `exe.xml` file"
-about: BetterBravoLights has told you your existing `exe.xml` file is corrupt and you'd like some help
+name: "🧑‍🔧 Help me fix my corrupt `exe.xml` file"
+about: BetterBravoLights told me my existing `exe.xml` file is corrupt and I'd like some help.
 title: ""
 labels: exe-xml-help
 assignees: RoystonS
