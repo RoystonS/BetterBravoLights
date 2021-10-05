@@ -9,7 +9,7 @@ namespace BravoLights
     {
         private readonly ISet<string> litLights = new HashSet<string>();
 
-        private Dictionary<string, LightExpression> lightExpressions = new Dictionary<string, LightExpression>();
+        private Dictionary<string, LightExpression> lightExpressions = new();
 
         public IReadOnlyDictionary<string, LightExpression> LightExpressions
         {
@@ -37,7 +37,7 @@ namespace BravoLights
                 }
             }
 
-            SetProperty(ref lightExpressions, newExpressions, "LightExpressions");
+            SetProperty(ref lightExpressions, newExpressions, nameof(LightExpressions));
         }
 
         private void ExpressionValueChanged(object sender, ValueChangedEventArgs e)
@@ -46,7 +46,7 @@ namespace BravoLights
             var lightName = lightExpression.LightName;
 
 
-            var lit = e.NewValue is Exception ? false : (bool)e.NewValue;
+            var lit = e.NewValue is not Exception && (bool)e.NewValue;
 
             bool changed;
             if (lit)

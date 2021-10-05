@@ -11,10 +11,10 @@ namespace BravoLights.Ast
     }
     class FSUIPCOffsetExpression : IAstNode
     {
-        private Offset<ushort> onGround = new Offset<ushort>(0x0366);         // 2-byte offset - Unsigned short
+        private readonly Offset<ushort> onGround = new(0x0366);         // 2-byte offset - Unsigned short
 
-        private Offset offset;
-        private UICPCOffsetType type;
+        private readonly Offset offset;
+        private readonly UICPCOffsetType type;
 
         private FSUIPCOffsetExpression(int offset, int size, UICPCOffsetType type)
         {
@@ -32,8 +32,6 @@ namespace BravoLights.Ast
             }
 
             FSUIPCConnection.Process();
-
-            var val = onGround.Value;
 
             if (this.type == UICPCOffsetType.FLOAT)
             {
@@ -58,12 +56,12 @@ namespace BravoLights.Ast
             if (sizeAndType.StartsWith("FLOAT"))
             {
                 type = UICPCOffsetType.FLOAT;
-                size = int.Parse(sizeAndType.Substring(5));
+                size = int.Parse(sizeAndType[5..]);
             }
             else
             {
                 type = UICPCOffsetType.INT;
-                size = int.Parse(sizeAndType.Substring(3));
+                size = int.Parse(sizeAndType[3..]);
             }
 
             // TODO: error handling

@@ -77,10 +77,7 @@ namespace BravoLights.Ast
             {
                 lastReportedValue = newValue;
 
-                if (listeners != null)
-                {
-                    listeners(this, new ValueChangedEventArgs { NewValue = newValue });
-                }
+                listeners?.Invoke(this, new ValueChangedEventArgs { NewValue = newValue });
             }
         }
 

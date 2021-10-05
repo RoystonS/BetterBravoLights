@@ -8,7 +8,7 @@ namespace BravoLights.Connections
 {
     class BravoFSUIPCConnection : IConnection
     {
-        public readonly static BravoFSUIPCConnection Connection = new BravoFSUIPCConnection();
+        public readonly static BravoFSUIPCConnection Connection = new();
 
         private BravoFSUIPCConnection()
         {
@@ -17,13 +17,13 @@ namespace BravoLights.Connections
         }
 
         private bool connectedToFSUIPC = false;
-        private readonly Dictionary<string, double> lastReportedValue = new Dictionary<string, double>();
+        private readonly Dictionary<string, double> lastReportedValue = new();
         private readonly Dictionary<string, ISet<EventHandler<ValueChangedEventArgs>>> variableHandlers =
-            new Dictionary<string, ISet<EventHandler<ValueChangedEventArgs>>>();
+            new();
 
         // Reading LVARs the way we do right now is a little expensive, so just 10Hz.
-        private Timer readTimer = new Timer { AutoReset = false, Interval = 100 };
-        private Timer reconnectTimer = new Timer { AutoReset = false, Interval = 30000 };
+        private readonly Timer readTimer = new() { AutoReset = false, Interval = 100 };
+        private readonly Timer reconnectTimer = new() { AutoReset = false, Interval = 30000 };
 
         private void ReadTimer_Elapsed(object sender, ElapsedEventArgs e)
         {
@@ -36,10 +36,9 @@ namespace BravoLights.Connections
 
                     try
                     {
-                        double oldValue;
                         var newValue = FSUIPCConnection.ReadLVar(lvarName);
 
-                        if (lastReportedValue.TryGetValue(lvarName, out oldValue))
+                        if (lastReportedValue.TryGetValue(lvarName, out double oldValue))
                         {
                             if (oldValue == newValue)
                             {
@@ -75,9 +74,8 @@ namespace BravoLights.Connections
             {
                 StartFSUIPC();
             }
-    
-            ISet<EventHandler<ValueChangedEventArgs>> handlers;
-            if (!variableHandlers.TryGetValue(name, out handlers))
+
+            if (!variableHandlers.TryGetValue(name, out ISet<EventHandler<ValueChangedEventArgs>> handlers))
             {
                 handlers = new HashSet<EventHandler<ValueChangedEventArgs>>();
                 variableHandlers.Add(name, handlers);
@@ -92,10 +90,9 @@ namespace BravoLights.Connections
         {
             var simvar = (FSUIPCLvarExpression)variable;
             var name = simvar.Identifier;
-            double lastValue;
             if (connectedToFSUIPC)
             {
-                if (lastReportedValue.TryGetValue(name, out lastValue))
+                if (lastReportedValue.TryGetValue(name, out double lastValue))
                 {
                     handler(sender, new ValueChangedEventArgs { NewValue = lastValue });
                 }

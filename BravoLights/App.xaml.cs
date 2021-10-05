@@ -67,8 +67,10 @@ namespace BravoLights
             viewModel = new MainViewModel();
             usbLogic = new UsbLogic(viewModel);
 
-            lightsWindow = new LightsWindow();
-            lightsWindow.ViewModel = viewModel;
+            lightsWindow = new LightsWindow
+            {
+                ViewModel = viewModel
+            };
             lightsWindow.Show();
             lightsWindow.Hide();
 

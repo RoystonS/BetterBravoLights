@@ -7,6 +7,7 @@ using sly.parser.generator;
 
 namespace BravoLights
 {
+    #pragma warning disable CA1822 // Mark members as static
     public class ExpressionParser
     {
         [Production("logicalExpression: OFF")]
@@ -19,7 +20,7 @@ namespace BravoLights
         [Production("primary: LVAR")]
         public IAstNode Lvar(Token<ExpressionToken> token)
         {
-            var text = token.Value.Substring(2);
+            var text = token.Value[2..];
 
             return new FSUIPCLvarExpression
             {
@@ -30,7 +31,7 @@ namespace BravoLights
         [Production("primary: SIMVAR")]
         public IAstNode SimVarExpression(Token<ExpressionToken> simvarToken)
         {
-            var text = simvarToken.Value.Substring(2);
+            var text = simvarToken.Value[2..];
             var bits = text.Split(",");
             var varName = bits[0];
             var type = bits[1].Trim();
@@ -47,7 +48,7 @@ namespace BravoLights
         public IAstNode NumericExpressionFromLiteralNumber(Token<ExpressionToken> offsetToken)
         {
             var text = offsetToken.Value;
-            var num = text.Substring(2);
+            var num = text[2..];
 
             // TODO: error handling
             var value = int.Parse(num, NumberStyles.HexNumber);
@@ -80,6 +81,7 @@ namespace BravoLights
         [Production("logicalTerm: logicalPrimary")]
         [Production("logicalExpression: logicalTerm")]
         public IAstNode Direct(IAstNode node)
+
         {
             return node;
         }
@@ -133,5 +135,6 @@ namespace BravoLights
             return parseResult.Result;
         }
     }
+    #pragma warning restore CA1822 // Mark members as static
 }
 

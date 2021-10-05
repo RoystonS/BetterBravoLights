@@ -33,10 +33,7 @@ namespace BravoLights
 
         private void Expression_ValueChanged(object sender, ValueChangedEventArgs e)
         {
-            if (handlers != null)
-            {
-                handlers(this, e);
-            }
+            handlers?.Invoke(this, e);
         }
     }
 }
