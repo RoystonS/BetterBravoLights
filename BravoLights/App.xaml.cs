@@ -78,10 +78,11 @@ namespace BravoLights
             };
             
             // How can we get an HWnd without having to (briefly) show the lights window?
-            var hwndSource = PresentationSource.FromVisual(splashScreen) as HwndSource;
+            var hwndWindow = splashScreen;
+            var hwndSource = PresentationSource.FromVisual(hwndWindow) as HwndSource;
             hwndSource.AddHook(WndProc);
 
-            SimConnectConnection.HWnd = new WindowInteropHelper(lightsWindow).Handle;
+            SimConnectConnection.HWnd = new WindowInteropHelper(hwndWindow).Handle;
             SimConnectConnection.Connection.OnAircraftLoaded += Connection_OnAircraftLoaded;
             SimConnectConnection.Connection.OnSimStateChanged += Connection_OnSimStateChanged;
 
