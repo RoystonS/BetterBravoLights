@@ -1,0 +1,26 @@
+﻿<Window x:Class="BravoLights.UI.BBLSplashScreen"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:BravoLights.UI"
+        mc:Ignorable="d"
+        Title="SplashScreen"
+        WindowStyle="None"
+        WindowStartupLocation="CenterScreen"
+        Width="550" Height="200"
+        DataContext="{Binding RelativeSource={RelativeSource Self}}">
+    <Window.Resources>
+        <ResourceDictionary>
+            <BitmapImage x:Key="logo" UriSource="pack://application:,,,/Resources/Bulb.png" />
+        </ResourceDictionary>
+    </Window.Resources>
+    <StackPanel Orientation="Horizontal">
+        <Image Source="{StaticResource logo}" Margin="-24,0,-24,0" />
+        <DockPanel Margin="0,24">
+            <TextBlock DockPanel.Dock="Top" FontSize="36" FontFamily="Gill Sans MT" VerticalAlignment="Stretch" Text="{Binding ProductAndVersion}" />
+            <TextBlock DockPanel.Dock="Top" Margin="0,8,0,0">by Royston Shufflebotham &lt;royston@shufflebotham.org&gt;</TextBlock>
+            <TextBlock DockPanel.Dock="Bottom" Margin="0,8,0,-8" Height="32" VerticalAlignment="Bottom">Uses the FSUIPC Client DLL for .NET by Paul Henty</TextBlock>
+        </DockPanel>
+    </StackPanel>
+</Window>

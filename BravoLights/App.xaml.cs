@@ -16,6 +16,7 @@ namespace BravoLights
     /// </summary>
     public partial class App : Application
     {
+        private BBLSplashScreen splashScreen;
         private LightsWindow lightsWindow;
 
         private MainViewModel viewModel;
@@ -67,15 +68,17 @@ namespace BravoLights
             viewModel = new MainViewModel();
             usbLogic = new UsbLogic(viewModel);
 
+            splashScreen = new BBLSplashScreen();
+            splashScreen.Show();
+            splashScreen.HideAfter(TimeSpan.FromSeconds(1.5));
+
             lightsWindow = new LightsWindow
             {
                 ViewModel = viewModel
             };
-            lightsWindow.Show();
-            lightsWindow.Hide();
-
+            
             // How can we get an HWnd without having to (briefly) show the lights window?
-            var hwndSource = PresentationSource.FromVisual(lightsWindow) as HwndSource;
+            var hwndSource = PresentationSource.FromVisual(splashScreen) as HwndSource;
             hwndSource.AddHook(WndProc);
 
             SimConnectConnection.HWnd = new WindowInteropHelper(lightsWindow).Handle;
