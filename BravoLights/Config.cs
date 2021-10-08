@@ -12,7 +12,7 @@ namespace BravoLights
         /// <summary>
         /// A cooloff timer to prevent us reading the config file as soon as it changes.
         /// </summary>
-        private readonly Timer backoffTimer = new Timer { AutoReset = false, Interval = 100 };
+        private readonly Timer backoffTimer = new() { AutoReset = false, Interval = 100 };
 
         private FileSystemWatcher fsWatcher;
 
@@ -49,16 +49,14 @@ namespace BravoLights
         }
 
 
-        private static readonly Regex sectionRegex = new Regex("\\[(.*)\\]");
-        private static readonly Regex keyValueRegex = new Regex("^(.*?)\\s*=\\s*(.*)$");
+        private static readonly Regex sectionRegex = new("\\[(.*)\\]");
+        private static readonly Regex keyValueRegex = new("^(.*?)\\s*=\\s*(.*)$");
 
         public string GetConfig(string aircraft, string key)
         {
-            IniSection section;
-            if (sections.TryGetValue($"Aircraft.{aircraft}", out section))
+            if (sections.TryGetValue($"Aircraft.{aircraft}", out var section))
             {
-                string value;
-                if (section.TryGetValue(key, out value))
+                if (section.TryGetValue(key, out var value))
                 {
                     return value;
                 }
@@ -66,8 +64,7 @@ namespace BravoLights
 
             if (sections.TryGetValue("Default", out section))
             {
-                string value;
-                if (section.TryGetValue(key, out value))
+                if (section.TryGetValue(key, out string value))
                 {
                     return value;
                 }
@@ -76,7 +73,7 @@ namespace BravoLights
             return null;
         }
 
-        private Dictionary<string, IniSection> sections = new Dictionary<string, IniSection>();
+        private Dictionary<string, IniSection> sections = new();
 
         private void ReadConfig()
         {
@@ -127,10 +124,9 @@ namespace BravoLights
                     foreach (var sectionName in sectionNames)
                     {
                         var trimmedSectionName = sectionName.Trim();
-                        IniSection section;
-                        if (!sections.TryGetValue(trimmedSectionName, out section))
+                        if (!sections.TryGetValue(trimmedSectionName, out IniSection section))
                         {
-                            section = new IniSection(trimmedSectionName);
+                            section = new IniSection();
                             sections[trimmedSectionName] = section;
                         }
                         currentSections.Add(section);
@@ -153,21 +149,16 @@ namespace BravoLights
 
             this.sections = sections;
 
-            if (this.OnConfigChanged != null)
-            {
-                this.OnConfigChanged(this, EventArgs.Empty);
-            }
+            OnConfigChanged?.Invoke(this, EventArgs.Empty);
         }
     }
 
     class IniSection
     {
-        private readonly string SectionName;
-        private readonly Dictionary<string, string> storage = new Dictionary<string, string>();
+        private readonly Dictionary<string, string> storage = new();
 
-        public IniSection(string sectionName)
+        public IniSection()
         {
-            SectionName = sectionName;
         }
         
         

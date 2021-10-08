@@ -1,15 +1,15 @@
 ﻿using System;
-using System.Diagnostics;
 using HidSharp;
 
 namespace BravoLights
 {
     class UsbLogic
     {
-        private static int HoneycombVendorId = 0x294B;
-        private static int BravoProductId = 0x1901;
+        private static readonly int HoneycombVendorId = 0x294B;
+        private static readonly int BravoProductId = 0x1901;
 
-        private MainViewModel lightsState;
+        private readonly MainViewModel lightsState;
+
         private HidDevice bravoDevice;
         private HidStream bravoStream;
 
