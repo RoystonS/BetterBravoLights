@@ -4,7 +4,7 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net5.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
-    <Version>0.4.2</Version>
+    <Version>0.4.3</Version>
     <Authors>Royston Shufflebotham &lt;royston@shufflebotham.org&gt;</Authors>
     <Product>Better Bravo Lights</Product>
     <Copyright>(C) 2021 Royston Shufflebotham &lt;royston@shufflebotham.org&gt;</Copyright>
