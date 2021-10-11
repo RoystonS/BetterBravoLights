@@ -60,7 +60,7 @@ namespace BravoLights
                 }                
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Operation failed: {ex.Message}. Please report this to the application author.", "Better Bravo Lights", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show($"Operation failed: {ex.GetType().FullName}:{ex.Message}. Please report this to the application author.", "Better Bravo Lights", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
                 Environment.Exit(0);
             }

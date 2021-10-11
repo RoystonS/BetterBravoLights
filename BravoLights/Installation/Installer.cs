@@ -36,6 +36,9 @@ namespace BravoLights.Installation
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
         }
 
+        /// <summary>
+        /// Gets the location of the MSFS exe.xml file, which may not actually exist yet.
+        /// </summary>
         private static string ExeXmlPath
         {
             get
@@ -58,6 +61,12 @@ namespace BravoLights.Installation
 
                     if (File.Exists(exeXmlPath))
                     {
+                        return exeXmlPath;
+                    }
+
+                    if (File.Exists(Path.Join(path, "FlightSimulator.CFG")))
+                    {
+                        // There's no existing exe.xml file but it does belong here.
                         return exeXmlPath;
                     }
                 }
@@ -95,6 +104,21 @@ namespace BravoLights.Installation
             try
             {
                 return XDocument.Load(ExeXmlPath);
+            }
+            catch (FileNotFoundException)
+            {
+                // The exe.xml file does not exist. Make one.
+                var doc = new XDocument(
+                    new XDeclaration("1.0", "windows-1252", null),
+                    new XElement("SimBase.Document",
+                        new XAttribute("Type", "SimConnect"),
+                        new XAttribute("version", "1,0"),
+                        new XElement("Descr", "Auto launch external applications on MSFS start"),
+                        new XElement("Filename", "exe.xml"),
+                        new XElement("Disabled", "False")
+                        )
+                    );
+                return doc;
             }
             catch (XmlException ex)
             {
@@ -134,6 +158,12 @@ namespace BravoLights.Installation
 
         public static string Uninstall()
         {
+            if (!File.Exists(ExeXmlPath))
+            {
+                // The file does not exist. No need to write out a version with our entry removed.
+                return "Better Bravo Lights was not installed.";
+            }
+
             var xdoc = LoadExeXml();
 
             var afcBridgeEl = FindAddon(xdoc, AFCBridgeAddonName);
