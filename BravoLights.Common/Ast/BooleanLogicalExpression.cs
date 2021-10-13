@@ -11,17 +11,12 @@ namespace BravoLights.Common.Ast
 
         public static BooleanLogicalExpression Create(IAstNode lhs, Token<ExpressionToken> token, IAstNode rhs)
         {
-            switch (token.Value)
+            return token.Value switch
             {
-                case "&&":
-                case "AND":
-                    return new AndExpression(lhs, rhs);
-                case "||":
-                case "OR":
-                    return new OrExpression(lhs, rhs);
-                default:
-                    throw new Exception($"Unexpected operator {token.Value}");
-            }
+                "&&" or "AND" => new AndExpression(lhs, rhs),
+                "||" or "OR" => new OrExpression(lhs, rhs),
+                _ => throw new Exception($"Unexpected operator {token.Value}"),
+            };
         }
     }
 

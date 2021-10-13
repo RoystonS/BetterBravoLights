@@ -14,24 +14,16 @@ namespace BravoLights.Common.Ast
 
         public static ComparisonExpression Create(IAstNode lhs, Token<ExpressionToken> token, IAstNode rhs)
         {
-            switch (token.Value)
+            return token.Value switch
             {
-                case "<":
-                    return new LtComparison(lhs, rhs);
-                case "<=":
-                    return new LeqComparison(lhs, rhs);
-                case "==":
-                    return new EqComparison(lhs, rhs);
-                case "!=":
-                case "<>":
-                    return new NeqComparison(lhs, rhs);
-                case ">=":
-                    return new GeqComparison(lhs, rhs);
-                case ">":
-                    return new GtComparison(lhs, rhs);
-                default:
-                    throw new Exception($"Unexpected operator {token.Value}");
-            }
+                "<" => new LtComparison(lhs, rhs),
+                "<=" => new LeqComparison(lhs, rhs),
+                "==" => new EqComparison(lhs, rhs),
+                "!=" or "<>" => new NeqComparison(lhs, rhs),
+                ">=" => new GeqComparison(lhs, rhs),
+                ">" => new GtComparison(lhs, rhs),
+                _ => throw new Exception($"Unexpected operator {token.Value}"),
+            };
         }
     }
 

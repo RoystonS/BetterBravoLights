@@ -23,19 +23,14 @@ namespace BravoLights.Common.Ast
 
         public static BinaryNumericExpression Create(IAstNode lhs, Token<ExpressionToken> op, IAstNode rhs)
         {
-            switch (op.Value)
+            return op.Value switch
             {
-                case "+":
-                    return new PlusExpression(lhs, rhs);
-                case "-":
-                    return new MinusExpression(lhs, rhs);
-                case "*":
-                    return new TimesExpression(lhs, rhs);
-                case "/":
-                    return new DivideExpression(lhs, rhs);
-                default:
-                    throw new Exception($"Unexpected operator: {op.Value}");
-            }
+                "+" => new PlusExpression(lhs, rhs),
+                "-" => new MinusExpression(lhs, rhs),
+                "*" => new TimesExpression(lhs, rhs),
+                "/" => new DivideExpression(lhs, rhs),
+                _ => throw new Exception($"Unexpected operator: {op.Value}"),
+            };
         }
     }
 
