@@ -1,19 +1,19 @@
 ﻿using System;
 using HidSharp;
 
-namespace BravoLights
+namespace BravoLights.Common
 {
-    class UsbLogic
+    public class UsbLogic
     {
         private static readonly int HoneycombVendorId = 0x294B;
         private static readonly int BravoProductId = 0x1901;
 
-        private readonly MainViewModel lightsState;
+        private readonly ILightsState lightsState;
 
         private HidDevice bravoDevice;
         private HidStream bravoStream;
 
-        public UsbLogic(MainViewModel lightsState)
+        public UsbLogic(ILightsState lightsState)
         {
             this.lightsState = lightsState;
 

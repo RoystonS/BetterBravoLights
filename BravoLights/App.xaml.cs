@@ -9,6 +9,7 @@ using BravoLights.Installation;
 using BravoLights.UI;
 using System.Drawing;
 using BravoLights.Ast;
+using BravoLights.Common;
 
 namespace BravoLights
 {

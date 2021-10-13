@@ -6,7 +6,7 @@ using BravoLights.UI;
 
 namespace BravoLights
 {
-    public class MainViewModel : ViewModelBase
+    public class MainViewModel : ViewModelBase, ILightsState
     {
         private readonly ISet<string> litLights = new HashSet<string>();
 

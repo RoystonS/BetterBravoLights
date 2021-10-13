@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace BravoLights
+namespace BravoLights.Common
 {
     class LightInfo
     {
@@ -8,46 +8,46 @@ namespace BravoLights
         public byte BitValue;
     }
 
-    static class LightNames
+    public static class LightNames
     {
-        public static string HDG = "HDG";
-        public static string NAV = "NAV";
-        public static string APR = "APR";
-        public static string REV = "REV";
-        public static string ALT = "ALT";
-        public static string VS = "VS";
-        public static string IAS = "IAS";
-        public static string AUTOPILOT = "AUTOPILOT";
+        public const string HDG = "HDG";
+        public const string NAV = "NAV";
+        public const string APR = "APR";
+        public const string REV = "REV";
+        public const string ALT = "ALT";
+        public const string VS = "VS";
+        public const string IAS = "IAS";
+        public const string AUTOPILOT = "AUTOPILOT";
 
-        public static string GearLGreen = "GearLGreen";
-        public static string GearLRed = "GearLRed";
-        public static string GearCGreen = "GearCGreen";
-        public static string GearCRed = "GearCRed";
-        public static string GearRGreen = "GearRGreen";
-        public static string GearRRed = "GearRRed";
+        public const string GearLGreen = "GearLGreen";
+        public const string GearLRed = "GearLRed";
+        public const string GearCGreen = "GearCGreen";
+        public const string GearCRed = "GearCRed";
+        public const string GearRGreen = "GearRGreen";
+        public const string GearRRed = "GearRRed";
 
-        public static string MasterWarning = "MasterWarning";
-        public static string EngineFire = "EngineFire";
-        public static string LowOilPressure = "LowOilPressure";
-        public static string LowFuelPressure = "LowFuelPressure";
-        public static string AntiIce = "AntiIce";
-        public static string StarterEngaged = "StarterEngaged";
-        public static string APU = "APU";
+        public const string MasterWarning = "MasterWarning";
+        public const string EngineFire = "EngineFire";
+        public const string LowOilPressure = "LowOilPressure";
+        public const string LowFuelPressure = "LowFuelPressure";
+        public const string AntiIce = "AntiIce";
+        public const string StarterEngaged = "StarterEngaged";
+        public const string APU = "APU";
 
-        public static string MasterCaution = "MasterCaution";
-        public static string Vacuum = "Vacuum";
-        public static string LowHydPressure = "LowHydPressure";
-        public static string AuxFuelPump = "AuxFuelPump";
-        public static string ParkingBrake = "ParkingBrake";
-        public static string LowVolts = "LowVolts";
-        public static string Door = "Door";
+        public const string MasterCaution = "MasterCaution";
+        public const string Vacuum = "Vacuum";
+        public const string LowHydPressure = "LowHydPressure";
+        public const string AuxFuelPump = "AuxFuelPump";
+        public const string ParkingBrake = "ParkingBrake";
+        public const string LowVolts = "LowVolts";
+        public const string Door = "Door";
 
         public static IEnumerable<string> AllNames
         {
             get { return LightInfos.Keys; }
         }
 
-        public static IDictionary<string, LightInfo> LightInfos = new Dictionary<string, LightInfo> {
+        internal static IDictionary<string, LightInfo> LightInfos = new Dictionary<string, LightInfo> {
             { HDG, new LightInfo { Byte = 1, BitValue = 1 << 0 }  },
             { NAV, new LightInfo { Byte = 1, BitValue = 1 << 1 }  },
             { APR, new LightInfo { Byte = 1, BitValue = 1 << 2 }  },

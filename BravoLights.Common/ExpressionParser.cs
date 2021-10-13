@@ -1,11 +1,13 @@
-﻿using System.Globalization;
+﻿using System;
+using System.Globalization;
 using BravoLights.Common.Ast;
 using sly.lexer;
+using sly.parser;
 using sly.parser.generator;
 
 namespace BravoLights.Common
 {
-#pragma warning disable CA1822 // Mark members as static
+    #pragma warning disable CA1822 // Mark members as static
     public abstract class ExpressionParserBase
     {
         [Production("logicalExpression: OFF")]
@@ -78,6 +80,33 @@ namespace BravoLights.Common
             return exp;
         }
 
+        private static Parser<ExpressionToken, IAstNode> cachedParser;
+
+        public static IAstNode Parse<T>(string expression) where T : ExpressionParserBase, new()
+        {
+            if (cachedParser == null)
+            {
+                var parserInstance = new T();
+                var builder = new ParserBuilder<ExpressionToken, IAstNode>();
+                var parser = builder.BuildParser(parserInstance, ParserType.EBNF_LL_RECURSIVE_DESCENT, "logicalExpression");
+                if (parser.IsError)
+                {
+                    throw new Exception($"Could not create parser. BNF is not valid. {parser.Errors[0]}");
+                }
+                cachedParser = parser.Result;
+            }
+
+            var parseResult = cachedParser.Parse(expression);
+            if (parseResult.IsError)
+            {
+                return new ErrorNode
+                {
+                    ErrorText = parseResult.Errors[0].ErrorMessage
+                };
+            }
+
+            return parseResult.Result;
+        }
     }
     #pragma warning restore CA1822 // Mark members as static
 }

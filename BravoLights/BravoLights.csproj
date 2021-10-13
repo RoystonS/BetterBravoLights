@@ -18,7 +18,6 @@
 
   <ItemGroup>
     <PackageReference Include="FSUIPCClientDLL" Version="3.2.10" />
-    <PackageReference Include="HidSharp" Version="2.1.0" />
     <PackageReference Include="sly" Version="2.7.0.3" />
     <PackageReference Include="System.Text.Encoding.CodePages" Version="5.0.0" />
   </ItemGroup>
