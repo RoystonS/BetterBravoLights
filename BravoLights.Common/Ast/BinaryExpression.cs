@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace BravoLights.Ast
+namespace BravoLights.Common.Ast
 {
     abstract class BinaryExpression<TChildren, TOutput> : IAstNode
     {

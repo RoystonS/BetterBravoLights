@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace BravoLights.Ast
+namespace BravoLights.Common.Ast
 {
     /// <summary>
     /// Represents a node in a parsed expression tree.

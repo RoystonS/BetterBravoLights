@@ -1,6 +1,6 @@
 ﻿using sly.lexer;
 
-namespace BravoLights.Ast
+namespace BravoLights.Common.Ast
 {
     public enum ExpressionToken
     {

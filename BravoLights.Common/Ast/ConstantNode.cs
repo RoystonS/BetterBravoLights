@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace BravoLights.Ast
+namespace BravoLights.Common.Ast
 {
     /// <summary>
     /// A node which represents a constant value.
@@ -19,7 +19,7 @@ namespace BravoLights.Ast
 
         public IEnumerable<IVariable> Variables
         {
-            get { return new IVariable[0]; }
+            get { return Array.Empty<IVariable>(); }
         }
 
         public event EventHandler<ValueChangedEventArgs> ValueChanged

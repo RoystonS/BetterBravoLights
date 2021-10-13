@@ -1,7 +1,7 @@
 ﻿using System;
 using sly.lexer;
 
-namespace BravoLights.Ast
+namespace BravoLights.Common.Ast
 {
     abstract class BooleanLogicalExpression : BinaryExpression<bool, bool>
     {

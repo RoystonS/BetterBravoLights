@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using BravoLights.Common;
 using BravoLights.Connections;
 using BravoLights.UI;
 

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using BravoLights.Common;
+using BravoLights.Common.Ast;
 using FSUIPC;
 
 namespace BravoLights.Ast

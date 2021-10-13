@@ -8,6 +8,7 @@ using BravoLights.Connections;
 using BravoLights.Installation;
 using BravoLights.UI;
 using System.Drawing;
+using BravoLights.Ast;
 
 namespace BravoLights
 {
@@ -219,7 +220,7 @@ namespace BravoLights
                     expressionText = "OFF";
                 }
 
-                var expression = ExpressionParser.Parse(expressionText);
+                var expression = MSFSExpressionParser.Parse(expressionText);
 
                 return new LightExpression { LightName = lightName, Expression = expression };
             });

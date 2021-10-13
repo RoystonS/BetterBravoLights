@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Timers;
 using BravoLights.Ast;
+using BravoLights.Common;
 using Microsoft.FlightSimulator.SimConnect;
 
 namespace BravoLights.Connections

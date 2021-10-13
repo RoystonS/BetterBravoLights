@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using BravoLights.Connections;
 
-namespace BravoLights.Ast
+namespace BravoLights.Common.Ast
 {
     /// <summary>
     /// Base class for a variable.
     /// </summary>
-    abstract class VariableBase : IVariable
+    public abstract class VariableBase : IVariable
     {
         public string ErrorText { get { return null; } }
 

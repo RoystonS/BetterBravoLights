@@ -1,4 +1,4 @@
-﻿namespace BravoLights.Ast
+﻿namespace BravoLights.Common.Ast
 {
     /// <summary>
     /// A node which represents a literal bool.

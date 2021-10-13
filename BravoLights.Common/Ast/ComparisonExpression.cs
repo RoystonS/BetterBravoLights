@@ -1,7 +1,7 @@
 ﻿using System;
 using sly.lexer;
 
-namespace BravoLights.Ast
+namespace BravoLights.Common.Ast
 {
     /// <summary>
     /// A binary expression such as 'X < Y' or 'X == Y', which produces a boolean from two other numbers and an operator.

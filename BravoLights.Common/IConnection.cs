@@ -1,7 +1,7 @@
-﻿
-using System;
+﻿using System;
+using BravoLights.Common;
 
-namespace BravoLights.Connections
+namespace BravoLights.Common
 {
     public interface IConnection
     {

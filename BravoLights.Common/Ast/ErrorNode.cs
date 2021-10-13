@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace BravoLights.Ast
+namespace BravoLights.Common.Ast
 {
-    class ErrorNode : IAstNode
+    public class ErrorNode : IAstNode
     {
         public string ErrorText { get; set; }
 
         public IEnumerable<IVariable> Variables {
-            get { return new IVariable[0]; }
+            get { return Array.Empty<IVariable>(); }
         }
 
         event EventHandler<ValueChangedEventArgs> IAstNode.ValueChanged

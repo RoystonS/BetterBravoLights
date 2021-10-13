@@ -1,6 +1,8 @@
 using System;
 using System.Globalization;
 using System.Threading;
+using BravoLights.Ast;
+using BravoLights.Common;
 using Xunit;
 
 namespace BravoLights.Tests
@@ -10,7 +12,7 @@ namespace BravoLights.Tests
         [Fact]
         public void ParserCopesWithSimpleSimVarExpressions()
         {
-            var parsed = ExpressionParser.Parse("A:FOO, bool < 42");
+            var parsed = MSFSExpressionParser.Parse("A:FOO, bool < 42");
             Assert.Null(parsed.ErrorText);
             Assert.Equal("(A:FOO, bool < 42)", parsed.ToString());
         }
@@ -18,7 +20,7 @@ namespace BravoLights.Tests
         [Fact]
         public void ParserUsesCorrectPrecedenceForArithmeticOperators()
         {
-            var parsed = ExpressionParser.Parse("1 + 2 * 3 + 4 == 11");
+            var parsed = MSFSExpressionParser.Parse("1 + 2 * 3 + 4 == 11");
             Assert.Null(parsed.ErrorText);
 
             var valueReported = false;
@@ -34,7 +36,7 @@ namespace BravoLights.Tests
         [Fact]
         public void ParserUsesCorrectPrecedenceForLogicalOperators()
         {
-            var parsed = ExpressionParser.Parse("1==1 || 2==2 && 3==3 || 4==4");
+            var parsed = MSFSExpressionParser.Parse("1==1 || 2==2 && 3==3 || 4==4");
             Assert.Null(parsed.ErrorText);
 
             Assert.Equal("((1 == 1) OR (((2 == 2) AND (3 == 3)) OR (4 == 4)))", parsed.ToString());
@@ -43,7 +45,7 @@ namespace BravoLights.Tests
         [Fact]
         public void AllowsCStyleLogicalOperatorsAndEnglishLogicalOperators()
         {
-            var parsed = ExpressionParser.Parse("1==1 AND 2==2 && 3==3 OR 4==4 || 5==5");
+            var parsed = MSFSExpressionParser.Parse("1==1 AND 2==2 && 3==3 OR 4==4 || 5==5");
 
             Assert.Null(parsed.ErrorText);
 
@@ -54,7 +56,7 @@ namespace BravoLights.Tests
         [Fact]
         public void ParserSupportsAllArithmeticOperators()
         {
-            var parsed = ExpressionParser.Parse("1 < 2 && 1 <= 2 && 1 == 2 && 1 >= 2 && 1 > 2 && 1 != 2");
+            var parsed = MSFSExpressionParser.Parse("1 < 2 && 1 <= 2 && 1 == 2 && 1 >= 2 && 1 > 2 && 1 != 2");
 
             Assert.Null(parsed.ErrorText);
 
@@ -72,7 +74,7 @@ namespace BravoLights.Tests
                 // Switch into Italian and check that parsing still works correctly
                 thread.CurrentCulture = new CultureInfo("it-IT");
 
-                var parsed = ExpressionParser.Parse("1 < 2.5 && 3.0 < 4");
+                var parsed = MSFSExpressionParser.Parse("1 < 2.5 && 3.0 < 4");
                 Assert.Null(parsed.ErrorText);
                 Assert.Equal("((1 < 2.5) AND (3 < 4))", parsed.ToString());
             }
@@ -86,7 +88,7 @@ namespace BravoLights.Tests
         [InlineData("A:FOO, bool < 42", "(A:FOO, bool < 42)")]
         public void ParserRoundTrips(string expression, string generated)
         {
-            var parse = ExpressionParser.Parse(expression);
+            var parse = MSFSExpressionParser.Parse(expression);
             Assert.Null(parse.ErrorText);
 
             var output = parse.ToString();

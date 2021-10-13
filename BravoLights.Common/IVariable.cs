@@ -1,7 +1,7 @@
 ﻿using System;
-using BravoLights.Ast;
+using BravoLights.Common.Ast;
 
-namespace BravoLights
+namespace BravoLights.Common
 {
     public interface IVariable : IAstNode, IEquatable<IVariable>
     {
