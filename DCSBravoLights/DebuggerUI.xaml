@@ -1,0 +1,44 @@
+﻿<Window x:Class="DCSBravoLights.DebuggerUI"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:DCSBravoLights"
+        mc:Ignorable="d"
+        DataContext="{Binding RelativeSource={RelativeSource Self}, Path=ViewModel}"
+        Topmost="True"
+        Title="DCS Bravo Lights Debugger" Height="450" Width="800">
+    <Window.Resources>
+        <local:RedBrushConverter x:Key="errorBrushConverter" />
+    </Window.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <DockPanel Grid.Row="0">
+            <Label DockPanel.Dock="Left" Content="Current aircraft:" Target="{Binding ElementName=txtAircraft}" />
+            <TextBox x:Name="txtAircraft" Text="{Binding Path=AircraftName}" IsReadOnly="True" />
+        </DockPanel>
+        <DockPanel Grid.Row="1">
+            <Label DockPanel.Dock="Left" Content="_Filter:" Target="{Binding ElementName=txtFilter}" />
+            <TextBox x:Name="txtFilter" Text="{Binding Mode=TwoWay, Path=FilterText, UpdateSourceTrigger=PropertyChanged}" />
+        </DockPanel>
+        <DataGrid Grid.Row="2" ItemsSource="{Binding Items}" AutoGenerateColumns="False" IsReadOnly="True">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Address" Binding="{Binding DataDefinition.Address}" />
+                <DataGridTextColumn Header="Category" Binding="{Binding DataDefinition.VariableName.DcsCategory}" />
+                <DataGridTextColumn Header="Identifier" Binding="{Binding DataDefinition.VariableName.DcsIdentifier}" />
+                <DataGridTemplateColumn Header="Value">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Foreground="{Binding IsError, Converter={StaticResource errorBrushConverter}}" Text="{Binding ValueText}" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTextColumn Header="Description" Binding="{Binding DataDefinition.Description}" />
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</Window>

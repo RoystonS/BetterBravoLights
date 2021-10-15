@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
+using BravoLights.Common;
 
 namespace BravoLights.UI
 {

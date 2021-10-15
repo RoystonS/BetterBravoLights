@@ -9,6 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BravoLights", "BravoLights\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BravoLights.Common", "BravoLights.Common\BravoLights.Common.csproj", "{60426C1C-884E-4727-8BAC-794E601CDD15}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DCSBravoLights", "DCSBravoLights\DCSBravoLights.csproj", "{EF0B053E-4214-49B4-94A0-8B165981F822}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{60426C1C-884E-4727-8BAC-794E601CDD15}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{60426C1C-884E-4727-8BAC-794E601CDD15}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{60426C1C-884E-4727-8BAC-794E601CDD15}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EF0B053E-4214-49B4-94A0-8B165981F822}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EF0B053E-4214-49B4-94A0-8B165981F822}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EF0B053E-4214-49B4-94A0-8B165981F822}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EF0B053E-4214-49B4-94A0-8B165981F822}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

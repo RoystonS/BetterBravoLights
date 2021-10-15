@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace BravoLights.UI
+namespace BravoLights.Common
 {
     public abstract class ViewModelBase : INotifyPropertyChanged
     {

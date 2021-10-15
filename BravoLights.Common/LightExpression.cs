@@ -1,8 +1,7 @@
 ﻿using System;
-using BravoLights.Common;
 using BravoLights.Common.Ast;
 
-namespace BravoLights
+namespace BravoLights.Common
 {
     public class LightExpression
     {

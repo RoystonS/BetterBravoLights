@@ -70,7 +70,9 @@ namespace BravoLights.Common.Ast
             }
             else
             {
-                newValue = ComputeValue((TChildren)lastLhsValue, (TChildren)lastRhsValue);
+                var lhs = (TChildren)Convert.ChangeType(lastLhsValue, typeof(TChildren));
+                var rhs = (TChildren)Convert.ChangeType(lastRhsValue, typeof(TChildren));
+                newValue = ComputeValue(lhs, rhs);
             }
 
             if (lastReportedValue == null || !lastReportedValue.Equals(newValue)) // N.B. We must unbox before doing the comparison otherwise we'll be comparing boxed pointers
