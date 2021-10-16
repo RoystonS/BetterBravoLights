@@ -104,4 +104,18 @@ namespace BravoLights.Common.Ast
         }
         protected override string OperatorText => ">";
     }
+
+    class UnaryMinusExpression : UnaryExpression<double, double>
+    {
+        public UnaryMinusExpression(IAstNode child) : base(child)
+        {
+        }
+
+        protected override string OperatorText => "-";
+
+        protected override double ComputeValue(double child)
+        {
+            return -child;
+        }
+    }
 }

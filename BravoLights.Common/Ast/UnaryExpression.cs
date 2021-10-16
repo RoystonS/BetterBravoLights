@@ -1,78 +1,53 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace BravoLights.Common.Ast
 {
-    abstract class BinaryExpression<TChildren, TOutput> : IAstNode
+    abstract class UnaryExpression<TChildren, TOutput> : IAstNode
     {
-        internal readonly IAstNode Lhs;
-        internal readonly IAstNode Rhs;
+        private readonly IAstNode Child;
 
-        private object lastLhsValue;
-        private object lastRhsValue;
+        private object lastChildValue;
         private object lastReportedValue;
 
-        protected BinaryExpression(IAstNode lhs, IAstNode rhs)
+        protected UnaryExpression(IAstNode child)
         {
-            Lhs = lhs;
-            Rhs = rhs;
+            Child = child;
         }
 
         public string ErrorText => null;
 
         public IEnumerable<IVariable> Variables
         {
-            get
-            {
-                foreach (var variable in Lhs.Variables) {
-                    yield return variable;
-                }
-                foreach (var variable in Rhs.Variables)
-                {
-                    yield return variable;
-                }
-            }
+            get { return Child.Variables; }
         }
 
         protected abstract string OperatorText { get; }
-        protected abstract TOutput ComputeValue(TChildren lhsValue, TChildren rhsValue);
-       
-        private void HandleLhsValueChanged(object sender, ValueChangedEventArgs e)
-        {
-            lastLhsValue = e.NewValue;
+        protected abstract TOutput ComputeValue(TChildren child);
 
-            Recompute();
-        }
-
-        private void HandleRhsValueChanged(object sender, ValueChangedEventArgs e)
+        private void HandleChildValueChanged(object sender, ValueChangedEventArgs e)
         {
-            lastRhsValue = e.NewValue;
+            lastChildValue = e.NewValue;
 
             Recompute();
         }
 
         private void Recompute()
         {
-            if (lastLhsValue == null || lastRhsValue == null)
+            if (lastChildValue == null)
             {
                 return;
             }
 
             object newValue;
-            if (lastLhsValue is Exception)
+            if (lastChildValue is Exception)
             {
-                newValue = lastLhsValue;
-            }
-            else if (lastRhsValue is Exception)
-            {
-                newValue = lastRhsValue;
+                newValue = lastChildValue;
             }
             else
             {
-                var lhs = (TChildren)Convert.ChangeType(lastLhsValue, typeof(TChildren));
-                var rhs = (TChildren)Convert.ChangeType(lastRhsValue, typeof(TChildren));
-                newValue = ComputeValue(lhs, rhs);
+                var child = (TChildren)Convert.ChangeType(lastChildValue, typeof(TChildren));
+                newValue = ComputeValue(child);
             }
 
             if (lastReportedValue == null || !lastReportedValue.Equals(newValue)) // N.B. We must unbox before doing the comparison otherwise we'll be comparing boxed pointers
@@ -95,8 +70,7 @@ namespace BravoLights.Common.Ast
                 listeners += value;
                 if (subscribe)
                 {
-                    Lhs.ValueChanged += HandleLhsValueChanged;
-                    Rhs.ValueChanged += HandleRhsValueChanged;
+                    Child.ValueChanged += HandleChildValueChanged;
                 }
                 if (lastReportedValue != null)
                 {
@@ -109,15 +83,14 @@ namespace BravoLights.Common.Ast
                 listeners -= value;
                 if (listeners == null)
                 {
-                    Lhs.ValueChanged -= HandleLhsValueChanged;
-                    Rhs.ValueChanged -= HandleRhsValueChanged;
+                    Child.ValueChanged -= HandleChildValueChanged;
                 }
             }
         }
 
         public override string ToString()
         {
-            return $"({Lhs} {OperatorText} {Rhs})";
+            return $"({OperatorText} {Child})";
         }
     }
 }

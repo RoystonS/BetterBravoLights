@@ -10,6 +10,7 @@ using BravoLights.UI;
 using System.Drawing;
 using BravoLights.Ast;
 using BravoLights.Common;
+using System.Collections.Generic;
 
 namespace BravoLights
 {
@@ -213,6 +214,9 @@ namespace BravoLights
             // Turn off the lights whilst we reconfigure everything
             usbLogic.LightsEnabled = false;
 
+            var invert = config.GetConfig(viewModel.Aircraft, "Invert") ?? "";
+            var lightNamesToInvert = new HashSet<string>(invert.Split(',', ' ').Select(n => n.Trim()));
+
             var lightExpressions = LightNames.AllNames.Select(lightName =>
             {
                 var expressionText = config.GetConfig(viewModel.Aircraft, lightName);
@@ -221,6 +225,11 @@ namespace BravoLights
                     expressionText = "OFF";
                 }
 
+                if (lightNamesToInvert.Contains(lightName))
+                {
+                    expressionText = $"NOT({expressionText})";
+                }
+             
                 var expression = MSFSExpressionParser.Parse(expressionText);
 
                 return new LightExpression { LightName = lightName, Expression = expression };

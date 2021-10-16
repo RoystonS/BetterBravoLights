@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using sly.lexer;
 
 namespace BravoLights.Common.Ast
@@ -44,5 +45,19 @@ namespace BravoLights.Common.Ast
             return lhs || rhs;
         }
         protected override string OperatorText => "OR";
+    }
+
+    class NotExpression : UnaryExpression<bool, bool>
+    {
+        public NotExpression(IAstNode child) : base(child)
+        {
+        }
+
+        protected override string OperatorText => "NOT";
+
+        protected override bool ComputeValue(bool child)
+        {
+            return !child;
+        }
     }
 }

@@ -10,8 +10,8 @@ namespace BravoLights.Common
     #pragma warning disable CA1822 // Mark members as static
     public abstract class ExpressionParserBase
     {
-        [Production("logicalExpression: OFF")]
-        [Production("logicalExpression: ON")]
+        [Production("logicalPrimary: OFF")]
+        [Production("logicalPrimary: ON")]
         public IAstNode LiteralBool(Token<ExpressionToken> token)
         {
             return new LiteralBoolNode(token.Value == "ON");
@@ -64,6 +64,18 @@ namespace BravoLights.Common
         public IAstNode LogicalJunction(IAstNode lhs, Token<ExpressionToken> token, IAstNode rhs)
         {
             return BooleanLogicalExpression.Create(lhs, token, rhs);
+        }
+
+        [Production("primary: MINUS [d] primary")]
+        public IAstNode UnaryMinus(IAstNode child)
+        {
+            return new UnaryMinusExpression(child);
+        }
+
+        [Production("logicalPrimary: NOT [d] logicalPrimary")]
+        public IAstNode LogicalUnary(IAstNode child)
+        {
+            return new NotExpression(child);
         }
 
         [Production("comparison: numericExpression COMPARISON numericExpression")]

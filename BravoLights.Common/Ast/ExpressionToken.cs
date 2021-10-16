@@ -50,6 +50,9 @@ namespace BravoLights.Common.Ast
         [Lexeme("(&&)|(AND)")]
         AND = 11,
 
+        [Lexeme("NOT")]
+        NOT = 12,
+
         [Lexeme("(<=?)|(==)|(!=)|(>=?)")]
         COMPARISON = 13,
 
