@@ -30,33 +30,37 @@ namespace BravoLights.Connections
         {
             try
             {
-                foreach (var variableInfo in variableHandlers)
+                lock (this)
                 {
-                    var lvarName = variableInfo.Key;
-                    var handlers = variableInfo.Value;
-
-                    try
+                    foreach (var variableInfo in variableHandlers)
                     {
-                        var newValue = FSUIPCConnection.ReadLVar(lvarName);
+                        var lvarName = variableInfo.Key;
+                        var handlers = variableInfo.Value;
 
-                        if (lastReportedValue.TryGetValue(lvarName, out double oldValue))
+                        try
                         {
-                            if (oldValue == newValue)
+                            var newValue = FSUIPCConnection.ReadLVar(lvarName);
+
+                            if (lastReportedValue.TryGetValue(lvarName, out double oldValue))
                             {
-                                // Value is unchanged
-                                continue;
+                                if (oldValue == newValue)
+                                {
+                                    // Value is unchanged
+                                    continue;
+                                }
+                            }
+
+                            lastReportedValue[lvarName] = newValue;
+
+                            var ea = new ValueChangedEventArgs { NewValue = newValue };
+                            foreach (var handler in handlers)
+                            {
+                                handler(this, ea);
                             }
                         }
-
-                        lastReportedValue[lvarName] = newValue;
-
-                        var ea = new ValueChangedEventArgs { NewValue = newValue };
-                        foreach (var handler in handlers)
+                        catch (Exception)
                         {
-                            handler(this, ea);
                         }
-                    } catch (Exception)
-                    {
                     }
                 }
             }
@@ -76,15 +80,18 @@ namespace BravoLights.Connections
                 StartFSUIPC();
             }
 
-            if (!variableHandlers.TryGetValue(name, out ISet<EventHandler<ValueChangedEventArgs>> handlers))
+            lock (this)
             {
-                handlers = new HashSet<EventHandler<ValueChangedEventArgs>>();
-                variableHandlers.Add(name, handlers);
+                if (!variableHandlers.TryGetValue(name, out ISet<EventHandler<ValueChangedEventArgs>> handlers))
+                {
+                    handlers = new HashSet<EventHandler<ValueChangedEventArgs>>();
+                    variableHandlers.Add(name, handlers);
+                }
+
+                handlers.Add(handler);
+
+                SendLastValue(variable, this, handler);
             }
-
-            handlers.Add(handler);
-
-            SendLastValue(variable, this, handler);
         }
 
         private void SendLastValue(IVariable variable, object sender, EventHandler<ValueChangedEventArgs> handler)
@@ -109,15 +116,18 @@ namespace BravoLights.Connections
             var lvar = (FSUIPCLvarExpression)variable;
             var name = lvar.Identifier;
 
-            var handlers = this.variableHandlers[name];
-            handlers.Remove(handler);
-            if (handlers.Count == 0)
+            lock (this)
             {
-                variableHandlers.Remove(name);
-            }
-            if (variableHandlers.Count == 0)
-            {
-                StopFSUIPC();
+                var handlers = this.variableHandlers[name];
+                handlers.Remove(handler);
+                if (handlers.Count == 0)
+                {
+                    variableHandlers.Remove(name);
+                }
+                if (variableHandlers.Count == 0)
+                {
+                    StopFSUIPC();
+                }
             }
         }
 
