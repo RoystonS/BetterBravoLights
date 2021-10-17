@@ -86,7 +86,7 @@ namespace BravoLights.Installation
                     var lightsEl = FindAddon(xdoc, BravoLightsAddonName);
                     if (lightsEl != null)
                     {
-                        return lightsEl.Element("Disabled").Value == "False";
+                        return lightsEl.Element("Disabled")?.Value != "True";
                     }
                 }
                 catch
@@ -98,6 +98,29 @@ namespace BravoLights.Installation
             }
         }
 
+        /// <summary>
+        /// Tests if the exe.xml entry contains the current recommended entries.
+        /// </summary>
+        public static bool InstallationNeedsUpdating
+        {
+            get
+            {
+                try
+                {
+                    var xdoc = XDocument.Load(ExeXmlPath);
+                    var lightsEl = FindAddon(xdoc, BravoLightsAddonName);
+                    if (lightsEl != null)
+                    {
+                        return lightsEl.Element("ManualLoad") == null;
+                    }
+                }
+                catch
+                {
+                }
+
+                return false;
+            }
+        }
 
         private static XDocument LoadExeXml()
         {
@@ -143,7 +166,10 @@ namespace BravoLights.Installation
                 xdoc.Root.Add(lightsEl);
             }
             lightsEl.SetElementValue("Disabled", "False");
+            lightsEl.SetElementValue("ManualLoad", "False");
             lightsEl.SetElementValue("Path", Path.Join(Application.StartupPath, "BetterBravoLights.exe"));
+            lightsEl.SetElementValue("CommandLine", "/startedbysimulator");
+            lightsEl.SetElementValue("NewConsole", "False");
 
             xdoc.Save(ExeXmlPath);
 

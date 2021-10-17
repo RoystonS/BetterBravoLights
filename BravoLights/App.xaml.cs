@@ -28,6 +28,8 @@ namespace BravoLights
 
         private Forms.NotifyIcon notifyIcon;
 
+        private bool exitWhenSimulatorExits = false;
+
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
@@ -54,18 +56,37 @@ namespace BravoLights
                                 Environment.Exit(0);
                                 break;
                             }
+                        case "/startedbysimulator":
+                            exitWhenSimulatorExits = true;
+                            break;
                     }
                 }
                 catch (CorruptExeXmlException ex)
                 {
                     var window = new CorruptExeXmlErrorWindow() { XmlFilename = ex.ExeXmlPath, Exception = ex };
                     window.ShowDialog();
-                }                
+                    Environment.Exit(0);
+                }
                 catch (Exception ex)
                 {
                     MessageBox.Show($"Operation failed: {ex.GetType().FullName}:{ex.Message}. Please report this to the application author.", "Better Bravo Lights", MessageBoxButton.OK, MessageBoxImage.Error);
+                    Environment.Exit(0);
                 }
-                Environment.Exit(0);
+            }
+            else
+            {
+                // Run without command arguments; detect whether it should automatically exit
+                if (Installer.IsSetToRunOnStartup && Installer.InstallationNeedsUpdating)
+                {
+                    // We are set to run on simulator startup but the installation entries are out of date
+                    try
+                    {
+                        Installer.Install();
+                    } catch { }
+                    
+                    // And for this run, assume we were run with the simulator
+                    exitWhenSimulatorExits = true;
+                }
             }
 
             viewModel = new MainViewModel();
@@ -175,10 +196,8 @@ namespace BravoLights
                     break;
                 case SimState.SimExited:
                     usbLogic.LightsEnabled = false;
-                    if (Installer.IsSetToRunOnStartup)
+                    if (exitWhenSimulatorExits)
                     {
-                        // We're set to run at sim startup, so now the sim is exiting, we should exit too.
-
                         notifyIcon.Dispose();
                         Environment.Exit(0);
                     } else
