@@ -11,6 +11,7 @@ using System.Drawing;
 using BravoLights.Ast;
 using BravoLights.Common;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace BravoLights
 {
@@ -37,7 +38,7 @@ namespace BravoLights
             if (e.Args.Length == 1)
             {
                 var cmd = e.Args[0];
-
+                
                 try
                 {
                     switch (cmd)
@@ -86,6 +87,21 @@ namespace BravoLights
                     
                     // And for this run, assume we were run with the simulator
                     exitWhenSimulatorExits = true;
+                }
+            }
+
+            var processName = Process.GetCurrentProcess().ProcessName;
+            if (Process.GetProcessesByName(processName).Length > 1)
+            {
+                // There was already a copy running.
+                if (exitWhenSimulatorExits)
+                {
+                    // It's being started by the simulator. Exit silently.
+                    Environment.Exit(0);
+                } else
+                {
+                    MessageBox.Show($"Another copy of Better Bravo Lights is already running.", "Better Bravo Lights", MessageBoxButton.OK);
+                    Environment.Exit(0);
                 }
             }
 
