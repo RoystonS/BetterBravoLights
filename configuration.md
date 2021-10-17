@@ -53,9 +53,12 @@ The configuration file `Config.ini` is a standard [.ini file](https://en.wikiped
   - logical expressions
     - `AND` (can also be written as `&&`)
     - `OR` (can also be written as `||`)
+    - `NOT` (New in v0.5.0)
   - grouping
     - standard arithmetic precedence (multiplication and division bind more tightly than addition and subtraction; AND binds more tightly than OR); this can be overridden with parentheses
     - `(1 + 2) * 3` is different from `1 + 2 * 3`
+  - unary minus
+    - `-4`, `-(3 + 4)`, `6 + -3`, `-(A:SOME VARIABLE, psi)` (New in v0.5.0)
 - (New in v0.3.0) In an extension to standard `.ini` syntax, you can define multiple sections at the same time, to reduce duplication, by comma-separating the section names.
 
   For instance:
@@ -80,7 +83,23 @@ The configuration file `Config.ini` is a standard [.ini file](https://en.wikiped
 - (New in v0.3.0) The same section name can appear multiple times. Sections with the same name will be merged.
 - Configuration in the section named `[Default]` automatically apply to every aircraft unless an aircraft overrides a light
 
-## Examples
+### Other Settings
+
+As well as setting the configuration for lights (see the list of Light Names below), some other configuration settings can be made:
+
+- `Invert` (New in v0.5.0)
+
+  - This setting takes a comma-separated list of light names and arranges for their logic to be inverted.
+
+    For example, if you wanted to operate the Bravo throttle in a dark room, and light the top row of auto-pilot buttons UNLESS activated, you would write:
+
+    `Invert = HDG, NAV, APR, REV, ALT, VS, IAS, AUTOPILOT`
+
+    It _is_ possible to apply this setting for individual aircraft, but it makes most sense in the `[Default]` section.
+
+    Note that when viewing inverted lights in the debugger, their expressions will be shown with an extra `NOT` prefix for the expression: this is how the inverting logic works.
+
+## Examples of light configurations
 
 - `LowHydPressure = OFF`
 
