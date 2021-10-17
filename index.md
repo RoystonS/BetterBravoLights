@@ -84,10 +84,52 @@ There's a limit on what features can realistically be added to a tool which simp
 1. The debugger UI is messy. I’ll tidy it up when everything else is stable. Right now, it works, so making it prettier is lower priority.
 1. When returning to the main menu, the lights will turn on and off a few times and then remain on in a strange state. This is because the simulator tells us that it’s not running, then it is, then it isn’t, and then it tells us it’s running whilst on the main menu. [If you’re technical and know how to detect that we’re at the main menu and not in the sim, please let me know!]
 
+## How do I report problems or make suggestions?
+
+If something doesn't work properly, you find problems with the configuration, you can't figure out how to install it, or need anything else, please raise an issue at the GitHub repository: [https://github.com/RoystonS/BetterBravoLights/issues](https://github.com/RoystonS/BetterBravoLights/issues)
+
 ## Can I see the code?
 
 Of course. It's all available on GitHub as MIT-licensed Open Source: [https://github.com/RoystonS/BetterBravoLights](https://github.com/RoystonS/BetterBravoLights)
 
-## How do I report problems or make suggestions?
+### Third party software
 
-If something doesn't work properly, you find problems with the configuration, you can't figure out how to install it, or need anything else, please raise an issue at the GitHub repository: [https://github.com/RoystonS/BetterBravoLights/issues](https://github.com/RoystonS/BetterBravoLights/issues)
+Better Bravo Lights makes use of some _excellent_ third party libraries, without which it would have been too painful to create. Thank you all!
+
+---
+
+#### FSUIPC Client DLL 3.2.10
+
+This library enables Better Bravo Lights to read L: variables.
+
+http://fsuipc.paulhenty.com/#licence
+
+Uses the FSUIPC Client DLL for .NET by Paul Henty.
+
+---
+
+#### HidSharp 2.1.0
+
+This library enables Better Bravo Lights to output the USB signals needed to drive the Bravo.
+
+https://www.zer7.com/files/oss/hidsharp/LICENSE.txt
+
+HIDSharp is Copyright 2010-2019 James F. Bellinger <http://www.zer7.com/software/hidsharp>
+
+Licensed under the Apache License, Version 2.0
+
+---
+
+#### sly 2.7.0.3
+
+This library helps Better Bravo Lights to construct and handle its variable expression syntax.
+
+https://github.com/b3b00/csly/blob/a7b9031342d051aa7bc76e92658ccc6e3b6d921f/LICENSE
+
+sly is Copyright (c) 2017 Olivier Duhart
+
+Licensed under the MIT License
+
+---
+
+Full details of _all_ these licences can be found in the `LICENSES.md` which is included in the software distribution, or in the GitHub repo at https://github.com/RoystonS/BetterBravoLights/blob/main/BravoLights/LICENSES.md.
