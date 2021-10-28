@@ -83,7 +83,13 @@ namespace BravoLights
             }
         }
 
+        public void LoadConfig(string[] lines)
+        {
+            lock (this)
+            {
+                iniFile.LoadConfigLines(lines);
+            }
+        }
     }
-
 }
 
