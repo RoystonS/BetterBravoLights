@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using System.Xml;
 using System.Xml.Linq;
@@ -36,10 +37,7 @@ namespace BravoLights.Installation
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
         }
 
-        /// <summary>
-        /// Gets the location of the MSFS exe.xml file, which may not actually exist yet.
-        /// </summary>
-        private static string ExeXmlPath
+        private static string FlightSimulatorPath
         {
             get
             {
@@ -57,23 +55,59 @@ namespace BravoLights.Installation
 
                 foreach (var path in pathsToTry)
                 {
-                    var exeXmlPath = Path.Join(path, "exe.xml");
-
-                    if (File.Exists(exeXmlPath))
+                    if (File.Exists(Path.Join(path, "FlightSimulator.CFG")) || File.Exists(Path.Join(path, "UserCfg.opt")))
                     {
-                        return exeXmlPath;
-                    }
-
-                    if (File.Exists(Path.Join(path, "FlightSimulator.CFG")))
-                    {
-                        // There's no existing exe.xml file but it does belong here.
-                        return exeXmlPath;
+                        return path;
                     }
                 }
 
                 var pathsTried = String.Join(", ", pathsToTry);
                 throw new Exception($"Could not locate exe.xml file. Paths tried: {pathsTried}");
             }
+        }
+
+        /// <summary>
+        /// Gets the location of the MSFS exe.xml file, which may not actually exist yet.
+        /// </summary>
+        private static string ExeXmlPath
+        {
+            get
+            {
+                return Path.Join(FlightSimulatorPath, "exe.xml");
+            }
+        }
+
+        private static string UserCfgOptPath
+        {
+            get
+            {
+                return Path.Join(FlightSimulatorPath, "UserCfg.opt");
+            }
+        }
+
+        private static readonly Regex installedPackagesPathRegex = new("^InstalledPackagesPath \"(.*)\"");
+
+        public static string MSFSPackagesPath
+        {
+            get
+            {
+                var lines = File.ReadAllLines(UserCfgOptPath);
+                foreach (var line in lines)
+                {
+                    var match = installedPackagesPathRegex.Match(line);
+                    if (match.Success)
+                    {
+                        return match.Groups[1].Value;
+                    }
+                }
+
+                throw new Exception("Cannot locate FS packages path");
+            }
+        }
+
+        public static string CommunityFolderPath
+        {
+            get { return Path.Join(MSFSPackagesPath, "Community"); }
         }
 
         public static bool IsSetToRunOnStartup
