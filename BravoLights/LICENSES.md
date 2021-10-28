@@ -1,25 +1,5 @@
 ﻿# Licenses for third party software used by Better Bravo Lights
 
-## FSUIPC Client DLL 3.2.10
-http://fsuipc.paulhenty.com/#licence
-
-```
-Licence
-You are granted a non-exclusive right to distribute this DLL at no cost and royalty-free as part of a freeware or commercial application.
-
-The DLL, example applications, and documentation are owned by Paul Henty.
-
-You may not sell this DLL or the example applications or the documentation, individually, together, or as part of a toolkit for developing applications.
-
-A credit acknowledging the author of this DLL and its use in your application must appear in the documentation and at least one place in the application's user interface (e.g. on the ‘about’ screen, version information screen, splash screen etc). The suggested wording is “Uses the FSUIPC Client DLL for .NET by Paul Henty”. This applies to both Freeware and Commercial Applications.
-
-Distribution
-When you build your project, Visual Studio will place a copy of the DLL (FSUIPCClient.dll) in your build folder along with your .exe. You need to distribute the DLL with your program for it to work. You do not need to include the XML file (FSUIPCClient.xml).
-
-Warranty
-The software and documentation are provided ‘AS IS’ without warranty of any kind.
-```
-
 ## HidSharp 2.1.0
 https://www.zer7.com/files/oss/hidsharp/LICENSE.txt
 

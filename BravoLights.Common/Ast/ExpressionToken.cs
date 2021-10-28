@@ -7,9 +7,6 @@ namespace BravoLights.Common.Ast
         [Lexeme("L:[A-Za-z0-9_]+")]
         LVAR = 50,
 
-        [Lexeme("OFFSET:[0-9A-F]+:(FLOAT|INT)[1248]")]
-        OFFSET = 51,
-
         [Lexeme("A:[:A-Za-z0-9 ]+,\\s*([A-Za-z0-9 ]+)")]
         SIMVAR = 52,
 

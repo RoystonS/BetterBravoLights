@@ -4,11 +4,11 @@ using BravoLights.Connections;
 
 namespace BravoLights.Ast
 {
-    class FSUIPCLvarExpression : VariableBase, IAstNode
+    class LvarExpression : VariableBase, IAstNode
     {
         public string LVarName { get; set; }
 
-        protected override IConnection Connection => BravoFSUIPCConnection.Connection;
+        protected override IConnection Connection => LVarManager.Connection;
 
         public override string Identifier => $"L:{LVarName}";
 

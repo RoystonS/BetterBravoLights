@@ -1,6 +1,5 @@
 ﻿.vs/
 bin/
 obj/
-*.csproj.user
+*.*proj.user
 *.pubxml.user
-

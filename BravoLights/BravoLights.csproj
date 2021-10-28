@@ -4,6 +4,7 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net5.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
     <Version>0.5.1</Version>
     <Authors>Royston Shufflebotham &lt;royston@shufflebotham.org&gt;</Authors>
     <Product>Better Bravo Lights</Product>
@@ -17,7 +18,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="FSUIPCClientDLL" Version="3.2.10" />
     <PackageReference Include="sly" Version="2.7.0.3" />
     <PackageReference Include="System.Text.Encoding.CodePages" Version="5.0.0" />
   </ItemGroup>

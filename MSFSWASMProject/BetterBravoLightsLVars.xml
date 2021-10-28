@@ -1,0 +1,8 @@
+<Project Version="2" Name="StandaloneModuleProject" FolderName="Packages">
+	<OutputDirectory>.</OutputDirectory>
+	<TemporaryOutputDirectory>_PackageInt</TemporaryOutputDirectory>
+	<Packages>
+		<Package>PackageDefinitions\better-bravo-lights-lvar-module.xml</Package>
+	</Packages>
+</Project>
+

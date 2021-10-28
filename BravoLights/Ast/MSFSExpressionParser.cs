@@ -13,7 +13,7 @@ namespace BravoLights.Ast
         {
             var text = token.Value[2..];
 
-            return new FSUIPCLvarExpression
+            return new LvarExpression
             {
                 LVarName = text
             };

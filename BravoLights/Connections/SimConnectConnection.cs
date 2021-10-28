@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Timers;
 using BravoLights.Ast;
@@ -9,17 +12,103 @@ using BravoLights.Common;
 using Microsoft.FlightSimulator.SimConnect;
 
 namespace BravoLights.Connections
-{
-    enum Ids : uint
+{   
+    enum EventId: uint
     {
         SimState = 1,
-        AircraftLoaded = 3,
-
-        DynamicStart = 1000,
     }
 
-    class SimConnectConnection : IConnection
+    enum DefineId : uint
     {
+        WASMRequestResponse = 1,
+        WASMLVars = 2,
+
+        // The start of dynamically-allocated definitions for simulator variables
+        DynamicStart = 100
+    }
+
+    enum RequestId : uint
+    {
+        SimState = 1,
+        WASMResponse = 2,
+        WASMLVars = 3,
+        AircraftLoaded = 4,
+
+        // The start of dynamically-allocated request ids for simulator variables
+        DynamicStart = DefineId.DynamicStart
+    }
+
+    enum WASMReaderState
+    {
+        Neutral,
+        ReadingLVars
+    }
+
+    class SimConnectConnection : IConnection, IWASMChannel
+    {
+        // Names of the client data areas established by the WASM module
+        private const string CDA_NAME_SIMVAR = "BetterBravoLights.LVars";
+        private const string CDA_NAME_REQUEST = "BetterBravoLights.Request";
+        private const string CDA_NAME_RESPONSE = "BetterBravoLights.Response";
+
+        // Ids for the client data areas
+        private enum ClientDataId
+        {
+            LVars = 0,
+            Request = 1,
+            Response = 2
+        }
+
+        private const string RESPONSE_LVAR_START = "!LVARS-START";
+        private const string RESPONSE_LVAR_END = "!LVARS-END";
+
+        // Size of the request and response CDAs
+        private const int RequestResponseSize = 256;
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct RequestString
+        {
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = RequestResponseSize)]
+            public byte[] data;
+
+            public RequestString(string str)
+            {
+                var bytes = Encoding.ASCII.GetBytes(str);
+                var ret = new byte[RequestResponseSize];
+                Array.Copy(bytes, ret, bytes.Length);
+                data = ret;
+            }
+        }
+
+        public struct ResponseString
+        {
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = RequestResponseSize)]
+            public string Data;
+        }
+
+        // This MUST match the value in the WASM
+        private const int MaxDataValuesInPacket = 10;
+
+        public struct LVarData : ILVarData
+        {
+            [MarshalAs(UnmanagedType.U2)]
+            public short ValueCount;
+
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = MaxDataValuesInPacket, ArraySubType = UnmanagedType.U2)]
+            public short[] Ids;
+
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = MaxDataValuesInPacket, ArraySubType = UnmanagedType.R8)]
+            public double[] Values;
+
+            short ILVarData.ValueCount => ValueCount;
+
+            short[] ILVarData.Ids => Ids;
+
+            double[] ILVarData.Values => Values;
+        }
+
+        private readonly uint LVarDataSize = (uint)Marshal.SizeOf<LVarData>();
+
         public static SimConnectConnection Connection = new();
 
         private readonly Timer reconnectTimer = new();
@@ -30,13 +119,16 @@ namespace BravoLights.Connections
             reconnectTimer.AutoReset = false;
             reconnectTimer.Interval = new TimeSpan(0, 0, 30).TotalMilliseconds;
             reconnectTimer.Elapsed += Timer_Elapsed;
+
+            LVarManager.Connection.SetWASMChannel(this);
         }
+
         public void Start()
         {
             ConnectNow();
         }
 
-        private uint nextVariableId = (uint)Ids.DynamicStart;
+        private uint nextVariableId = (uint)DefineId.DynamicStart;
 
         private readonly Dictionary<uint, NameAndUnits> idToName = new();
         private readonly Dictionary<NameAndUnits, uint> nameToId = new(new NameAndUnitsComparer());
@@ -51,9 +143,9 @@ namespace BravoLights.Connections
             idToName[id] = nameAndUnits;
             nameToId[nameAndUnits] = id;
 
-            simconnect.AddToDataDefinition((Ids)id, nameAndUnits.Name, nameAndUnits.Units, SIMCONNECT_DATATYPE.FLOAT64, 0, SimConnect.SIMCONNECT_UNUSED);
-            simconnect.RegisterDataDefineStruct<ContainerStruct>((Ids)id);
-            simconnect.RequestDataOnSimObject((Ids)id, (Ids)id, 0, SIMCONNECT_PERIOD.SIM_FRAME, SIMCONNECT_DATA_REQUEST_FLAG.DEFAULT, 0, 0, 0);
+            simconnect.AddToDataDefinition((DefineId)id, nameAndUnits.Name, nameAndUnits.Units, SIMCONNECT_DATATYPE.FLOAT64, 0, SimConnect.SIMCONNECT_UNUSED);
+            simconnect.RegisterDataDefineStruct<ContainerStruct>((DefineId)id);
+            simconnect.RequestDataOnSimObject((RequestId)id, (DefineId)id, 0, SIMCONNECT_PERIOD.SIM_FRAME, SIMCONNECT_DATA_REQUEST_FLAG.DEFAULT, 0, 0, 0);
         }
 
         private void UnsubscribeFromSimConnect(SimVarExpression simvar)
@@ -63,7 +155,7 @@ namespace BravoLights.Connections
             try
             {
                 id = nameToId[name];
-                simconnect.ClearClientDataDefinition((Ids)id);
+                simconnect.ClearClientDataDefinition((DefineId)id);
             } catch
             {
                 nameToId.Remove(name);
@@ -209,10 +301,14 @@ namespace BravoLights.Connections
                 simconnect.OnRecvQuit += Simconnect_OnRecvQuit;
 
                 simconnect.OnRecvEvent += Simconnect_OnRecvEvent;
-                simconnect.SubscribeToSystemEvent(Ids.SimState, "Sim");
+                simconnect.SubscribeToSystemEvent(RequestId.SimState, "Sim");
 
                 simconnect.OnRecvSystemState += Simconnect_OnRecvSystemState;
-                simconnect.RequestSystemState(Ids.SimState, "Sim");
+                simconnect.RequestSystemState(RequestId.SimState, "Sim");
+
+                ConfigureWASMComms();
+                SendLVarRequest("CLEAR");
+                SendLVarRequest("LISTLVARS");
 
                 RequestAircraftLoaded();
 
@@ -229,18 +325,58 @@ namespace BravoLights.Connections
             }
         }
 
+        private void ConfigureWASMComms()
+        {
+            simconnect.MapClientDataNameToID(CDA_NAME_SIMVAR, ClientDataId.LVars);
+            simconnect.CreateClientData(ClientDataId.LVars, (uint)Marshal.SizeOf<LVarData>(), SIMCONNECT_CREATE_CLIENT_DATA_FLAG.DEFAULT);
+
+            simconnect.MapClientDataNameToID(CDA_NAME_REQUEST, ClientDataId.Request);
+            simconnect.CreateClientData(ClientDataId.Request, 256, SIMCONNECT_CREATE_CLIENT_DATA_FLAG.DEFAULT);
+
+            simconnect.MapClientDataNameToID(CDA_NAME_RESPONSE, ClientDataId.Response);
+            simconnect.CreateClientData(ClientDataId.Response, 256, SIMCONNECT_CREATE_CLIENT_DATA_FLAG.DEFAULT);
+
+            simconnect.AddToClientDataDefinition(DefineId.WASMRequestResponse, 0, RequestResponseSize, 0, 0);
+            simconnect.RegisterStruct<SIMCONNECT_RECV_CLIENT_DATA, ResponseString>(DefineId.WASMRequestResponse);
+            simconnect.RequestClientData(
+                ClientDataId.Response,
+                RequestId.WASMResponse,
+                DefineId.WASMRequestResponse,
+                SIMCONNECT_CLIENT_DATA_PERIOD.ON_SET,
+                SIMCONNECT_CLIENT_DATA_REQUEST_FLAG.DEFAULT,
+                0,
+                0,
+                0
+            );
+
+            simconnect.AddToClientDataDefinition(DefineId.WASMLVars, 0, LVarDataSize, 0, 0);
+            simconnect.RegisterStruct<SIMCONNECT_RECV_CLIENT_DATA, LVarData>(DefineId.WASMLVars);
+            simconnect.RequestClientData(
+                ClientDataId.LVars,
+                RequestId.WASMLVars,
+                DefineId.WASMLVars,
+                SIMCONNECT_CLIENT_DATA_PERIOD.ON_SET,
+                SIMCONNECT_CLIENT_DATA_REQUEST_FLAG.DEFAULT,
+                0,
+                0,
+                0
+            );
+
+            simconnect.OnRecvClientData += SimConnect_OnRecvClientData;
+        }
+
         private void RequestAircraftLoaded()
         {
-            simconnect.RequestSystemState(Ids.AircraftLoaded, "AircraftLoaded");
+            simconnect.RequestSystemState(RequestId.AircraftLoaded, "AircraftLoaded");
         }
 
         private void Simconnect_OnRecvEvent(SimConnect sender, SIMCONNECT_RECV_EVENT data)
         {
             lock (this)
             {
-                switch ((Ids)data.uEventID)
+                switch ((EventId)data.uEventID)
                 {
-                    case Ids.SimState:
+                    case EventId.SimState:
                         var running = data.dwData == 1;
                         if (running)
                         {
@@ -256,12 +392,12 @@ namespace BravoLights.Connections
         {
             lock (this)
             {
-                switch ((Ids)data.dwRequestID)
+                switch ((RequestId)data.dwRequestID)
                 {
-                    case Ids.SimState:
+                    case RequestId.SimState:
                         RaiseSimStateChanged(data.dwInteger == 1 ? SimState.SimRunning : SimState.SimStopped);
                         break;
-                    case Ids.AircraftLoaded:
+                    case RequestId.AircraftLoaded:
                         RaiseAircraftChanged(data.szString);
                         break;
                 }
@@ -340,6 +476,49 @@ namespace BravoLights.Connections
             }
         }
 
+        private List<string> incomingLVars = new List<string>();
+        private Dictionary<string, int> lvarIds = new();
+        private Dictionary<int, string> lvarNames = new();
+
+        private WASMReaderState readerState = WASMReaderState.Neutral;
+
+        private void SimConnect_OnRecvClientData(SimConnect sender, SIMCONNECT_RECV_CLIENT_DATA data)
+        {
+            switch ((RequestId)data.dwRequestID)
+            {
+                case RequestId.WASMResponse:
+                    {
+                        var responseString = ((ResponseString)data.dwData[0]).Data;
+
+                        switch (responseString)
+                        {
+                            case RESPONSE_LVAR_START:
+                                readerState = WASMReaderState.ReadingLVars;
+                                return;
+                            case RESPONSE_LVAR_END:
+                                readerState = WASMReaderState.Neutral;
+                                var newLVars = incomingLVars;
+                                incomingLVars = new();
+                                LVarManager.Connection.UpdateLVarList(newLVars);
+                                return;
+                        }
+
+                        if (readerState == WASMReaderState.ReadingLVars)
+                        {
+                            incomingLVars.Add(responseString);
+                            return;
+                        }
+                    }
+                    break;
+                case RequestId.WASMLVars:
+                    { 
+                        var lvarUpdate = ((LVarData)data.dwData[0]);
+                        LVarManager.Connection.UpdateLVarValues(lvarUpdate);
+                    }
+                    break;
+            }
+        }
+
         private void Simconnect_OnRecvSimobjectData(SimConnect sender, SIMCONNECT_RECV_SIMOBJECT_DATA data)
         {
             lock (this)
@@ -374,7 +553,7 @@ namespace BravoLights.Connections
                     // been running during multiple sim runs. Unsubscribe.
                     if (simconnect != null)
                     {
-                        simconnect.ClearClientDataDefinition((Ids)data.dwRequestID);
+                        simconnect.ClearClientDataDefinition((DefineId)data.dwRequestID);
                     }
                 }
             }
@@ -384,6 +563,33 @@ namespace BravoLights.Connections
 
         public event EventHandler<AircraftEventArgs> OnAircraftLoaded;
         public event EventHandler<SimStateEventArgs> OnSimStateChanged;
+
+        private void SendLVarRequest(string message)
+        {
+            var cmd = new RequestString(message);
+            simconnect.SetClientData(
+                ClientDataId.Request,
+                DefineId.WASMRequestResponse,
+                SIMCONNECT_CLIENT_DATA_SET_FLAG.DEFAULT,
+                0,
+                cmd
+            );
+        }
+
+        void IWASMChannel.ClearSubscriptions()
+        {
+            SendLVarRequest($"CLEAR");
+        }
+
+        void IWASMChannel.Subscribe(short id)
+        {
+            SendLVarRequest($"SUBSCRIBE {id.ToString(CultureInfo.InvariantCulture)}");
+        }
+
+        void IWASMChannel.Unsubscribe(short id)
+        {
+            SendLVarRequest($"UNSUBSCRIBE {id.ToString(CultureInfo.InvariantCulture)}");
+        }
     }
 
     public enum SimState

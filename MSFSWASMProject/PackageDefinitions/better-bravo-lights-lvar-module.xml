@@ -1,0 +1,31 @@
+<AssetPackage Name="better-bravo-lights-lvar-module" Version="0.1.2">
+	<ItemSettings>
+		<ContentType>MISC</ContentType>
+		<Title>Better Bravo Lights LVars</Title>
+		<Manufacturer/>
+		<Creator>Royston Shufflebotham</Creator>
+	</ItemSettings>
+	<Flags>
+		<VisibleInStore>true</VisibleInStore>
+		<CanBeReferenced>true</CanBeReferenced>
+	</Flags>
+	<AssetGroups>
+		<AssetGroup Name="ContentInfo">
+			<Type>ContentInfo</Type>
+			<Flags>
+				<FSXCompatibility>false</FSXCompatibility>
+			</Flags>
+			<AssetDir>PackageDefinitions\better-bravo-lights-lvar-module\ContentInfo</AssetDir>
+			<OutputDir>ContentInfo\better-bravo-lights-lvar-module</OutputDir>
+		</AssetGroup>
+		<AssetGroup Name="Module">
+			<Type>Copy</Type>
+			<Flags>
+				<FSXCompatibility>false</FSXCompatibility>
+			</Flags>
+			<AssetDir>PackageSources\modules\</AssetDir>
+			<OutputDir>modules\</OutputDir>
+		</AssetGroup>
+	</AssetGroups>
+</AssetPackage>
+

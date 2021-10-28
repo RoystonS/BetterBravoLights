@@ -26,8 +26,7 @@
             <TextBlock FontSize="36" FontFamily="Gill Sans MT" VerticalAlignment="Stretch" Text="{Binding ProductAndVersion}" />
             <TextBlock Grid.Row="1" Margin="0,8,0,0">by Royston Shufflebotham &lt;royston@shufflebotham.org&gt;</TextBlock>
             <TextBlock Grid.Row="2" Margin="0,8,0,0" Height="32" VerticalAlignment="Bottom" TextWrapping="Wrap">
-                Uses the
-                <Run FontStyle="Italic">FSUIPC Client DLL for .NET</Run> by Paul Henty,
+                Uses 
                 <Run FontStyle="Italic">HidSharp</Run> by James F. Bellinger
                 and
                 <Run FontStyle="Italic">sly</Run> by Olivier Duhart.</TextBlock>
