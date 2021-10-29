@@ -145,7 +145,7 @@ namespace BravoLights.Connections
 
             simconnect.AddToDataDefinition((DefineId)id, nameAndUnits.Name, nameAndUnits.Units, SIMCONNECT_DATATYPE.FLOAT64, 0, SimConnect.SIMCONNECT_UNUSED);
             simconnect.RegisterDataDefineStruct<ContainerStruct>((DefineId)id);
-            simconnect.RequestDataOnSimObject((RequestId)id, (DefineId)id, 0, SIMCONNECT_PERIOD.SIM_FRAME, SIMCONNECT_DATA_REQUEST_FLAG.DEFAULT, 0, 0, 0);
+            simconnect.RequestDataOnSimObject((RequestId)id, (DefineId)id, 0, SIMCONNECT_PERIOD.SIM_FRAME, SIMCONNECT_DATA_REQUEST_FLAG.CHANGED, 0, 0, 0);
         }
 
         private void UnsubscribeFromSimConnect(SimVarExpression simvar)
@@ -529,15 +529,6 @@ namespace BravoLights.Connections
                     var newValue = dataContainer.Value.doubleValue;
 
                     var handlers = this.variableHandlers[nau];
-
-                    if (lastReportedValue.TryGetValue(nau, out double lastValue))
-                    {
-                        if (newValue == lastValue)
-                        {
-                            // Value is unchanged
-                            return;
-                        }
-                    }
                     lastReportedValue[nau] = newValue;
 
                     var e = new ValueChangedEventArgs { NewValue = newValue };
