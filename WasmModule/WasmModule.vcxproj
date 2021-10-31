@@ -103,7 +103,7 @@
       <AdditionalLibraryDirectories>$(OutDir)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /Y "$(TargetPath)" "$(SolutionDir)MSFSWASMProject\PackageSources\modules\$(TargetName)$(TargetExt)"</Command>
+      <Command>echo F | xcopy /Y /F "$(TargetPath)" "$(SolutionDir)MSFSWASMProject\PackageSources\modules\$(TargetName)$(TargetExt)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|MSFS'">
@@ -146,7 +146,7 @@
       <AdditionalLibraryDirectories>$(OutDir)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /Y "$(TargetPath)" "$(SolutionDir)MSFSWASMProject\PackageSources\modules\$(TargetName)$(TargetExt)"</Command>
+      <Command>echo F | xcopy /Y /F "$(TargetPath)" "$(SolutionDir)MSFSWASMProject\PackageSources\modules\$(TargetName)$(TargetExt)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
