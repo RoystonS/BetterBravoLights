@@ -26,9 +26,9 @@ namespace BravoLights.Tests
             public void Listener(object sender, ValueChangedEventArgs e)
             {
                 LastValue = e.NewValue;
-                if (LastValue is Exception)
+                if (LastValue is Exception exception)
                 {
-                    LastValue = ((Exception)LastValue).Message;
+                    LastValue = exception.Message;
                 }
             }
         }

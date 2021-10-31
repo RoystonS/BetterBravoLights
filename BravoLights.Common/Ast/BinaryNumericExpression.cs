@@ -15,10 +15,27 @@ namespace BravoLights.Common.Ast
     /// <summary>
     /// A binary expression such as 'X + Y' or 'X / Y', which produces a number from two other numbers and an operator.
     /// </summary>
-    abstract class BinaryNumericExpression : BinaryExpression<double, double>
+    abstract class BinaryNumericExpression : BinaryExpression<double>
     {
         protected BinaryNumericExpression(IAstNode lhs, IAstNode rhs) : base(lhs, rhs)
         {
+        }
+
+        protected abstract double ComputeNumericValue(double lhs, double rhs);
+
+        protected override object ComputeValue(object lhsValue, object rhsValue)
+        {
+            if (lhsValue is Exception)
+            {
+                return lhsValue;
+            }
+            if (rhsValue is Exception)
+            {
+                return rhsValue;
+            }
+            var lhs = Convert.ToDouble(lhsValue);
+            var rhs = Convert.ToDouble(rhsValue);
+            return ComputeNumericValue(lhs, rhs);
         }
 
         public static BinaryNumericExpression Create(IAstNode lhs, Token<ExpressionToken> op, IAstNode rhs)
@@ -42,7 +59,7 @@ namespace BravoLights.Common.Ast
 
         protected override string OperatorText => "+";
 
-        protected override double ComputeValue(double lhs, double rhs)
+        protected override double ComputeNumericValue(double lhs, double rhs)
         {
             return lhs + rhs;
         }
@@ -56,7 +73,7 @@ namespace BravoLights.Common.Ast
 
         protected override string OperatorText => "-";
 
-        protected override double ComputeValue(double lhs, double rhs)
+        protected override double ComputeNumericValue(double lhs, double rhs)
         {
             return lhs - rhs;
         }
@@ -70,7 +87,7 @@ namespace BravoLights.Common.Ast
 
         protected override string OperatorText => "*";
 
-        protected override double ComputeValue(double lhs, double rhs)
+        protected override double ComputeNumericValue(double lhs, double rhs)
         {
             return lhs * rhs;
         }
@@ -84,7 +101,7 @@ namespace BravoLights.Common.Ast
 
         protected override string OperatorText => "/";
 
-        protected override double ComputeValue(double lhs, double rhs)
+        protected override double ComputeNumericValue(double lhs, double rhs)
         {
             return lhs / rhs;
         }

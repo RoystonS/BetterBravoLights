@@ -19,7 +19,6 @@ namespace BravoLights.Ast
             };
         }
 
-
         [Production("primary: SIMVAR")]
         public IAstNode SimVarExpression(Token<ExpressionToken> simvarToken)
         {

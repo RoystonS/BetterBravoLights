@@ -4,11 +4,12 @@ using sly.lexer;
 
 namespace BravoLights.Common.Ast
 {
-    abstract class BooleanLogicalExpression : BinaryExpression<bool, bool>
+    abstract class BooleanLogicalExpression : BinaryExpression<bool>
     {
         protected BooleanLogicalExpression(IAstNode lhs, IAstNode rhs) : base(lhs, rhs)
         {
         }
+
 
         public static BooleanLogicalExpression Create(IAstNode lhs, Token<ExpressionToken> token, IAstNode rhs)
         {
@@ -27,10 +28,35 @@ namespace BravoLights.Common.Ast
         {
         }
 
-        protected override bool ComputeValue(bool lhs, bool rhs)
+        protected override object ComputeValue(object lhsValue, object rhsValue)
         {
-            return lhs && rhs;
+            if (lhsValue is Boolean lhs)
+            {
+                if (lhs == false)
+                {
+                    return false;
+                }
+            }
+            if (rhsValue is Boolean rhs)
+            {
+                if (rhs == false)
+                {
+                    return false;
+                }
+            }
+            if (lhsValue is Exception)
+            {
+                return lhsValue;
+            }
+            if (rhsValue is Exception)
+            {
+                return rhsValue;
+            }
+
+            // Neither side is false, and neither are Exceptions
+            return true;
         }
+
         protected override string OperatorText => "AND";
     }
 
@@ -40,10 +66,35 @@ namespace BravoLights.Common.Ast
         {
         }
 
-        protected override bool ComputeValue(bool lhs, bool rhs)
+        protected override object ComputeValue(object lhsValue, object rhsValue)
         {
-            return lhs || rhs;
+            if (lhsValue is Boolean lhs)
+            {
+                if (lhs == true)
+                {
+                    return true;
+                }
+            }
+            if (rhsValue is Boolean rhs)
+            {
+                if (rhs == true)
+                {
+                    return true;
+                }
+            }
+            if (lhsValue is Exception)
+            {
+                return lhsValue;
+            }
+            if (rhsValue is Exception)
+            {
+                return rhsValue;
+            }
+
+            // Neither side is true, and neither are Exceptions
+            return false;
         }
+
         protected override string OperatorText => "OR";
     }
 

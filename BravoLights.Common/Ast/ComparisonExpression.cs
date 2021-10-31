@@ -6,10 +6,27 @@ namespace BravoLights.Common.Ast
     /// <summary>
     /// A binary expression such as 'X < Y' or 'X == Y', which produces a boolean from two other numbers and an operator.
     /// </summary>
-    abstract class ComparisonExpression : BinaryExpression<double, bool>
+    abstract class ComparisonExpression : BinaryExpression<bool>
     {
         protected ComparisonExpression(IAstNode lhs, IAstNode rhs) : base(lhs, rhs)
         {
+        }
+
+        protected abstract bool ComputeComparisonValue(double lhs, double rhs);
+
+        protected override object ComputeValue(object lhsValue, object rhsValue)
+        {
+            if (lhsValue is Exception)
+            {
+                return lhsValue;
+            }
+            if (rhsValue is Exception)
+            {
+                return rhsValue;
+            }
+            var lhs = Convert.ToDouble(lhsValue);
+            var rhs = Convert.ToDouble(rhsValue);
+            return ComputeComparisonValue(lhs, rhs);
         }
 
         public static ComparisonExpression Create(IAstNode lhs, Token<ExpressionToken> token, IAstNode rhs)
@@ -33,7 +50,7 @@ namespace BravoLights.Common.Ast
         {
         }
 
-        protected override bool ComputeValue(double lhs, double rhs)
+        protected override bool ComputeComparisonValue(double lhs, double rhs)
         {
             return lhs < rhs;
         }
@@ -46,7 +63,7 @@ namespace BravoLights.Common.Ast
         {
         }
 
-        protected override bool ComputeValue(double lhs, double rhs)
+        protected override bool ComputeComparisonValue(double lhs, double rhs)
         {
             return lhs <= rhs;
         }
@@ -59,7 +76,7 @@ namespace BravoLights.Common.Ast
         {
         }
 
-        protected override bool ComputeValue(double lhs, double rhs)
+        protected override bool ComputeComparisonValue(double lhs, double rhs)
         {
             return lhs == rhs;
         }
@@ -72,7 +89,7 @@ namespace BravoLights.Common.Ast
         {
         }
 
-        protected override bool ComputeValue(double lhs, double rhs)
+        protected override bool ComputeComparisonValue(double lhs, double rhs)
         {
             return lhs != rhs;
         }
@@ -85,7 +102,7 @@ namespace BravoLights.Common.Ast
         {
         }
 
-        protected override bool ComputeValue(double lhs, double rhs)
+        protected override bool ComputeComparisonValue(double lhs, double rhs)
         {
             return lhs >= rhs;
         }
@@ -98,7 +115,7 @@ namespace BravoLights.Common.Ast
         {
         }
 
-        protected override bool ComputeValue(double lhs, double rhs)
+        protected override bool ComputeComparisonValue(double lhs, double rhs)
         {
             return lhs > rhs;
         }

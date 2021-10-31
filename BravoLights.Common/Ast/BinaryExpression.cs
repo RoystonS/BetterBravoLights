@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace BravoLights.Common.Ast
 {
-    abstract class BinaryExpression<TChildren, TOutput> : IAstNode
+    abstract class BinaryExpression<TOutput> : IAstNode
     {
         internal readonly IAstNode Lhs;
         internal readonly IAstNode Rhs;
@@ -36,7 +36,7 @@ namespace BravoLights.Common.Ast
         }
 
         protected abstract string OperatorText { get; }
-        protected abstract TOutput ComputeValue(TChildren lhsValue, TChildren rhsValue);
+        protected abstract object ComputeValue(object lhsValue, object rhsValue);
        
         private void HandleLhsValueChanged(object sender, ValueChangedEventArgs e)
         {
@@ -59,21 +59,7 @@ namespace BravoLights.Common.Ast
                 return;
             }
 
-            object newValue;
-            if (lastLhsValue is Exception)
-            {
-                newValue = lastLhsValue;
-            }
-            else if (lastRhsValue is Exception)
-            {
-                newValue = lastRhsValue;
-            }
-            else
-            {
-                var lhs = (TChildren)Convert.ChangeType(lastLhsValue, typeof(TChildren));
-                var rhs = (TChildren)Convert.ChangeType(lastRhsValue, typeof(TChildren));
-                newValue = ComputeValue(lhs, rhs);
-            }
+            object newValue = ComputeValue(lastLhsValue, lastRhsValue);
 
             if (lastReportedValue == null || !lastReportedValue.Equals(newValue)) // N.B. We must unbox before doing the comparison otherwise we'll be comparing boxed pointers
             {
