@@ -67,7 +67,8 @@ namespace BravoLights.Connections
                     {
                         wasmChannel.Unsubscribe(id);
                     }
-                } else
+                }
+                else
                 {
                     handlers[name] = newListeners;
                 }

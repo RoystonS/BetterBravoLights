@@ -124,7 +124,7 @@ namespace BravoLights.Connections
 
         private readonly Dictionary<uint, NameAndUnits> idToName = new();
         private readonly Dictionary<NameAndUnits, uint> nameToId = new(new NameAndUnitsComparer());
-        private readonly Dictionary<NameAndUnits, ISet<EventHandler<ValueChangedEventArgs>>> variableHandlers =
+        private readonly Dictionary<NameAndUnits, EventHandler<ValueChangedEventArgs>> variableHandlers =
             new(new NameAndUnitsComparer());
         private readonly Dictionary<NameAndUnits, double> lastReportedValue = new(new NameAndUnitsComparer());
 
@@ -165,13 +165,11 @@ namespace BravoLights.Connections
 
             lock (this)
             {
-                if (!variableHandlers.TryGetValue(nau, out ISet<EventHandler<ValueChangedEventArgs>> handlers))
-                {
-                    handlers = new HashSet<EventHandler<ValueChangedEventArgs>>();
-                    variableHandlers.Add(nau, handlers);
-                }
+                variableHandlers.TryGetValue(nau, out var existingHandlers);
+                var newHandlers = (EventHandler<ValueChangedEventArgs>)Delegate.Combine(existingHandlers, handler);
+                variableHandlers[nau] = newHandlers;
 
-                if (handlers.Count == 0)
+                if (existingHandlers == null)
                 {
                     if (this.simconnect != null)
                     {
@@ -182,8 +180,6 @@ namespace BravoLights.Connections
                         ConnectNow();
                     }
                 }
-
-                handlers.Add(handler);
 
                 SendLastValue(nau, handler);
             }
@@ -216,14 +212,21 @@ namespace BravoLights.Connections
 
             lock (this)
             {
-                var handlers = variableHandlers[nau];
-                handlers.Remove(handler);
-                if (handlers.Count == 0)
+                variableHandlers.TryGetValue(nau, out var existingHandlers);
+                var newListeners = (EventHandler<ValueChangedEventArgs>)Delegate.Remove(existingHandlers, handler);
+
+                if (newListeners == null)
                 {
+                    variableHandlers.Remove(nau);
+
                     if (this.simconnect != null)
                     {
                         UnsubscribeFromSimConnect(simvar);
                     }
+                }
+                else
+                {
+                    variableHandlers[nau] = newListeners;
                 }
             }
         }
@@ -446,10 +449,7 @@ namespace BravoLights.Connections
                         var variable = kvp.Key;
                         var handlers = kvp.Value;
 
-                        foreach (var handler in handlers)
-                        {
-                            SendLastValue(variable, handler);
-                        }
+                        SendLastValue(variable, handlers);
                     }
                 }
                 else
@@ -638,13 +638,13 @@ namespace BravoLights.Connections
                     var dataContainer = data.dwData[0] as ContainerStruct?;
                     var newValue = dataContainer.Value.doubleValue;
 
-                    var handlers = this.variableHandlers[nau];
+                    var handlers = variableHandlers[nau];
                     lastReportedValue[nau] = newValue;
 
-                    var e = new ValueChangedEventArgs { NewValue = newValue };
-                    foreach (var handler in handlers)
+                    if (handlers != null)
                     {
-                        handler(this, e);
+                        var e = new ValueChangedEventArgs { NewValue = newValue };
+                        handlers(this, e);
                     }
                 }
                 else
