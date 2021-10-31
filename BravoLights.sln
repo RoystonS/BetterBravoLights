@@ -16,7 +16,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{7C55C68B-E475-4274-A0DB-37A629D3FE8A}"
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
-		assemble-debug-wasm.cmd = assemble-debug-wasm.cmd
+		assemble-wasm-for-ide.cmd = assemble-wasm-for-ide.cmd
 		MSFSWASMProject\PackageDefinitions\better-bravo-lights-lvar-module.xml = MSFSWASMProject\PackageDefinitions\better-bravo-lights-lvar-module.xml
 		MSFSWASMProject\BetterBravoLightsLVars.xml = MSFSWASMProject\BetterBravoLightsLVars.xml
 		build-and-publish.ps1 = build-and-publish.ps1

@@ -79,7 +79,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <BasicRuntimeChecks>
       </BasicRuntimeChecks>
-      <LanguageStandard>stdcpp14</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -122,6 +122,7 @@
       <DebugInformationFormat>false</DebugInformationFormat>
       <SupportJustMyCode>
       </SupportJustMyCode>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>

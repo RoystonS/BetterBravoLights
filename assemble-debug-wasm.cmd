@@ -1,2 +1,0 @@
-rem Builds the WASM module and installs it into the Debug output directory for the project.
-"%MSFS_SDK%Tools\bin\fspackagetool.exe" MSFSWASMProject\BetterBravoLightsLVars.xml -outputdir BravoLights\bin\Debug\net5.0-windows

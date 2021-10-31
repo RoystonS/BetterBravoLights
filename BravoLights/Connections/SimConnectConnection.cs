@@ -348,7 +348,9 @@ namespace BravoLights.Connections
                 switch ((RequestId)data.uEventID)
                 {
                     case RequestId.SimState:
+#if DEBUG
                         Debug.WriteLine($"SimState {data.dwData}");
+#endif
                         RaiseSimStateChanged(data.dwData == 1 ? SimState.SimRunning : SimState.SimStopped);
                         break;
                     case RequestId.AircraftLoaded:
@@ -503,7 +505,9 @@ namespace BravoLights.Connections
         /// </summary>
         private void ScheduleLVarCheck()
         {
+#if DEBUG
             Debug.WriteLine("ScheduleLVarCheck");
+#endif
 
             if (lvarCheckTimer == null)
             {
@@ -513,9 +517,14 @@ namespace BravoLights.Connections
 
         private Timer lvarCheckTimer = null;
 
+        /// <summary>
+        /// Called every ~30s or so, just to check if new lvars have appeared. Some aircraft take a while to register theirs.
+        /// </summary>
         private void LVarCheckTimerElapsed(object state)
         {
+#if DEBUG
             Debug.WriteLine("LVarCheckTimerElapsed");
+#endif
             lvarCheckTimer.Dispose();
             lvarCheckTimer = null;
 
@@ -529,7 +538,9 @@ namespace BravoLights.Connections
         /// </summary>
         private void CheckForNewLVars()
         {
+#if DEBUG
             Debug.WriteLine("CheckForNewLVars");
+#endif
             if (hasEverCheckedForLVars)
             {
                 // Ask the WASM module to check for new lvars
@@ -660,7 +671,9 @@ namespace BravoLights.Connections
 
         private void SendLVarRequest(string message)
         {
+#if DEBUG
             Debug.WriteLine($"Sending LVarRequest {message}");
+#endif
 
             var cmd = new RequestString(message);
             try
@@ -682,21 +695,18 @@ namespace BravoLights.Connections
         void IWASMChannel.ClearSubscriptions()
         {
             var message = $"CLEAR";
-            Debug.WriteLine(message);
             SendLVarRequest(message);
         }
 
         void IWASMChannel.Subscribe(short id)
         {
             var message = $"SUBSCRIBE {id.ToString(CultureInfo.InvariantCulture)}";
-            Debug.WriteLine(message);
             SendLVarRequest(message);
         }
 
         void IWASMChannel.Unsubscribe(short id)
         {
             var message = $"UNSUBSCRIBE {id.ToString(CultureInfo.InvariantCulture)}";
-            Debug.WriteLine(message);
             SendLVarRequest(message);
         }
     }
