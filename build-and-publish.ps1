@@ -2,7 +2,11 @@ if (Test-Path -Path .\BravoLights\bin\Release) {
 	Remove-Item -Path .\BravoLights\bin\Release -Recurse
 }
 
-dotnet publish -p:PublishProfile=FolderProfile
+if ($null -eq $env:VCTargetsPath) {
+	$env:VCTargetsPath = 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Microsoft\VC\v160\'
+}
+
+dotnet publish -p:PublishProfile=FolderProfile -p:Configuration=Release
 $path = Resolve-Path "BravoLights\bin\Release\net5.0-windows\publish\BetterBravoLights.exe"
 
 $o = [system.diagnostics.fileversioninfo]::GetVersionInfo($path)
