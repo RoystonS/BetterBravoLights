@@ -64,7 +64,7 @@ namespace BravoLights
                 }
                 catch (CorruptExeXmlException ex)
                 {
-                    var window = new CorruptExeXmlErrorWindow() { XmlFilename = ex.ExeXmlPath, Exception = ex };
+                    var window = new CorruptExeXmlErrorWindow() { XmlFilename = ex.ExeXmlFilename, Exception = ex };
                     window.ShowDialog();
                     Environment.Exit(0);
                 }
@@ -105,6 +105,39 @@ namespace BravoLights
                 }
             }
 
+            var includedWasmVersion = Installer.IncludedWasmModuleVersion;
+            var installedWasmVersion = Installer.InstalledWasmModuleVersion;
+
+            if (installedWasmVersion != includedWasmVersion)
+            {
+                var doInstall = false;
+
+                if (installedWasmVersion == null)
+                {
+                    if (MessageBox.Show("Lights that use L: variables will not work correctly unless the Better Bravo Lights WASM module is installed in the Flight Simulator Community folder. Would you like it to be installed?",
+                        "Better Bravo Lights", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+                    {
+                        doInstall = true;
+                    }
+                }
+                else
+                {
+                    if (MessageBox.Show("Lights that use L: variables will not work correctly unless the correct version of the Better Bravo Lights WASM module is installed in the Flight Simulator Community folder. Would you like the correct version to be installed?",
+                        "Better Bravo Lights", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+                    {
+                        doInstall = true;
+                    }
+                }
+                if (doInstall)
+                {
+                    Installer.InstallWasmModule();
+                    MessageBox.Show("The Better Bravo Lights WASM module is now installed. If Flight Simulator was already running it will need to be restarted.", "Better Bravo Lights", MessageBoxButton.OK);
+                } else
+                {
+                    LVarManager.Connection.DisableLVars = true;
+                }
+            }
+
             viewModel = new MainViewModel();
             usbLogic = new UsbLogic(viewModel);
 
@@ -125,6 +158,7 @@ namespace BravoLights
             SimConnectConnection.HWnd = new WindowInteropHelper(hwndWindow).Handle;
             SimConnectConnection.Connection.OnAircraftLoaded += Connection_OnAircraftLoaded;
             SimConnectConnection.Connection.OnSimStateChanged += Connection_OnSimStateChanged;
+            SimConnectConnection.Connection.OnInMainMenuChanged += Connection_OnInMainMenuChanged;
 
             var toolStrip = new Forms.ContextMenuStrip();
             toolStrip.Items.Add(new Forms.ToolStripLabel { Text = ProgramInfo.ProductNameAndVersion });
@@ -167,6 +201,12 @@ namespace BravoLights
             SimConnectConnection.Connection.Start();
         }
 
+        private void Connection_OnInMainMenuChanged(object sender, EventArgs e)
+        {
+            // We turn all the lights off when we're in the main menu
+            usbLogic.LightsEnabled = !SimConnectConnection.Connection.InMainMenu;
+        }
+
         private void BtnExit_Click(object sender, EventArgs e)
         {
             usbLogic.LightsEnabled = false;
@@ -204,12 +244,6 @@ namespace BravoLights
 
             switch (e.SimState)
             {
-                case SimState.SimRunning:
-                    usbLogic.LightsEnabled = true;
-                    break;
-                case SimState.SimStopped:
-                    usbLogic.LightsEnabled = false;
-                    break;
                 case SimState.SimExited:
                     usbLogic.LightsEnabled = false;
                     if (exitWhenSimulatorExits)

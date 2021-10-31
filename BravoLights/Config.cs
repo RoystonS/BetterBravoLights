@@ -1,9 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Text.RegularExpressions;
 using System.Timers;
+using BravoLights.Installation;
 
 namespace BravoLights
 {
@@ -28,7 +27,7 @@ namespace BravoLights
 
         public void Monitor()
         {
-            fsWatcher = new FileSystemWatcher(System.Windows.Forms.Application.StartupPath);
+            fsWatcher = new FileSystemWatcher(FlightSimulatorPaths.BetterBravoLightsPath);
             fsWatcher.Changed += ConfigFileChanged;
             fsWatcher.Created += ConfigFileChanged;
             fsWatcher.EnableRaisingEvents = true;
@@ -72,7 +71,7 @@ namespace BravoLights
             {
                 lock (this)
                 {
-                    iniFile.LoadConfigFromFile(Path.Join(System.Windows.Forms.Application.StartupPath, "Config.ini"));
+                    iniFile.LoadConfigFromFile(Path.Join(FlightSimulatorPaths.BetterBravoLightsPath, "Config.ini"));
                 }
                 OnConfigChanged?.Invoke(this, EventArgs.Empty);
             }

@@ -64,6 +64,11 @@ namespace BravoLights.Common
         {
             get { return lightsEnabled; }
             set {
+                if (lightsEnabled == value)
+                {
+                    return;
+                }
+
                 lightsEnabled = value;
                 LightsState_Changed(null, EventArgs.Empty);
             }

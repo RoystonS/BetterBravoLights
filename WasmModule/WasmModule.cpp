@@ -11,6 +11,12 @@
 #include <string>
 
 // #define DEBUG 1
+// How often do we check for LVar changes, in sim frame counts?
+#if DEBUG
+#define CHECK_EVERY_FRAME_COUNTS 120
+#else
+#define CHECK_EVERY_FRAME_COUNTS 4
+#endif
 
 void CALLBACK BBLDispatchProc(SIMCONNECT_RECV* pData, DWORD cbData, void* pContext);
 
@@ -38,17 +44,21 @@ const char* CDA_NAME_SIMVAR = "BetterBravoLights.LVars";
 const char* CDA_NAME_REQUEST = "BetterBravoLights.Request";
 const char* CDA_NAME_RESPONSE = "BetterBravoLights.Response";
 
-const SIMCONNECT_DATA_REQUEST_ID SIMCONNECT_REQUEST_ID_SIMVAR = 0;
 const SIMCONNECT_DATA_REQUEST_ID SIMCONNECT_REQUEST_ID_REQUEST = 1;
-const SIMCONNECT_DATA_REQUEST_ID SIMCONNECT_REQUEST_ID_RESPONSE = 2;
 
 const SIMCONNECT_CLIENT_DATA_DEFINITION_ID DEF_ID_SIMVAR = 0;
 const SIMCONNECT_CLIENT_DATA_DEFINITION_ID DEF_ID_REQUEST = 1;
 const SIMCONNECT_CLIENT_DATA_DEFINITION_ID DEF_ID_RESPONSE = 2;
 
+// Clears all subscriptions
 const char* CMD_CLEAR = "CLEAR";
+// Requests that the WASM module checks for any new LVars; if there are any, ALL lvars are sent
+const char* CMD_CHECKLVARS = "CHECKLVARS";
+// Requests that the WASM module checks for any new LVars; whether there are new lvars, ALL lvars are sent
 const char* CMD_LISTLVARS = "LISTLVARS";
+// Subscribes to a 0-indexed lvar
 const char* CMD_SUBSCRIBE = "SUBSCRIBE";
+// Unsubscribes from a 0-indexed lvar
 const char* CMD_UNSUBSCRIBE = "UNSUBSCRIBE";
 
 const char* RESPONSE_LVAR_START = "!LVARS-START";
@@ -80,7 +90,7 @@ void RegisterDataAreas()
 	HRESULT hr = SimConnect_MapClientDataNameToID(hSimConnect, CDA_NAME_SIMVAR, CDA_SIMVAR);
 	if (hr != S_OK)
 	{
-		fprintf(stderr, "BetterBravoLights: cannot create Client Data Area: %u", hr);
+		fprintf(stderr, "BetterBravoLights: cannot create Client Data Area: %lu", hr);
 		return;
 	}
 	SimConnect_CreateClientData(hSimConnect, CDA_SIMVAR, OutgoingDataSize, SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
@@ -91,7 +101,7 @@ void RegisterDataAreas()
 	hr = SimConnect_MapClientDataNameToID(hSimConnect, CDA_NAME_REQUEST, CDA_REQUEST);
 	if (hr != S_OK)
 	{
-		fprintf(stderr, "BetterBravoLights: cannot create Client Data Area: %u", hr);
+		fprintf(stderr, "BetterBravoLights: cannot create Client Data Area: %lu", hr);
 		return;
 	}
 	SimConnect_CreateClientData(hSimConnect, CDA_REQUEST, requestAreaSize, SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
@@ -102,7 +112,7 @@ void RegisterDataAreas()
 	hr = SimConnect_MapClientDataNameToID(hSimConnect, CDA_NAME_RESPONSE, CDA_RESPONSE);
 	if (hr != S_OK)
 	{
-		fprintf(stderr, "BetterBravoLights: cannot create Client Data Area: %u", hr);
+		fprintf(stderr, "BetterBravoLights: cannot create Client Data Area: %lu", hr);
 		return;
 	}
 	SimConnect_CreateClientData(hSimConnect, CDA_RESPONSE, responseAreaSize, SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
@@ -219,50 +229,61 @@ void CheckSubscribedLVars()
 	}
 }
 
-void SendLVars(bool forceSend)
+/// <summary>
+/// Checks for new LVars and, if there are some (or forceSend is true), send all of them.
+/// </summary>
+void CheckLVars(bool forceSend)
 { 
 #if DEBUG
 	fprintf(stderr, "BetterBravoLights: checking for lvars. current size: %u", lvarToId.size());
-#endif
+ #endif
+
+	auto startIdCheckingAt = lvarToId.size();
 
 	bool send = forceSend;
 
-	int i = 0;
+	int i = startIdCheckingAt;
 	while (true) {
+#if DEBUG
+		if (startIdCheckingAt > 0)
+		{
+			fprintf(stderr, "BetterBravoLights: checking lvar id %d (started: %d)", i, startIdCheckingAt);
+		}
+#endif
+		
 		const char* name = get_name_of_named_variable(i);
 		if (name == NULLPTR) {
 			break;
 		}
 
-		if (idToLvar.count(i) == 0)
-		{
-			// New lvar
-			auto key = std::string(name);
-			idToLvar[i] = key;
-			lvarToId[key] = i;
+		// New lvar
+		auto key = std::string(name);
+		idToLvar[i] = key;
+		lvarToId[key] = i;
 
-
-			send = TRUE;
+		send = TRUE;
 #if DEBUG
-			auto newValue = get_named_variable_value(i);
-			fprintf(stderr, "BetterBravoLights: new lvar: %s (%d) %f", name, i, newValue);
-#endif
-		}
+		auto newValue = get_named_variable_value(i);
+		fprintf(stderr, "BetterBravoLights: new lvar: %s (%d) %f", name, i, newValue);
+ #endif
 
 		i++;
 	}
 
-	auto count = lvarToId.size();
+	if (send)
+	{
+		auto count = lvarToId.size();
 
-	SendResponse(RESPONSE_LVAR_START);
-	for (i = 0; i <= count; i++) {
-		auto lvarName = idToLvar[i];
+		SendResponse(RESPONSE_LVAR_START);
+		for (i = 0; i <= count; i++) {
+			auto lvarName = idToLvar[i];
 #if DEBUG
-		fprintf(stderr, "BetterBravoLights: sending lvar %d", i);
+            fprintf(stderr, "BetterBravoLights: sending lvar %d", i);
 #endif
-		SendResponse(lvarName.c_str());
+			SendResponse(lvarName.c_str());
+		}
+		SendResponse(RESPONSE_LVAR_END);
 	}
-	SendResponse(RESPONSE_LVAR_END);
 }
 
 
@@ -272,15 +293,6 @@ void CALLBACK BBLDispatchProc(SIMCONNECT_RECV* pData, DWORD cbData, void* pConte
 {
 	switch (pData->dwID)
 	{
-		case SIMCONNECT_RECV_ID_EVENT_FILENAME: {
-			SIMCONNECT_RECV_EVENT_FILENAME* evt = (SIMCONNECT_RECV_EVENT_FILENAME*)pData;
-#if DEBUG
-			fprintf(stderr, "BetterBravoLights: DispatchProc %s", evt->szFileName);
-#endif
-			SendLVars(false);
-			break;
-		}
-
 		case SIMCONNECT_RECV_ID_CLIENT_DATA: {			
 			auto recv_data = static_cast<SIMCONNECT_RECV_CLIENT_DATA*>(pData);
 
@@ -294,7 +306,13 @@ void CALLBACK BBLDispatchProc(SIMCONNECT_RECV* pData, DWORD cbData, void* pConte
 
 			// LISTLVARS
 			if (str.compare(CMD_LISTLVARS) == 0) {
-				SendLVars(true);
+				CheckLVars(true);
+				return;
+			}
+
+			// CHECKLVARS
+			if (str.compare(CMD_CHECKLVARS) == 0) {
+				CheckLVars(false);
 				return;
 			}
 
@@ -325,7 +343,7 @@ void CALLBACK BBLDispatchProc(SIMCONNECT_RECV* pData, DWORD cbData, void* pConte
 
 		case SIMCONNECT_RECV_ID_EVENT_FRAME: {
 			frameCount++;
-			if (frameCount % 4 == 0)
+			if (frameCount % CHECK_EVERY_FRAME_COUNTS == 0)
 			{
 #if DEBUG
 				fprintf(stderr, "Frame %u", frameCount);
@@ -338,18 +356,12 @@ void CALLBACK BBLDispatchProc(SIMCONNECT_RECV* pData, DWORD cbData, void* pConte
 	}
 }
 
-SIMCONNECT_CLIENT_EVENT_ID EV_FLIGHT_LOADED = 1;
-SIMCONNECT_CLIENT_EVENT_ID EV_FRAME = 2;
+SIMCONNECT_CLIENT_EVENT_ID EV_FRAME = 1;
 
 extern "C" MSFS_CALLBACK void module_init(void) {
 	HRESULT hr = SimConnect_Open(&hSimConnect, "Better Bravo Lights LVar Access", nullptr, 0, 0, 0);
 	if (hr != S_OK) {
 		fprintf(stderr, "BetterBravoLights: SimConnect Open failed");
-		return;
-	}
-	hr = SimConnect_SubscribeToSystemEvent(hSimConnect, EV_FLIGHT_LOADED, "FlightLoaded");
-	if (hr != S_OK) {
-		fprintf(stderr, "BetterBravoLights: FlightLoaded subscription failed");
 		return;
 	}
 	hr = SimConnect_SubscribeToSystemEvent(hSimConnect, EV_FRAME, "Frame");

@@ -58,15 +58,18 @@ namespace BravoLights.Connections
             {
                 handlers.TryGetValue(name, out var existingHandlersForDefinition);
                 var newListeners = (EventHandler<ValueChangedEventArgs>)Delegate.Remove(existingHandlersForDefinition, handler);
-                handlers[name] = newListeners;
 
                 if (newListeners == null)
                 {
+                    handlers.Remove(name);
                     // No more subscriptions for this variable
                     if (lvarIds.TryGetValue(name, out var id))
                     {
                         wasmChannel.Unsubscribe(id);
                     }
+                } else
+                {
+                    handlers[name] = newListeners;
                 }
 
                 SendLastValue(name, handler);
@@ -75,6 +78,18 @@ namespace BravoLights.Connections
 
         private void SendLastValue(string name, EventHandler<ValueChangedEventArgs> handler)
         {
+            if (DisableLVars)
+            {
+                handler(this, new ValueChangedEventArgs { NewValue = new Exception("The LVars module is not installed") });
+                return;
+            }
+
+            if (wasmChannel.SimState == SimState.SimExited)
+            {
+                VariableHandlerUtils.SendNoConnectionError(this, handler);
+                return;
+            }
+
             if (lvarValues.TryGetValue(name, out var lastValue))
             {
                 handler(this, new ValueChangedEventArgs { NewValue = lastValue });
@@ -85,8 +100,9 @@ namespace BravoLights.Connections
             // because it's not being used for _this_ aircraft?
             if (lvarIds.ContainsKey(name))
             {
-                SendNoValueError(handler);
-            } else
+                VariableHandlerUtils.SendNoValueError(this, handler);
+            }
+            else
             {
                 SendNoSuchLVarError(handler);
             }
@@ -94,25 +110,59 @@ namespace BravoLights.Connections
 
         private IWASMChannel wasmChannel;
 
+        /// <summary>
+        /// Gets or sets a value that disables LVar support. This is typically set if we know that the LVar module is missing or the wrong version.
+        /// </summary>
+        public bool DisableLVars { get; internal set; }
+
         public void SetWASMChannel(IWASMChannel wasmChannel)
         {
             this.wasmChannel = wasmChannel;
+            wasmChannel.OnSimStateChanged += WasmChannel_OnSimStateChanged;
         }
 
-        private void SendNoValueError(EventHandler<ValueChangedEventArgs> handler)
+        private void WasmChannel_OnSimStateChanged(object sender, SimStateEventArgs e)
         {
-            handler(this, new ValueChangedEventArgs { NewValue = new Exception("No value yet received from simulator") });
+            if (e.SimState == SimState.SimExited)
+            {
+                this.ResetKnownLVars();
+            }
         }
 
         private void SendNoSuchLVarError(EventHandler<ValueChangedEventArgs> handler)
         {
-            handler(this, new ValueChangedEventArgs { NewValue = new Exception("LVar does not exist") });
+            handler(this, new ValueChangedEventArgs { NewValue = new Exception("LVar does not exist yet; this aircraft may not support it") });
+        }
+
+        private void ResetKnownLVars()
+        {
+            lvarIds.Clear();
+            lvarNames.Clear();
+            lvarValues.Clear();
+
+            SendAllValues();
+        }
+
+        private void SendAllValues()
+        {
+            lock (this)
+            {
+                foreach (var kvp in this.handlers)
+                {
+                    var lvarName = kvp.Key;
+                    var handler = kvp.Value;
+                    SendLastValue(lvarName, handler);
+                }
+            }
         }
 
         /// <summary>
         /// Informs the LVar manager that the simulator list of LVars has changed.
         /// </summary>
-        public void UpdateLVarList(List<string> lvars)
+        /// <remarks>
+        /// The list _usually_ grows but if the simulator is restarted without restarting BBL, it will shrink.
+        /// </remarks>
+        public void UpdateLVarList(List<string> newLVars)
         {
             // During one run of the simulator, lvar ids will not disappear, but
             // between runs of the simulator, all bets are off.
@@ -122,13 +172,19 @@ namespace BravoLights.Connections
             {
                 wasmChannel.ClearSubscriptions();
 
+                var oldCount = lvarIds.Count;
                 lvarIds.Clear();
                 lvarNames.Clear();
 
-                Debug.WriteLine($"Incoming lvars: {lvars.Count}");
-                for (short id = 0; id < lvars.Count; id++)
+                Debug.WriteLine($"Incoming lvars: {newLVars.Count}");
+                for (short id = 0; id < newLVars.Count; id++)
                 {
-                    var name = lvars[id];
+                    var name = newLVars[id];
+
+                    if (id >= oldCount)
+                    {
+                        Debug.WriteLine($"Received new lvar {name}");
+                    }
 
                     if (!lvarIds.ContainsKey(name))
                     {
@@ -138,31 +194,11 @@ namespace BravoLights.Connections
                         if (handlers.ContainsKey(name))
                         {
                             wasmChannel.Subscribe(id);
-                            // We don't need to send a last value here: we will have already sent them
-                            // a "this lvar doesn't exist" value
                         }
-
-                        /*
-                        switch (name)
-                        {
-                            case "Generic_Master_Caution_Active":
-                            case "Generic_Master_Warning_Active":
-                            case "XMLVAR_Autopilot_1_Status":
-                            case "HANDLING_ElevatorTrim":
-                            case "HUD_AP_SELECTED_SPEED":
-                            case "HUD_AP_SELECTED_ALTITUDE":
-                            case "DEICE_Pitot_1":
-                            case "DEICE_Pitot_2":
-                            case "AS3000_Brightness":
-                            case "XMLVAR_SyntheticVision_On":
-                            case "XMLVAR_SyntheticVision_Off":
-                                Debug.WriteLine("Subscribing to {0} {1}", name, id);
-                                SubscribeToLVar(id);
-                                break;
-                        }
-                        */
                     }
                 }
+
+                SendAllValues();
             }
         }
 
@@ -175,8 +211,6 @@ namespace BravoLights.Connections
                     var id = data.Ids[i];
                     var value = data.Values[i];
                     var name = lvarNames[id];
-
-                    Debug.WriteLine("LVAR VALUE UPDATE {0} {1} {2}", id, name, value);
 
                     lvarValues[name] = value;
 

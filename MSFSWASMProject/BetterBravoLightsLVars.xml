@@ -1,4 +1,4 @@
-<Project Version="2" Name="StandaloneModuleProject" FolderName="Packages">
+<Project Version="2" Name="StandaloneModuleProject" FolderName="">
 	<OutputDirectory>.</OutputDirectory>
 	<TemporaryOutputDirectory>_PackageInt</TemporaryOutputDirectory>
 	<Packages>

@@ -74,7 +74,7 @@ namespace BravoLights
             }
         }
 
-        private SimState simState;
+        private SimState simState = SimState.SimExited;
         public SimState SimState
         {
             get { return simState; }

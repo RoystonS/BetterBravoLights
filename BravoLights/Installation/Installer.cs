@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Text;
-using System.Text.RegularExpressions;
+using System.Text.Json;
 using System.Windows.Forms;
 using System.Xml;
 using System.Xml.Linq;
@@ -18,7 +18,7 @@ namespace BravoLights.Installation
             this.exeXmlPath = exeXmlPath;
         }
 
-        public string ExeXmlPath
+        public string ExeXmlFilename
         {
             get
             {
@@ -37,86 +37,13 @@ namespace BravoLights.Installation
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
         }
 
-        private static string FlightSimulatorPath
-        {
-            get
-            {
-                var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-                var windowsStoreLocation = Path.Join(localAppData, "Packages", "Microsoft.FlightSimulator_8wekyb3d8bbwe", "LocalCache");
-
-                var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-                var steamLocation = Path.Join(appData, "Microsoft Flight Simulator");
-
-                var pathsToTry = new[]
-                {
-                    windowsStoreLocation,
-                    steamLocation
-                };
-
-                foreach (var path in pathsToTry)
-                {
-                    if (File.Exists(Path.Join(path, "FlightSimulator.CFG")) || File.Exists(Path.Join(path, "UserCfg.opt")))
-                    {
-                        return path;
-                    }
-                }
-
-                var pathsTried = String.Join(", ", pathsToTry);
-                throw new Exception($"Could not locate exe.xml file. Paths tried: {pathsTried}");
-            }
-        }
-
-        /// <summary>
-        /// Gets the location of the MSFS exe.xml file, which may not actually exist yet.
-        /// </summary>
-        private static string ExeXmlPath
-        {
-            get
-            {
-                return Path.Join(FlightSimulatorPath, "exe.xml");
-            }
-        }
-
-        private static string UserCfgOptPath
-        {
-            get
-            {
-                return Path.Join(FlightSimulatorPath, "UserCfg.opt");
-            }
-        }
-
-        private static readonly Regex installedPackagesPathRegex = new("^InstalledPackagesPath \"(.*)\"");
-
-        public static string MSFSPackagesPath
-        {
-            get
-            {
-                var lines = File.ReadAllLines(UserCfgOptPath);
-                foreach (var line in lines)
-                {
-                    var match = installedPackagesPathRegex.Match(line);
-                    if (match.Success)
-                    {
-                        return match.Groups[1].Value;
-                    }
-                }
-
-                throw new Exception("Cannot locate FS packages path");
-            }
-        }
-
-        public static string CommunityFolderPath
-        {
-            get { return Path.Join(MSFSPackagesPath, "Community"); }
-        }
-
         public static bool IsSetToRunOnStartup
         {
             get
             {
                 try
                 {
-                    var xdoc = XDocument.Load(ExeXmlPath);
+                    var xdoc = XDocument.Load(FlightSimulatorPaths.ExeXmlPath);
                     var lightsEl = FindAddon(xdoc, BravoLightsAddonName);
                     if (lightsEl != null)
                     {
@@ -141,7 +68,7 @@ namespace BravoLights.Installation
             {
                 try
                 {
-                    var xdoc = XDocument.Load(ExeXmlPath);
+                    var xdoc = XDocument.Load(FlightSimulatorPaths.ExeXmlPath);
                     var lightsEl = FindAddon(xdoc, BravoLightsAddonName);
                     if (lightsEl != null)
                     {
@@ -160,7 +87,7 @@ namespace BravoLights.Installation
         {
             try
             {
-                return XDocument.Load(ExeXmlPath);
+                return XDocument.Load(FlightSimulatorPaths.ExeXmlPath);
             }
             catch (FileNotFoundException)
             {
@@ -179,7 +106,7 @@ namespace BravoLights.Installation
             }
             catch (XmlException ex)
             {
-                throw new CorruptExeXmlException(ExeXmlPath, ex);
+                throw new CorruptExeXmlException(FlightSimulatorPaths.ExeXmlPath, ex);
             }
         }
 
@@ -201,26 +128,36 @@ namespace BravoLights.Installation
             }
             lightsEl.SetElementValue("Disabled", "False");
             lightsEl.SetElementValue("ManualLoad", "False");
-            lightsEl.SetElementValue("Path", Path.Join(Application.StartupPath, "BetterBravoLights.exe"));
+            lightsEl.SetElementValue("Path", Path.Join(FlightSimulatorPaths.BetterBravoLightsPath, "BetterBravoLights.exe"));
             lightsEl.SetElementValue("CommandLine", "/startedbysimulator");
             lightsEl.SetElementValue("NewConsole", "False");
 
-            xdoc.Save(ExeXmlPath);
+            xdoc.Save(FlightSimulatorPaths.ExeXmlPath);
+
+            var message = new StringBuilder();
 
             if (afcBridgeEl == null)
             {
-                return "Better Bravo Lights will now automatically start up with MSFS.";
-            } else
-            {
-                return "Better Bravo Lights will now automatically start up with MSFS instead of the AFCBridge.";
+                message.AppendLine("Better Bravo Lights will now automatically start up with MSFS.");
             }
+            else
+            {
+                message.AppendLine("Better Bravo Lights will now automatically start up with MSFS instead of the AFCBridge.");
+            }
+
+            InstallWasmModule();
+
+            message.AppendLine($"Better Bravo Lights will run from {FlightSimulatorPaths.BetterBravoLightsPath}");
+            message.AppendLine($"WASM module installed to {FlightSimulatorPaths.InstalledWasmModulePath}");
+
+            return message.ToString();
         }
 
         public static string Uninstall()
         {
-            if (!File.Exists(ExeXmlPath))
+            if (!File.Exists(FlightSimulatorPaths.ExeXmlPath))
             {
-                // The file does not exist. No need to write out a version with our entry removed.
+                // The file does not exist. No need to write out a version of exe.xml with our entry removed.
                 return "Better Bravo Lights was not installed.";
             }
 
@@ -238,16 +175,26 @@ namespace BravoLights.Installation
                 lightsEl.Remove();
             }
 
-            xdoc.Save(ExeXmlPath);
+            xdoc.Save(FlightSimulatorPaths.ExeXmlPath);
+
+            var message = new StringBuilder();
 
             if (afcBridgeEl == null)
             {
-                return "Better Bravo Lights removed.";
+                message.AppendLine("Better Bravo Lights will no longer start up with MSFS.");
             }
             else
             {
-                return "Better Bravo Lights removed. AFCBridge will now be used instead.";
+                message.AppendLine("Better Bravo Lights will no longer start up with MSFS. AFCBridge will now be used instead.");
             }
+
+            if (InstalledWasmModuleVersion != null)
+            {
+                UninstallWasmModule();
+                message.AppendLine($"WASM module uninstalled from {FlightSimulatorPaths.InstalledWasmModulePath}");
+            }
+
+            return message.ToString();
         }
 
         private static XElement FindAddon(XDocument document, string name)
@@ -261,6 +208,47 @@ namespace BravoLights.Installation
                 }
             }
             return null;
+        }
+
+        public static string GetWasmModuleVersion(string modulePath)
+        {
+            var manifestPath = Path.Join(modulePath, "manifest.json");
+
+            if (!File.Exists(manifestPath))
+            {
+                return null;
+            }
+
+            var text = File.ReadAllText(manifestPath);
+            var doc = JsonDocument.Parse(text);
+            return doc.RootElement.GetProperty("package_version").GetString();
+        }
+
+        public static string InstalledWasmModuleVersion
+        {
+            get
+            {
+                return GetWasmModuleVersion(FlightSimulatorPaths.InstalledWasmModulePath);
+            }
+        }
+
+        public static string IncludedWasmModuleVersion
+        {
+            get
+            {
+                return GetWasmModuleVersion(FlightSimulatorPaths.IncludedWasmModulePath);
+            }
+        }
+
+        public static void InstallWasmModule()
+        {
+            UninstallWasmModule();
+            FileUtils.CopyDirectory(FlightSimulatorPaths.IncludedWasmModulePath, FlightSimulatorPaths.InstalledWasmModulePath);
+        }
+
+        public static void UninstallWasmModule()
+        {
+            FileUtils.RemoveDirectoryRecursively(FlightSimulatorPaths.InstalledWasmModulePath);
         }
     }
 }

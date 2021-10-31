@@ -1,7 +1,7 @@
-<AssetPackage Name="better-bravo-lights-lvar-module" Version="0.1.2">
+<AssetPackage Name="better-bravo-lights-lvar-module" Version="0.6.0">
 	<ItemSettings>
 		<ContentType>MISC</ContentType>
-		<Title>Better Bravo Lights LVars</Title>
+		<Title>Better Bravo Lights LVars Module</Title>
 		<Manufacturer/>
 		<Creator>Royston Shufflebotham</Creator>
 	</ItemSettings>

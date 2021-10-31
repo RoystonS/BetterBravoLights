@@ -6,18 +6,13 @@ using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Timers;
+using System.Threading;
 using BravoLights.Ast;
 using BravoLights.Common;
 using Microsoft.FlightSimulator.SimConnect;
 
 namespace BravoLights.Connections
-{   
-    enum EventId: uint
-    {
-        SimState = 1,
-    }
-
+{       
     enum DefineId : uint
     {
         WASMRequestResponse = 1,
@@ -33,6 +28,7 @@ namespace BravoLights.Connections
         WASMResponse = 2,
         WASMLVars = 3,
         AircraftLoaded = 4,
+        FlightLoaded = 5,
 
         // The start of dynamically-allocated request ids for simulator variables
         DynamicStart = DefineId.DynamicStart
@@ -111,15 +107,11 @@ namespace BravoLights.Connections
 
         public static SimConnectConnection Connection = new();
 
-        private readonly Timer reconnectTimer = new();
-        private SimState simState = SimState.SimStopped;
+        private Timer reconnectTimer = null;
+        private SimState simState = SimState.SimExited;
 
         private SimConnectConnection()
         {
-            reconnectTimer.AutoReset = false;
-            reconnectTimer.Interval = new TimeSpan(0, 0, 30).TotalMilliseconds;
-            reconnectTimer.Elapsed += Timer_Elapsed;
-
             LVarManager.Connection.SetWASMChannel(this);
         }
 
@@ -166,12 +158,6 @@ namespace BravoLights.Connections
             }
         }
 
-
-        public void SimulateExit()
-        {
-            this.RaiseSimStateChanged(SimState.SimExited);
-        }
-
         public void AddListener(IVariable variable, EventHandler<ValueChangedEventArgs> handler)
         {
             var simvar = (SimVarExpression)variable;
@@ -191,7 +177,7 @@ namespace BravoLights.Connections
                     {
                         SubscribeToSimConnect(nau);
                     }
-                    else if (!reconnectTimer.Enabled)
+                    else if (reconnectTimer == null)
                     {
                         ConnectNow();
                     }
@@ -199,46 +185,29 @@ namespace BravoLights.Connections
 
                 handlers.Add(handler);
 
-                SendLastValue(variable, handler);
+                SendLastValue(nau, handler);
             }
         }
 
-        private void SendLastValue(IVariable variable, EventHandler<ValueChangedEventArgs> handler)
+        private void SendLastValue(NameAndUnits variable, EventHandler<ValueChangedEventArgs> handler)
         {
-            var simvar = (SimVarExpression)variable;
-            var nau = simvar.NameAndUnits;
             if (simState == SimState.SimRunning)
             {
-                if (lastReportedValue.TryGetValue(nau, out double lastValue))
+                if (lastReportedValue.TryGetValue(variable, out double lastValue))
                 {
                     handler(this, new ValueChangedEventArgs { NewValue = lastValue });
                 }
                 else
                 {
-                    SendNoValueError(handler);
+                    VariableHandlerUtils.SendNoValueError(this, handler);
                 }
             }
             else
             {
-                SendNoConnectionError(handler);
+                VariableHandlerUtils.SendNoConnectionError(this, handler);
             }
         }
 
-        /// <summary>
-        /// Reports that, whilst we are connected to the server, we haven't yet received a value for this variable.
-        /// </summary>
-        private void SendNoValueError(EventHandler<ValueChangedEventArgs> handler)
-        {
-            handler(this, new ValueChangedEventArgs { NewValue = new Exception("No value yet received from simulator") });
-        }
-
-        /// <summary>
-        /// Reports that a variable doesn't have a value because the simulator isn't connected.
-        /// </summary>
-        private void SendNoConnectionError(EventHandler<ValueChangedEventArgs> handler)
-        {
-            handler(this, new ValueChangedEventArgs { NewValue = new Exception("No connection to simulator") });
-        }
 
         public void RemoveListener(IVariable variable, EventHandler<ValueChangedEventArgs> handler)
         {
@@ -277,16 +246,17 @@ namespace BravoLights.Connections
             }
         }
 
-        private void Timer_Elapsed(object sender, ElapsedEventArgs e)
+        private void ReconnectTimerElapsed(object sender)
         {
             ConnectNow();
         }
 
         private void ConnectNow()
         {
-            if (reconnectTimer.Enabled)
+            if (reconnectTimer != null)
             {
-                reconnectTimer.Stop();
+                reconnectTimer.Dispose();
+                reconnectTimer = null;
             }
 
             if (simconnect != null)
@@ -302,21 +272,21 @@ namespace BravoLights.Connections
 
                 simconnect.OnRecvEvent += Simconnect_OnRecvEvent;
                 simconnect.SubscribeToSystemEvent(RequestId.SimState, "Sim");
+                simconnect.SubscribeToSystemEvent(RequestId.AircraftLoaded, "AircraftLoaded");
+                simconnect.SubscribeToSystemEvent(RequestId.FlightLoaded, "FlightLoaded");
 
                 simconnect.OnRecvSystemState += Simconnect_OnRecvSystemState;
-                simconnect.RequestSystemState(RequestId.SimState, "Sim");
 
                 ConfigureWASMComms();
                 SendLVarRequest("CLEAR");
-                SendLVarRequest("LISTLVARS");
 
-                RequestAircraftLoaded();
+                RequestAircraftAndFlightStatus();
 
                 RegisterCurrentVariables();
             }
             catch (Exception)
             {
-                reconnectTimer.Start();
+                reconnectTimer = new(ReconnectTimerElapsed, null, TimeSpan.FromSeconds(30), Timeout.InfiniteTimeSpan);
 
                 if (simState == SimState.SimRunning)
                 {
@@ -365,24 +335,33 @@ namespace BravoLights.Connections
             simconnect.OnRecvClientData += SimConnect_OnRecvClientData;
         }
 
-        private void RequestAircraftLoaded()
+        private void RequestAircraftAndFlightStatus()
         {
             simconnect.RequestSystemState(RequestId.AircraftLoaded, "AircraftLoaded");
+            simconnect.RequestSystemState(RequestId.FlightLoaded, "FlightLoaded");
         }
 
         private void Simconnect_OnRecvEvent(SimConnect sender, SIMCONNECT_RECV_EVENT data)
         {
             lock (this)
             {
-                switch ((EventId)data.uEventID)
+                switch ((RequestId)data.uEventID)
                 {
-                    case EventId.SimState:
-                        var running = data.dwData == 1;
-                        if (running)
+                    case RequestId.SimState:
+                        Debug.WriteLine($"SimState {data.dwData}");
+                        RaiseSimStateChanged(data.dwData == 1 ? SimState.SimRunning : SimState.SimStopped);
+                        break;
+                    case RequestId.AircraftLoaded:
                         {
-                            RequestAircraftLoaded();
+                            var fileData = (SIMCONNECT_RECV_EVENT_FILENAME)data;
+                            HandleAircraftChanged(fileData.szFileName);
                         }
-                        RaiseSimStateChanged(running ? SimState.SimRunning : SimState.SimStopped);
+                        break;
+                    case RequestId.FlightLoaded:
+                        {
+                            var fileData = (SIMCONNECT_RECV_EVENT_FILENAME)data;
+                            HandleFlightLoaded(fileData.szFileName);
+                        }
                         break;
                 }
             }
@@ -398,10 +377,21 @@ namespace BravoLights.Connections
                         RaiseSimStateChanged(data.dwInteger == 1 ? SimState.SimRunning : SimState.SimStopped);
                         break;
                     case RequestId.AircraftLoaded:
-                        RaiseAircraftChanged(data.szString);
+                        HandleAircraftChanged(data.szString);
+                        break;
+                    case RequestId.FlightLoaded:
+                        HandleFlightLoaded(data.szString);
                         break;
                 }
             }
+        }
+
+        private Timer periodicLVarTimer = null;
+
+        private void PeriodicLVarTimerElapsed(object state)
+        {
+            Debug.WriteLine("PeriodicLVarTimerElapsed");
+            ScheduleLVarCheck();
         }
 
         private void RaiseSimStateChanged(SimState state)
@@ -416,6 +406,18 @@ namespace BravoLights.Connections
 
                 simState = state;
 
+                if (periodicLVarTimer != null)
+                {
+                    periodicLVarTimer.Dispose();
+                    periodicLVarTimer = null;
+                }
+
+                if (simState == SimState.SimRunning)
+                {
+                    periodicLVarTimer = new(PeriodicLVarTimerElapsed, null, TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
+                    ScheduleLVarCheck();
+                }
+
                 if (simState == SimState.SimExited)
                 {
                     // The sim has exited. We're likely to be exiting soon, but in
@@ -424,6 +426,11 @@ namespace BravoLights.Connections
                     // Any previous values are now not valid.
                     lastReportedValue.Clear();
 
+                    lvarCheckTimer?.Dispose();
+                    lvarCheckTimer = null;
+                    periodicLVarTimer?.Dispose();
+                    periodicLVarTimer = null;
+
                     // SimConnect has gone away; presumably MSFS has exited.
                     // BetterBravoLights itself might not be exiting (if it's being run without install),
                     // but we need to clean up these registrations.
@@ -431,14 +438,23 @@ namespace BravoLights.Connections
                     this.nameToId.Clear();
                     simconnect = null;
 
-                    // Tell all existing subscribers that we have no connection.
-                    foreach (var variableHandlers in variableHandlers.Values)
+                    // Update all existing subscribers
+                    foreach (var kvp in variableHandlers)
                     {
-                        foreach (var handler in variableHandlers)
+                        var variable = kvp.Key;
+                        var handlers = kvp.Value;
+
+                        foreach (var handler in handlers)
                         {
-                            SendNoConnectionError(handler);
+                            SendLastValue(variable, handler);
                         }
                     }
+                }
+                else
+                {
+                    // Despite subscribing to AircraftLoaded and FlightLoaded events, we don't actually seem
+                    // to receive them, so we explicitly ask for them when we get SimStart/SimStop events.
+                    RequestAircraftAndFlightStatus();
                 }
 
                 OnSimStateChanged?.Invoke(this, new SimStateEventArgs { SimState = state });
@@ -447,7 +463,7 @@ namespace BravoLights.Connections
 
         private static readonly Regex AircraftPathRegex = new("Airplanes\\\\(.*)\\\\");
 
-        private void RaiseAircraftChanged(string aircraftPath)
+        private void HandleAircraftChanged(string aircraftPath)
         {
             if (OnAircraftLoaded != null)
             {
@@ -457,8 +473,93 @@ namespace BravoLights.Connections
                 var match = AircraftPathRegex.Match(aircraftPath);
                 if (match.Success)
                 {
-                    OnAircraftLoaded(this, new AircraftEventArgs { Aircraft = match.Groups[1].Value });
+                    var aircraftName = match.Groups[1].Value;
+                    Debug.WriteLine($"HandleAircraftChanged {aircraftName}. Checking LVars");
+
+                    // Note: LVars are not registered by an aircraft until a little while _after_ it has loaded.
+                    // So the first time we get an AircraftChanged event, the lvars will not be present.
+                    // However, we request aircraft + flight information on each SimStart/SimStop, which should catch them.
+                    ScheduleLVarCheck();
+                    OnAircraftLoaded(this, new AircraftEventArgs { Aircraft = aircraftName });
                 }
+            }
+        }
+
+        private void HandleFlightLoaded(string flightPath)
+        {
+            // Examples:
+            // flights\other\MainMenu.FLT
+            // C:\Users\royston\AppData\Local\Packages\Microsoft.FlightSimulator_8wekyb3d8bbwe\LocalState\MISSIONS\ACTIVITIES\ASOBO-BUSHTRIP-FINLAND_SAVE\ASOBO-BUSHTRIP-FINLAND_SAVE\ASOBO-BUSHTRIP-FINLAND_SAVE.FLT
+            // C:\Users\royston\AppData\Local\Packages\Microsoft.FlightSimulator_8wekyb3d8bbwe\LocalState\MISSIONS\ACTIVITIES\ASOBO-BUSHTRIP-FINLAND_SAVE\AUTOSAVE\\BCKP\\ASOBO-BUSHTRIP-FINLAND_SAVE.FLT
+            // missions\Asobo\Tutorials\VFRNavigation\LandmarkNavigation\03_Training_LandmarkNavigation.FLT
+
+            InMainMenu = flightPath.EndsWith("flights\\other\\mainmenu.flt", StringComparison.InvariantCultureIgnoreCase);
+            Debug.WriteLine($"HandleFlightLoaded. Checking LVars");
+            ScheduleLVarCheck();
+        }
+
+        /// <summary>
+        /// Called when we receive some event that suggests that the simulator LVars may have changed, e.g. aircraft/flight change/simstart/simstop
+        /// </summary>
+        private void ScheduleLVarCheck()
+        {
+            Debug.WriteLine("ScheduleLVarCheck");
+
+            if (lvarCheckTimer == null)
+            {
+                lvarCheckTimer = new(LVarCheckTimerElapsed, null, TimeSpan.FromSeconds(2), Timeout.InfiniteTimeSpan);
+            }
+        }
+
+        private Timer lvarCheckTimer = null;
+
+        private void LVarCheckTimerElapsed(object state)
+        {
+            Debug.WriteLine("LVarCheckTimerElapsed");
+            lvarCheckTimer.Dispose();
+            lvarCheckTimer = null;
+
+            CheckForNewLVars();
+        }
+
+        private bool hasEverCheckedForLVars = false;
+
+        /// <summary>
+        /// Asks the WASM module to check for new LVars.
+        /// </summary>
+        private void CheckForNewLVars()
+        {
+            Debug.WriteLine("CheckForNewLVars");
+            if (hasEverCheckedForLVars)
+            {
+                // Ask the WASM module to check for new lvars
+                SendLVarRequest($"CHECKLVARS");
+            } else
+            {
+                hasEverCheckedForLVars = true;
+                // Ask the WASM module for ALL lvars
+                SendLVarRequest($"LISTLVARS");
+            }
+        }
+
+        public event EventHandler OnInMainMenuChanged;
+        
+        private bool inMainMenu = true;
+        public bool InMainMenu
+        {
+            get {
+                return inMainMenu;
+            }
+            private set
+            {
+                if (inMainMenu == value)
+                {
+                    return;
+                }
+
+                CheckForNewLVars();
+                inMainMenu = value;
+                OnInMainMenuChanged?.Invoke(this, EventArgs.Empty);
             }
         }
 
@@ -476,9 +577,7 @@ namespace BravoLights.Connections
             }
         }
 
-        private List<string> incomingLVars = new List<string>();
-        private Dictionary<string, int> lvarIds = new();
-        private Dictionary<int, string> lvarNames = new();
+        private List<string> incomingLVars = new();
 
         private WASMReaderState readerState = WASMReaderState.Neutral;
 
@@ -553,33 +652,52 @@ namespace BravoLights.Connections
         public static IntPtr HWnd { get; set; }
 
         public event EventHandler<AircraftEventArgs> OnAircraftLoaded;
+        public SimState SimState
+        {
+            get { return simState; }
+        }
         public event EventHandler<SimStateEventArgs> OnSimStateChanged;
 
         private void SendLVarRequest(string message)
         {
+            Debug.WriteLine($"Sending LVarRequest {message}");
+
             var cmd = new RequestString(message);
-            simconnect.SetClientData(
-                ClientDataId.Request,
-                DefineId.WASMRequestResponse,
-                SIMCONNECT_CLIENT_DATA_SET_FLAG.DEFAULT,
-                0,
-                cmd
-            );
+            try
+            {
+                simconnect.SetClientData(
+                    ClientDataId.Request,
+                    DefineId.WASMRequestResponse,
+                    SIMCONNECT_CLIENT_DATA_SET_FLAG.DEFAULT,
+                    0,
+                    cmd
+                );
+            }
+            catch (Exception)
+            {
+                RaiseSimStateChanged(SimState.SimExited);
+            }
         }
 
         void IWASMChannel.ClearSubscriptions()
         {
-            SendLVarRequest($"CLEAR");
+            var message = $"CLEAR";
+            Debug.WriteLine(message);
+            SendLVarRequest(message);
         }
 
         void IWASMChannel.Subscribe(short id)
         {
-            SendLVarRequest($"SUBSCRIBE {id.ToString(CultureInfo.InvariantCulture)}");
+            var message = $"SUBSCRIBE {id.ToString(CultureInfo.InvariantCulture)}";
+            Debug.WriteLine(message);
+            SendLVarRequest(message);
         }
 
         void IWASMChannel.Unsubscribe(short id)
         {
-            SendLVarRequest($"UNSUBSCRIBE {id.ToString(CultureInfo.InvariantCulture)}");
+            var message = $"UNSUBSCRIBE {id.ToString(CultureInfo.InvariantCulture)}";
+            Debug.WriteLine(message);
+            SendLVarRequest(message);
         }
     }
 
@@ -614,7 +732,7 @@ namespace BravoLights.Connections
         }
     }
 
-    class SimStateEventArgs: EventArgs
+    public class SimStateEventArgs: EventArgs
     {
         public SimState SimState;
     }
