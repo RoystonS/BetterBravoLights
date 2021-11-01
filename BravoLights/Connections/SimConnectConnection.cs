@@ -130,32 +130,36 @@ namespace BravoLights.Connections
 
         private void SubscribeToSimConnect(NameAndUnits nameAndUnits)
         {
-            var id = ++nextVariableId;
+            nameToId.TryGetValue(nameAndUnits, out var id);
 
-            idToName[id] = nameAndUnits;
-            nameToId[nameAndUnits] = id;
+            // Do we already have a data definition and structure for this variable?
+            if (id == 0)
+            {
+                // No. Create one.
+                id = ++nextVariableId;
 
-            simconnect.AddToDataDefinition((DefineId)id, nameAndUnits.Name, nameAndUnits.Units, SIMCONNECT_DATATYPE.FLOAT64, 0, SimConnect.SIMCONNECT_UNUSED);
-            simconnect.RegisterDataDefineStruct<ContainerStruct>((DefineId)id);
+                idToName[id] = nameAndUnits;
+                nameToId[nameAndUnits] = id;
+
+                simconnect.AddToDataDefinition((DefineId)id, nameAndUnits.Name, nameAndUnits.Units, SIMCONNECT_DATATYPE.FLOAT64, 0, SimConnect.SIMCONNECT_UNUSED);
+                simconnect.RegisterDataDefineStruct<ContainerStruct>((DefineId)id);
+            }
+
             simconnect.RequestDataOnSimObject((RequestId)id, (DefineId)id, 0, SIMCONNECT_PERIOD.SIM_FRAME, SIMCONNECT_DATA_REQUEST_FLAG.CHANGED, 0, 0, 0);
         }
 
         private void UnsubscribeFromSimConnect(SimVarExpression simvar)
         {
             var name = simvar.NameAndUnits;
-            uint id = 0;
-            try
-            {
-                id = nameToId[name];
-                simconnect.ClearClientDataDefinition((DefineId)id);
-            } catch
-            {
-                nameToId.Remove(name);
-                if (id > 0)
-                {
-                    idToName.Remove(id);
-                }
-            }
+
+            var id = nameToId[name];
+
+            // We're unsubscribing from this variable, so any value is going to be out of date, so remove the old value
+            lastReportedValue.Remove(name);
+
+            // Note: some web pages say that the way to unsubscribe is to call ClearClientDataDefinition. That doesn't appear to be correct.
+            // Instead we use the (otherwise useless) 'NEVER' period
+            simconnect.RequestDataOnSimObject((RequestId)id, (DefineId)id, 0, SIMCONNECT_PERIOD.NEVER, SIMCONNECT_DATA_REQUEST_FLAG.DEFAULT, 0, 0, 0);
         }
 
         public void AddListener(IVariable variable, EventHandler<ValueChangedEventArgs> handler)
@@ -428,7 +432,9 @@ namespace BravoLights.Connections
                     // The sim has exited. We're likely to be exiting soon, but in
                     // case we don't, we should tidy up.
 
-                    // Any previous values are now not valid.
+                    // Any previous values and subscriptions/definitions are now not valid.
+                    idToName.Clear();
+                    nameToId.Clear();
                     lastReportedValue.Clear();
 
                     lvarCheckTimer?.Dispose();
@@ -638,23 +644,13 @@ namespace BravoLights.Connections
                     var dataContainer = data.dwData[0] as ContainerStruct?;
                     var newValue = dataContainer.Value.doubleValue;
 
-                    var handlers = variableHandlers[nau];
-                    lastReportedValue[nau] = newValue;
+                    variableHandlers.TryGetValue(nau, out var handlers);
 
                     if (handlers != null)
                     {
+                        lastReportedValue[nau] = newValue;
                         var e = new ValueChangedEventArgs { NewValue = newValue };
                         handlers(this, e);
-                    }
-                }
-                else
-                {
-                    // We're receiving data we don't currently have entries for,
-                    // probably from previous runs of the sim if the app has
-                    // been running during multiple sim runs. Unsubscribe.
-                    if (simconnect != null)
-                    {
-                        simconnect.ClearClientDataDefinition((DefineId)data.dwRequestID);
                     }
                 }
             }
