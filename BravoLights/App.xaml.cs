@@ -25,6 +25,7 @@ namespace BravoLights
 
         private MainViewModel viewModel;
         private UsbLogic usbLogic;
+        private GlobalLightController globalLightController;
         private Config config;
 
         private Forms.NotifyIcon notifyIcon;
@@ -140,6 +141,7 @@ namespace BravoLights
 
             viewModel = new MainViewModel();
             usbLogic = new UsbLogic(viewModel);
+            globalLightController = new GlobalLightController(usbLogic);
 
             splashScreen = new BBLSplashScreen();
             splashScreen.Show();
@@ -159,6 +161,7 @@ namespace BravoLights
             SimConnectConnection.Connection.OnAircraftLoaded += Connection_OnAircraftLoaded;
             SimConnectConnection.Connection.OnSimStateChanged += Connection_OnSimStateChanged;
             SimConnectConnection.Connection.OnInMainMenuChanged += Connection_OnInMainMenuChanged;
+            Connection_OnInMainMenuChanged(null, EventArgs.Empty);
 
             var toolStrip = new Forms.ContextMenuStrip();
             toolStrip.Items.Add(new Forms.ToolStripLabel { Text = ProgramInfo.ProductNameAndVersion });
@@ -203,14 +206,12 @@ namespace BravoLights
 
         private void Connection_OnInMainMenuChanged(object sender, EventArgs e)
         {
-            // We turn all the lights off when we're in the main menu
-            usbLogic.LightsEnabled = !SimConnectConnection.Connection.InMainMenu;
+            globalLightController.SimulatorInMainMenu = SimConnectConnection.Connection.InMainMenu;
         }
 
         private void BtnExit_Click(object sender, EventArgs e)
         {
-            usbLogic.LightsEnabled = false;
-            Current.Shutdown();
+            ExitApplication();
         }
 
         private void BtnDebug_Click(object sender, EventArgs e)
@@ -242,14 +243,14 @@ namespace BravoLights
         {
             viewModel.SimState = e.SimState;
 
+            globalLightController.SimulatorConnected = (e.SimState == SimState.SimRunning);
+
             switch (e.SimState)
             {
                 case SimState.SimExited:
-                    usbLogic.LightsEnabled = false;
                     if (exitWhenSimulatorExits)
                     {
-                        notifyIcon.Dispose();
-                        Environment.Exit(0);
+                        ExitApplication();
                     } else
                     {
                         // Attempt to reconnect when the sim starts again
@@ -281,12 +282,19 @@ namespace BravoLights
         private void Config_OnConfigChanged(object sender, EventArgs e)
         {
             // Turn off the lights whilst we reconfigure everything
-            usbLogic.LightsEnabled = false;
+            globalLightController.ReadingConfiguration = true;
 
             var lightExpressions = LightExpressionConfig.ComputeLightExpressions(config, viewModel.Aircraft);
             viewModel.RegisterLights(lightExpressions);
 
-            usbLogic.LightsEnabled = true;
+            globalLightController.ReadingConfiguration = false;
+        }
+
+        private void ExitApplication()
+        {
+            globalLightController.ApplicationExiting = true;
+            notifyIcon.Dispose();
+            Current.Shutdown();
         }
     }
 }

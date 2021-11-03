@@ -502,7 +502,7 @@ namespace BravoLights.Connections
             // missions\Asobo\Tutorials\VFRNavigation\LandmarkNavigation\03_Training_LandmarkNavigation.FLT
 
             InMainMenu = flightPath.EndsWith("flights\\other\\mainmenu.flt", StringComparison.InvariantCultureIgnoreCase);
-            Debug.WriteLine($"HandleFlightLoaded. Checking LVars");
+            Debug.WriteLine($"HandleFlightLoaded. {flightPath}. Checking LVars");
             ScheduleLVarCheck();
         }
 

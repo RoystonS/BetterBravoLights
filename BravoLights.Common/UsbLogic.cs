@@ -3,7 +3,12 @@ using HidSharp;
 
 namespace BravoLights.Common
 {
-    public class UsbLogic
+    public interface IUsbLogic
+    {
+        bool LightsEnabled { get; set; }
+    }
+
+    public class UsbLogic : IUsbLogic
     {
         private static readonly int HoneycombVendorId = 0x294B;
         private static readonly int BravoProductId = 0x1901;
