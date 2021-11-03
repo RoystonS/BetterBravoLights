@@ -275,7 +275,7 @@ void CheckLVars(bool forceSend)
         auto count = lvarToId.size();
 
         SendResponse(RESPONSE_LVAR_START);
-        for (i = 0; i <= count; i++) {
+        for (i = 0; i < count; i++) {
             auto lvarName = idToLvar[i];
 #if DEBUG
             fprintf(stderr, "BetterBravoLights: sending lvar %d", i);
