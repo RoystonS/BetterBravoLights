@@ -5,7 +5,7 @@
     <TargetFramework>net5.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
-    <Version>0.5.1</Version>
+    <Version>0.6.0</Version>
     <Authors>Royston Shufflebotham &lt;royston@shufflebotham.org&gt;</Authors>
     <Product>Better Bravo Lights</Product>
     <Copyright>(C) 2021 Royston Shufflebotham &lt;royston@shufflebotham.org&gt;</Copyright>
