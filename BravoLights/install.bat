@@ -1,1 +1,1 @@
-BetterBravoLights /install
+Program\BetterBravoLights /install

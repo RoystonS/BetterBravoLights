@@ -1,1 +1,1 @@
-BetterBravoLights /uninstall
+Program\BetterBravoLights /uninstall

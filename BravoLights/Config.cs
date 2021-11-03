@@ -27,7 +27,7 @@ namespace BravoLights
 
         public void Monitor()
         {
-            fsWatcher = new FileSystemWatcher(FlightSimulatorPaths.BetterBravoLightsPath);
+            fsWatcher = new FileSystemWatcher(Path.GetDirectoryName(ConfigIniPath));
             fsWatcher.Changed += ConfigFileChanged;
             fsWatcher.Created += ConfigFileChanged;
             fsWatcher.EnableRaisingEvents = true;
@@ -42,10 +42,33 @@ namespace BravoLights
 
         private void ConfigFileChanged(object sender, FileSystemEventArgs e)
         {
-            if (e.FullPath.Contains("Config.ini", StringComparison.InvariantCultureIgnoreCase))
+            if (e.FullPath == ConfigIniPath)
             {
                 backoffTimer.Stop();
                 backoffTimer.Start();
+            }
+        }
+
+        private string ConfigIniPath
+        {
+            get
+            {
+                var baseFilename = "Config.ini";
+
+                var candidates = new string[] {
+                    Path.Combine(FlightSimulatorPaths.BetterBravoLightsPath, baseFilename),
+                    Path.Combine(new DirectoryInfo(FlightSimulatorPaths.BetterBravoLightsPath).Parent.FullName, baseFilename)
+                };
+
+                foreach (var path in candidates)
+                {
+                    if (File.Exists(path))
+                    {
+                        return path;
+                    }
+                }
+
+                return candidates[0];
             }
         }
 
@@ -71,7 +94,7 @@ namespace BravoLights
             {
                 lock (this)
                 {
-                    iniFile.LoadConfigFromFile(Path.Join(FlightSimulatorPaths.BetterBravoLightsPath, "Config.ini"));
+                    iniFile.LoadConfigFromFile(ConfigIniPath);
                 }
                 OnConfigChanged?.Invoke(this, EventArgs.Empty);
             }
