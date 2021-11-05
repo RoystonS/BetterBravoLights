@@ -54,6 +54,10 @@ The configuration file `Config.ini` is a standard [.ini file](https://en.wikiped
     - `AND` (can also be written as `&&`)
     - `OR` (can also be written as `||`)
     - `NOT` (New in v0.5.0)
+    - Note that both `AND` and `OR` are 'short-circuiting' operators as of v0.6.0. This means that if one side of the value is enough to determine the overall result of the expression, the other side of the value is irrelevant. For example:
+      - `expr1 OR expr2` will evaluate to `true` if `expr1` is `true` irrespective of the value or error state of `expr2`
+      - `expr1 AND expr2` will evaluate to `false` if `expr1` is `false` irrespective of the value or error state of `expr2`.
+      - This has an impact on how erroneous (e.g. missing) `L:` variables are handled. See below.
   - grouping
     - standard arithmetic precedence (multiplication and division bind more tightly than addition and subtraction; AND binds more tightly than OR); this can be overridden with parentheses
     - `(1 + 2) * 3` is different from `1 + 2 * 3`
@@ -82,6 +86,26 @@ The configuration file `Config.ini` is a standard [.ini file](https://en.wikiped
 
 - (New in v0.3.0) The same section name can appear multiple times. Sections with the same name will be merged.
 - Configuration in the section named `[Default]` automatically apply to every aircraft unless an aircraft overrides a light
+
+### Error Handling
+
+If expression mentions an `A:` variable or `L:` variable that does not (yet) exist, that _part_ of the expression will be considered to be 'in error', as will anything that depends on it.
+
+For example, if `L:VAR1` exists but `L:VAR2` does not:
+
+- the expression `L:VAR1 + L:VAR2` will itself be considered an error
+- the expression `L:VAR1 OR L:VAR2` will evaluate to `true` if `L:VAR1` is `true` whether `L:VAR2` is `true` or `false` or erroring (due to the short-circuiting `OR` operator)
+- the expression `L:VAR1 AND L:VAR2` will evaluate to `false` if `L:VAR1` is `false` whether `L:VAR2` is `true` or `false` or erroring (due to the short-circuiting `AND` operator)
+
+In summary:
+
+- any arithmetic expression (e.g. `L:VAR1 + 4`) involving an error will evaluate to an error
+- any comparison expression (e.g. `L:VAR1 == 9`) involving an error will evaluate to an error
+- any logical operator (e.g. `L:VAR1 == 9 OR L:VAR2 > 42`) involving an error will evaluate to an error _unless the other side of the operator is able to determine the result by itself_
+
+If the overall expression for a light evaluates to an error, the light will be turned OFF.
+
+The short-circuiting `OR` operator is particularly useful for generating configurations which are resilient to missing variables. For instance the configuration `Vacuum = L:VAR1 == 1 OR L:VAR2 == 1 OR L:VAR3 == 1` will light up the VACUUM light if _any_ of `L:VAR1`, `L:VAR2`, `L:VAR3` exist and have the value 1.
 
 ### Other Settings
 
