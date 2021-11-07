@@ -8,7 +8,8 @@ namespace BravoLights.Ast
     #pragma warning disable CA1822 // Mark members as static
     public class MSFSExpressionParser : ExpressionParserBase
     {
-        [Production("primary: LVAR")]
+        [Operand]
+        [Production("numeric_literal: LVAR")]
         public IAstNode Lvar(Token<ExpressionToken> token)
         {
             var text = token.Value[2..];
@@ -19,7 +20,8 @@ namespace BravoLights.Ast
             };
         }
 
-        [Production("primary: SIMVAR")]
+        [Operand]
+        [Production("numeric_literal: SIMVAR")]
         public IAstNode SimVarExpression(Token<ExpressionToken> simvarToken)
         {
             var text = simvarToken.Value[2..];
@@ -27,6 +29,13 @@ namespace BravoLights.Ast
             var varName = bits[0];
             var type = bits[1].Trim();
             return new SimVarExpression(varName, type);
+        }
+
+        [Operand]
+        [Production("group : LPAREN MSFSExpressionParser_expressions RPAREN")]
+        public IAstNode Group(Token<ExpressionToken> _1, IAstNode child, Token<ExpressionToken> _2)
+        {
+            return child;
         }
 
         public static IAstNode Parse(string expression)

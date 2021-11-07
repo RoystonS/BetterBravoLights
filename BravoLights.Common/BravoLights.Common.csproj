@@ -9,7 +9,7 @@
 
   <ItemGroup>
     <PackageReference Include="HidSharp" Version="2.1.0" />
-    <PackageReference Include="sly" Version="2.7.0.3" />
+    <PackageReference Include="sly" Version="2.7.0.5" />
   </ItemGroup>
 
 </Project>

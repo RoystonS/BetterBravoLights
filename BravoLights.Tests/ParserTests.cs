@@ -40,7 +40,7 @@ namespace BravoLights.Tests
             var parsed = MSFSExpressionParser.Parse("1==1 || 2==2 && 3==3 || 4==4");
             Assert.Null(parsed.ErrorText);
 
-            Assert.Equal("((1 == 1) OR (((2 == 2) AND (3 == 3)) OR (4 == 4)))", parsed.ToString());
+            Assert.Equal("(((1 == 1) OR ((2 == 2) AND (3 == 3))) OR (4 == 4))", parsed.ToString());
         }
 
         [Fact]
@@ -48,7 +48,7 @@ namespace BravoLights.Tests
         {
             var parsed = MSFSExpressionParser.Parse("NOT ON AND NOT OFF OR NOT ON OR NOT OFF");
             Assert.Null(parsed.ErrorText);
-            Assert.Equal("(((NOT ON) AND (NOT OFF)) OR ((NOT ON) OR (NOT OFF)))", parsed.ToString());
+            Assert.Equal("((((NOT ON) AND (NOT OFF)) OR (NOT ON)) OR (NOT OFF))", parsed.ToString());
         }
 
         [Fact]
@@ -58,7 +58,7 @@ namespace BravoLights.Tests
 
             Assert.Null(parsed.ErrorText);
 
-            Assert.Equal("(((1 == 1) AND ((2 == 2) AND (3 == 3))) OR ((4 == 4) OR (5 == 5)))", parsed.ToString());
+            Assert.Equal("(((((1 == 1) AND (2 == 2)) AND (3 == 3)) OR (4 == 4)) OR (5 == 5))", parsed.ToString());
         }
 
         [Fact]
@@ -78,7 +78,7 @@ namespace BravoLights.Tests
 
             Assert.Null(parsed.ErrorText);
 
-            Assert.Equal("((1 < 2) AND ((1 <= 2) AND ((1 == 2) AND ((1 >= 2) AND ((1 > 2) AND (1 != 2))))))", parsed.ToString());
+            Assert.Equal("((((((1 < 2) AND (1 <= 2)) AND (1 == 2)) AND (1 >= 2)) AND (1 > 2)) AND (1 != 2))", parsed.ToString());
         }
 
         [Theory]
@@ -90,6 +90,13 @@ namespace BravoLights.Tests
         [InlineData("-(1+2)", -3.0)]
         [InlineData("-(1+2 * 3)", -7.0)]
         [InlineData("3 * -2", -6.0)]
+        [InlineData("9 & 8", 8.0)]
+        [InlineData("7 & 8", 0.0)]
+        [InlineData("8 & 8", 8.0)]
+        [InlineData("1 + 7 & 15 - 7", 8.0)] // & binds lower than + and -
+        [InlineData("1 | 2", 3.0)]
+        [InlineData("3 | 5", 7.0)]
+        [InlineData("1 + 3 | 3 - 1", 6.0)] // | binds lower than + and -
         public void LiteralNumericExpressionsEvaluateCorrectly(string expression, object value)
         {
             // The expression parser only parses boolean expressions so we make a boolean expression
@@ -134,18 +141,23 @@ namespace BravoLights.Tests
 
         [Theory]
         [InlineData("A:FOO, bool < 42", "(A:FOO, bool < 42)")]
+        [InlineData("L:BAR == 1", "(L:BAR == 1)")]
         [InlineData("ON", "ON")]
         [InlineData("OFF", "OFF")]
         [InlineData("ON OR OFF", "(ON OR OFF)")]
+        [InlineData("3 < 4", "(3 < 4)")]
+        [InlineData("3 < 4 OR 4 < 5", "((3 < 4) OR (4 < 5))")]
+        [InlineData("1 + 2 < 3 + 4", "((1 + 2) < (3 + 4))")]
+        [InlineData("1 + 2 * 3 < 3 * 4 - 5", "((1 + (2 * 3)) < ((3 * 4) - 5))")]
         [InlineData("- A:FOO, bool > 3", "((- A:FOO, bool) > 3)")]
         [InlineData("-(A:FOO, bool) > 3", "((- A:FOO, bool) > 3)")]
-        public void ParserRoundTrips(string expression, string generated)
+        public void ParserRoundTrips(string expression, string expected)
         {
             var parse = MSFSExpressionParser.Parse(expression);
             Assert.Null(parse.ErrorText);
 
-            var output = parse.ToString();
-            Assert.Equal(output, generated);
+            var actual = parse.ToString();
+            Assert.Equal(expected, actual);
         }
     }
 }
