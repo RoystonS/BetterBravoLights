@@ -39,13 +39,19 @@ namespace BravoLights.Common.Ast
         [Lexeme("/")]
         DIVIDE = 7,
 
+        [Lexeme("\\|")]
+        BITWISE_OR = 8,
+
+        [Lexeme("&")]
+        BITWISE_AND = 9,
+
         [Lexeme("[ \\t]+", isSkippable: true)]
         WHITESPACE = 20,
 
-        [Lexeme("(\\|\\|)|(OR)")]
-        OR = 10,
-        [Lexeme("(&&)|(AND)")]
-        AND = 11,
+        [Lexeme("OR")]
+        LOGICAL_OR = 10,
+        [Lexeme("AND")]
+        LOGICAL_AND = 11,
 
         [Lexeme("NOT")]
         NOT = 12,
@@ -58,6 +64,6 @@ namespace BravoLights.Common.Ast
 
         [Lexeme("\\)")]
         RPAREN = 31,
-    }
 
+    }
 }
