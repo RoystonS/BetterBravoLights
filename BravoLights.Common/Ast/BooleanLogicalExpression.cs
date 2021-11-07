@@ -1,6 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using sly.lexer;
+using Superpower.Model;
 
 namespace BravoLights.Common.Ast
 {
@@ -11,13 +10,13 @@ namespace BravoLights.Common.Ast
         }
 
 
-        public static BooleanLogicalExpression Create(IAstNode lhs, Token<ExpressionToken> token, IAstNode rhs)
+        public static BooleanLogicalExpression Create(Token<ExpressionToken> token, IAstNode lhs, IAstNode rhs)
         {
-            return token.Value switch
+            return token.ToStringValue() switch
             {
-                "&&" or "AND" => new AndExpression(lhs, rhs),
-                "||" or "OR" => new OrExpression(lhs, rhs),
-                _ => throw new Exception($"Unexpected operator {token.Value}"),
+                "AND" => new AndExpression(lhs, rhs),
+                "OR" => new OrExpression(lhs, rhs),
+                _ => throw new Exception($"Unexpected operator {token}"),
             };
         }
     }
@@ -104,11 +103,19 @@ namespace BravoLights.Common.Ast
         {
         }
 
-        protected override string OperatorText => "NOT";
-
         protected override bool ComputeValue(bool child)
         {
             return !child;
+        }
+
+        public static IAstNode Create(IAstNode child)
+        {
+            return new NotExpression(child);
+        }
+
+        public override string ToString()
+        {
+            return $"(NOT {Child})";
         }
     }
 }

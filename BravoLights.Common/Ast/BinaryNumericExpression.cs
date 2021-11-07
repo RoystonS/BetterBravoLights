@@ -1,15 +1,16 @@
 ﻿using System;
-using sly.lexer;
+using Superpower.Model;
 
 namespace BravoLights.Common.Ast
 {
-
     enum NumericOperator
     {
         Plus,
         Minus,
         Times,
-        Divide
+        Divide,
+        BinaryAnd,
+        BinaryOr
     }
 
     /// <summary>
@@ -38,15 +39,17 @@ namespace BravoLights.Common.Ast
             return ComputeNumericValue(lhs, rhs);
         }
 
-        public static BinaryNumericExpression Create(IAstNode lhs, Token<ExpressionToken> op, IAstNode rhs)
+        public static BinaryNumericExpression Create(Token<ExpressionToken> token, IAstNode lhs, IAstNode rhs)
         {
-            return op.Value switch
+            return token.ToStringValue() switch
             {
                 "+" => new PlusExpression(lhs, rhs),
                 "-" => new MinusExpression(lhs, rhs),
                 "*" => new TimesExpression(lhs, rhs),
                 "/" => new DivideExpression(lhs, rhs),
-                _ => throw new Exception($"Unexpected operator: {op.Value}"),
+                "&" => new BitwiseAndExpression(lhs, rhs),
+                "|" => new BitwiseOrExpression(lhs, rhs),
+                _ => throw new Exception($"Unexpected operator: {token}"),
             };
         }
     }
@@ -104,6 +107,34 @@ namespace BravoLights.Common.Ast
         protected override double ComputeNumericValue(double lhs, double rhs)
         {
             return lhs / rhs;
+        }
+    }
+
+    class BitwiseOrExpression : BinaryNumericExpression
+    {
+        public BitwiseOrExpression(IAstNode lhs, IAstNode rhs) : base(lhs, rhs)
+        {
+        }
+
+        protected override string OperatorText => "|";
+
+        protected override double ComputeNumericValue(double lhs, double rhs)
+        {
+            return Convert.ToDouble(Convert.ToInt32(lhs) | Convert.ToInt32(rhs));
+        }
+    }
+
+    class BitwiseAndExpression : BinaryNumericExpression
+    {
+        public BitwiseAndExpression(IAstNode lhs, IAstNode rhs) : base(lhs, rhs)
+        {
+        }
+
+        protected override string OperatorText => "&";
+
+        protected override double ComputeNumericValue(double lhs, double rhs)
+        {
+            return Convert.ToDouble(Convert.ToInt32(lhs) & Convert.ToInt32(rhs));
         }
     }
 }

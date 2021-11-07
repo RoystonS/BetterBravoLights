@@ -1,125 +1,179 @@
-﻿using System;
-using System.Globalization;
+﻿using System.Text.RegularExpressions;
 using BravoLights.Common.Ast;
-using sly.lexer;
-using sly.parser;
-using sly.parser.generator;
+using Superpower;
+using Superpower.Model;
+using Superpower.Parsers;
+using Superpower.Tokenizers;
 
 namespace BravoLights.Common
 {
-    #pragma warning disable CA1822 // Mark members as static
     public abstract class ExpressionParserBase
     {
-        [Production("logicalPrimary: OFF")]
-        [Production("logicalPrimary: ON")]
-        public IAstNode LiteralBool(Token<ExpressionToken> token)
+        private readonly TextParser<TextSpan> SimulationVariable = Span.Regex("A:[:A-Z_a-z0-9 ]+(,\\s*[A-Z_a-z0-9 ]+)?", RegexOptions.Compiled);
+        private readonly TextParser<TextSpan> LVar = Span.Regex("L:[:A-Z_a-z0-9 ]+", RegexOptions.Compiled);
+        private readonly TextParser<TextSpan> Double = Span.Regex("-?[0-9]+(\\.[0-9]+)?", RegexOptions.Compiled);
+
+        protected virtual TokenizerBuilder<ExpressionToken> ConfigureTokenizerBuilder(TokenizerBuilder<ExpressionToken> builder)
         {
-            return new LiteralBoolNode(token.Value == "ON");
+            return builder
+                .Match(SimulationVariable, ExpressionToken.SIMVAR)
+                .Match(LVar, ExpressionToken.LVAR);
         }
 
-        [Production("primary: HEX_NUMBER")]
-        public IAstNode NumericExpressionFromLiteralNumber(Token<ExpressionToken> offsetToken)
+        public Tokenizer<ExpressionToken> CreateTokenizer()
         {
-            var text = offsetToken.Value;
-            var num = text[2..];
-
-            // TODO: error handling
-            var value = int.Parse(num, NumberStyles.HexNumber);
-            return new LiteralNumericNode(value);
+            var builder = new TokenizerBuilder<ExpressionToken>();
+            builder = ConfigureTokenizerBuilder(builder);
+            return builder
+                .Match(Double, ExpressionToken.DECIMAL_NUMBER)
+                .Match(Span.EqualTo("ON"), ExpressionToken.ON)
+                .Match(Span.EqualTo("OFF"), ExpressionToken.OFF)
+                .Match(Span.EqualTo("AND"), ExpressionToken.LOGICAL_AND)
+                .Match(Span.EqualTo("OR"), ExpressionToken.LOGICAL_OR)
+                .Match(Span.EqualTo("NOT"), ExpressionToken.NOT)
+                .Match(Character.EqualTo('+'), ExpressionToken.PLUS)
+                .Match(Character.EqualTo('-'), ExpressionToken.MINUS)
+                .Match(Character.EqualTo('*'), ExpressionToken.TIMES)
+                .Match(Character.EqualTo('/'), ExpressionToken.DIVIDE)
+                .Match(Character.EqualTo('&'), ExpressionToken.BITWISE_AND)
+                .Match(Character.EqualTo('|'), ExpressionToken.BITWISE_OR)
+                .Match(Character.EqualTo('('), ExpressionToken.LPAREN)
+                .Match(Character.EqualTo(')'), ExpressionToken.RPAREN)
+                .Match(Span.EqualTo("<="), ExpressionToken.COMPARISON)
+                .Match(Span.EqualTo("<>"), ExpressionToken.COMPARISON)
+                .Match(Span.EqualTo("<"), ExpressionToken.COMPARISON)
+                .Match(Span.EqualTo(">="), ExpressionToken.COMPARISON)
+                .Match(Span.EqualTo(">"), ExpressionToken.COMPARISON)
+                .Match(Span.EqualTo("=="), ExpressionToken.COMPARISON)
+                .Match(Span.EqualTo("!="), ExpressionToken.COMPARISON)
+                .Ignore(Span.WhiteSpace)
+                .Build();
         }
 
-        [Production("primary: DECIMAL_NUMBER")]
-        public IAstNode NumericExpressionFromDecimalNumber(Token<ExpressionToken> offsetToken)
+        private static TextParser<string> MakeComparison { get; } = input =>
         {
-            var text = offsetToken.Value;
+            var fullOp = input.ToString();
+            return Result.Value(fullOp, input, input.Skip(fullOp.Length));
+        };
 
-            // TODO: error handling
-            var value = double.Parse(text, CultureInfo.InvariantCulture);
-            return new LiteralNumericNode(value);
+        public void Initialize()
+        {
+            var add = Token.EqualTo(ExpressionToken.PLUS);
+            var subtract = Token.EqualTo(ExpressionToken.MINUS);
+            var times = Token.EqualTo(ExpressionToken.TIMES);
+            var divide = Token.EqualTo(ExpressionToken.DIVIDE);
+            var bitwiseAND = Token.EqualTo(ExpressionToken.BITWISE_AND);
+            var bitwiseOR = Token.EqualTo(ExpressionToken.BITWISE_OR);
+            var logicalAND = Token.EqualTo(ExpressionToken.LOGICAL_AND);
+            var logicalOR = Token.EqualTo(ExpressionToken.LOGICAL_OR);
+            var numericComparison = Token.EqualTo(ExpressionToken.COMPARISON).Apply(MakeComparison);
+
+            var numericOperand = Number.Or(this.VariableParser);
+
+            var literalBool = Token.EqualTo(ExpressionToken.ON).Value(LiteralBoolNode.On).Or(Token.EqualTo(ExpressionToken.OFF).Value(LiteralBoolNode.Off));
+
+            var factorParser =
+                (from lparen in Token.EqualTo(ExpressionToken.LPAREN)
+                 from expr in Parse.Ref(() => BooleanRootParser)
+                 from rparen in Token.EqualTo(ExpressionToken.RPAREN)
+                 select expr)
+                .Or(numericOperand)
+                .Or(literalBool);
+
+            var unaryMinus =
+                from sign in Token.EqualTo(ExpressionToken.MINUS)
+                from factor in factorParser
+                select UnaryMinusExpression.Create(factor);
+
+            var precedence17 = unaryMinus.Or(factorParser).Named("expression");
+
+            var precedence15 = Parse.Chain(times.Or(divide), precedence17, BinaryNumericExpression.Create);
+            var precedence14 = Parse.Chain(add.Or(subtract), precedence15, BinaryNumericExpression.Create);
+            var precedence10 = Parse.Chain(bitwiseAND, precedence14, BinaryNumericExpression.Create);
+            var precedence09 = Parse.Chain(bitwiseOR, precedence10, BinaryNumericExpression.Create);
+            NumericRootParser = precedence09;
+
+            var NumericComparison = Parse.Chain(numericComparison, NumericRootParser, ComparisonExpression.Create);
+
+            var unaryNot =
+                from op in Token.EqualTo(ExpressionToken.NOT)
+                from factor in NumericComparison
+                select NotExpression.Create(factor);
+
+            var precedence08 = unaryNot.Or(NumericComparison);
+            var precedence07 = Parse.Chain(logicalAND, precedence08, BooleanLogicalExpression.Create);
+            var precedence06 = Parse.Chain(logicalOR, precedence07, BooleanLogicalExpression.Create);
+
+            BooleanRootParser = precedence06;
         }
 
-        [Production("numericExpression: term PLUS numericExpression")]
-        [Production("numericExpression: term MINUS numericExpression")]
-        [Production("term: factor TIMES term")]
-        [Production("term: factor DIVIDE term")]
-        public IAstNode NumberExpression(IAstNode lhs, Token<ExpressionToken> token, IAstNode rhs)
-        {
-            return BinaryNumericExpression.Create(lhs, token, rhs);
-        }
+        private TokenListParser<ExpressionToken, IAstNode> NumericRootParser;
+        private TokenListParser<ExpressionToken, IAstNode> BooleanRootParser;
 
-        [Production("numericExpression: term")]
-        [Production("term: factor")]
-        [Production("factor: primary")]
-        [Production("logicalPrimary: comparison")]
-        [Production("logicalTerm: logicalPrimary")]
-        [Production("logicalExpression: logicalTerm")]
-        public IAstNode Direct(IAstNode node)
+        protected abstract TokenListParser<ExpressionToken, IAstNode> VariableParser { get; }
 
-        {
-            return node;
-        }
-
-        [Production("logicalExpression: logicalTerm OR logicalExpression")]
-        [Production("logicalTerm: logicalPrimary AND logicalTerm")]
-        public IAstNode LogicalJunction(IAstNode lhs, Token<ExpressionToken> token, IAstNode rhs)
-        {
-            return BooleanLogicalExpression.Create(lhs, token, rhs);
-        }
-
-        [Production("primary: MINUS [d] primary")]
-        public IAstNode UnaryMinus(IAstNode child)
-        {
-            return new UnaryMinusExpression(child);
-        }
-
-        [Production("logicalPrimary: NOT [d] logicalPrimary")]
-        public IAstNode LogicalUnary(IAstNode child)
-        {
-            return new NotExpression(child);
-        }
-
-        [Production("comparison: numericExpression COMPARISON numericExpression")]
-        public IAstNode Comparison(IAstNode lhs, Token<ExpressionToken> token, IAstNode rhs)
-        {
-            return ComparisonExpression.Create(lhs, token, rhs);
-        }
-
-
-        [Production("primary: LPAREN [d] numericExpression RPAREN [d]")]
-        [Production("logicalPrimary: LPAREN [d] logicalExpression RPAREN [d]")]
-        public IAstNode Parens(IAstNode exp)
-        {
-            return exp;
-        }
-
-        private static Parser<ExpressionToken, IAstNode> cachedParser;
-
-        public static IAstNode Parse<T>(string expression) where T : ExpressionParserBase, new()
-        {
-            if (cachedParser == null)
+        public readonly TokenListParser<ExpressionToken, IAstNode> Number = Token.EqualTo(ExpressionToken.DECIMAL_NUMBER)
+            .Apply(Numerics.DecimalDouble)
+            .Select(n =>
             {
-                var parserInstance = new T();
-                var builder = new ParserBuilder<ExpressionToken, IAstNode>();
-                var parser = builder.BuildParser(parserInstance, ParserType.EBNF_LL_RECURSIVE_DESCENT, "logicalExpression");
-                if (parser.IsError)
-                {
-                    throw new Exception($"Could not create parser. BNF is not valid. {parser.Errors[0]}");
-                }
-                cachedParser = parser.Result;
-            }
+                IAstNode node = new LiteralNumericNode(n);
+                return node;
+            });
 
-            var parseResult = cachedParser.Parse(expression);
-            if (parseResult.IsError)
+        private Tokenizer<ExpressionToken> cachedTokenizer;
+        public Tokenizer<ExpressionToken> GetTokenizer()
+        {
+            if (cachedTokenizer == null)
+            {
+                cachedTokenizer = CreateTokenizer();
+            }
+            return cachedTokenizer;
+        }
+
+        public TokenListParser<ExpressionToken, IAstNode> GetCachedNumericRootParser()
+        {
+            if (NumericRootParser == null)
+            {
+                Initialize();
+            }
+            return NumericRootParser;
+        }
+
+        public TokenListParser<ExpressionToken, IAstNode> GetCachedBooleanRootParser()
+        {
+            if (BooleanRootParser == null)
+            {
+                Initialize();
+            }
+            return BooleanRootParser;
+        }
+
+        public IAstNode ParseWith(string expression, TokenListParser<ExpressionToken, IAstNode> parser)
+        {
+            // To simplify an ambiguous lexer which would result from having both && and & as well as || and |, we'll
+            // simplify the incoming expression by turning && into AND and || into OR:
+            expression = expression.Replace("&&", " AND ");
+            expression = expression.Replace("||", " OR ");
+
+            var tokenizer = GetTokenizer();
+            var result = parser.Parse(tokenizer.Tokenize(expression));
+            return result;
+        }
+
+        public IAstNode ParseExpression<T>(string expression) where T : ExpressionParserBase, new()
+        {
+            try
+            {
+                return ParseWith(expression, GetCachedBooleanRootParser());
+            }
+            catch (ParseException ex)
             {
                 return new ErrorNode
                 {
-                    ErrorText = parseResult.Errors[0].ErrorMessage
+                    ErrorText = ex.Message
                 };
             }
-
-            return parseResult.Result;
         }
     }
-    #pragma warning restore CA1822 // Mark members as static
 }
 

@@ -1,5 +1,4 @@
 ﻿using System;
-using sly.lexer;
 
 namespace BravoLights.Common.Ast
 {
@@ -29,9 +28,9 @@ namespace BravoLights.Common.Ast
             return ComputeComparisonValue(lhs, rhs);
         }
 
-        public static ComparisonExpression Create(IAstNode lhs, Token<ExpressionToken> token, IAstNode rhs)
+        public static ComparisonExpression Create(string token, IAstNode lhs, IAstNode rhs)
         {
-            return token.Value switch
+            return token switch
             {
                 "<" => new LtComparison(lhs, rhs),
                 "<=" => new LeqComparison(lhs, rhs),
@@ -39,7 +38,7 @@ namespace BravoLights.Common.Ast
                 "!=" or "<>" => new NeqComparison(lhs, rhs),
                 ">=" => new GeqComparison(lhs, rhs),
                 ">" => new GtComparison(lhs, rhs),
-                _ => throw new Exception($"Unexpected operator {token.Value}"),
+                _ => throw new Exception($"Unexpected operator {token}"),
             };
         }
     }
@@ -128,11 +127,19 @@ namespace BravoLights.Common.Ast
         {
         }
 
-        protected override string OperatorText => "-";
-
         protected override double ComputeValue(double child)
         {
             return -child;
+        }
+
+        public static IAstNode Create(IAstNode child)
+        {
+            return new UnaryMinusExpression(child);
+        }
+
+        public override string ToString()
+        {
+            return $"-{Child}";
         }
     }
 }
