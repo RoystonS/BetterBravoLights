@@ -101,7 +101,7 @@ Licensed under the Apache License, Version 2.0
 
 This library helps Better Bravo Lights to construct and handle its variable expression syntax.
 
-https://github.com/b3b00/csly/blob/a7b9031342d051aa7bc76e92658ccc6e3b6d921f/LICENSE
+<https://github.com/b3b00/csly/blob/a7b9031342d051aa7bc76e92658ccc6e3b6d921f/LICENSE>
 
 sly is Copyright (c) 2017 Olivier Duhart
 
@@ -109,4 +109,4 @@ Licensed under the MIT License
 
 ---
 
-Full details of _all_ these licences can be found in the `LICENSES.md` which is included in the software distribution, or in the GitHub repo at https://github.com/RoystonS/BetterBravoLights/blob/main/BravoLights/LICENSES.md.
+Full details of _all_ these licences can be found in the `LICENSES.md` which is included in the software distribution, or in the GitHub repo at <https://github.com/RoystonS/BetterBravoLights/blob/main/BravoLights/LICENSES.md>.
