@@ -136,6 +136,7 @@ namespace DCSBravoLights
 
         public void Dispose()
         {
+            GC.SuppressFinalize(this);
             UnsubscribeAll();
         }
 
@@ -186,8 +187,7 @@ namespace DCSBravoLights
         {
             get
             {
-                var ex = mValue as Exception;
-                if (ex != null)
+                if (mValue is Exception ex)
                 {
                     return ex.Message;
                 }

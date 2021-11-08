@@ -105,15 +105,12 @@ namespace BravoLights.Common
                 var parseResult = cachedParser.Parse(expression);
                 if (parseResult.IsError)
                 {
-                    return new ErrorNode
-                    {
-                        ErrorText = parseResult.Errors[0].ErrorMessage
-                    };
+                    return new ErrorNode(parseResult.Errors[0].ErrorMessage);
                 }
                 return parseResult.Result;
             } catch (Exception ex)
             {
-                return new ErrorNode { ErrorText = ex.Message };
+                return new ErrorNode(ex.Message);
             }
         }
     }

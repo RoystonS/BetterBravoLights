@@ -29,6 +29,8 @@ namespace BravoLights
 
         private bool exitWhenSimulatorExits = false;
 
+        private VariableList variableList;
+
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
@@ -200,6 +202,9 @@ namespace BravoLights
             config.OnConfigChanged += Config_OnConfigChanged;
             userConfig.Monitor();
             builtInConfig.Monitor();
+
+            variableList = new VariableList();
+            variableList.Show();
 
             // Strictly speaking we only really need to connect once we have variable-based light expressions registered,
             // but in practice we want to know if the sim has exited, even if we never use it.

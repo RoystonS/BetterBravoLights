@@ -120,5 +120,12 @@ namespace BravoLights
         public bool GearLGreen { get { return IsLit(LightNames.GearLGreen); } }
         public bool GearRRed { get { return IsLit(LightNames.GearRRed); } }
         public bool GearRGreen { get { return IsLit(LightNames.GearRGreen); } }
+
+
+    }
+
+    public class LightInfo : ViewModelBase
+    {
+
     }
 }

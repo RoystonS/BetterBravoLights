@@ -22,6 +22,11 @@ namespace BravoLights.Common.Ast
             get { return Child.Variables; }
         }
 
+        public NodeDataType ValueType
+        {
+            get { return NodeDataTypeUtility.GetNodeDataType(typeof(TOutput)); }
+        }
+
         protected abstract TOutput ComputeValue(TChildren child);
 
         private void HandleChildValueChanged(object sender, ValueChangedEventArgs e)

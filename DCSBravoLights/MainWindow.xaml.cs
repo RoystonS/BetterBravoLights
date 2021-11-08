@@ -11,10 +11,12 @@ namespace DCSBravoLights
             InitializeComponent();
         }
 
-        private DcsBiosState dcsBiosState = new DcsBiosState();
+        private readonly DcsBiosState dcsBiosState = new();
         private DebuggerUI debuggerUI;
         private LightsState lightsState;
+#pragma warning disable IDE0052 // Remove unread private members
         private UsbLogic usbLogic;
+#pragma warning restore IDE0052 // Remove unread private members
 
         protected override void OnInitialized(EventArgs e)
         {
@@ -30,8 +32,10 @@ namespace DCSBravoLights
             debuggerUI.Show();
 
             lightsState = new LightsState();
-            usbLogic = new UsbLogic(lightsState);
-            usbLogic.LightsEnabled = true;
+            usbLogic = new UsbLogic(lightsState)
+            {
+                LightsEnabled = true
+            };
 
             Monitor(LightNames.GearLGreen, "[Landing Gear and Flap Control Panel:GEAR_L_SAFE] == 1");
             Monitor(LightNames.GearCGreen, "[Landing Gear and Flap Control Panel:GEAR_N_SAFE] == 1");
@@ -54,11 +58,7 @@ namespace DCSBravoLights
 
         private void Monitor(string lightName, string expression)
         {
-            var lightExpression = new LightExpression
-            {
-                LightName = lightName,
-                Expression = DcsExpressionParser.Parse(expression)
-            };
+            var lightExpression = new LightExpression(lightName, DcsExpressionParser.Parse(expression), true);
 
             lightExpression.ValueChanged += LightExpression_ValueChanged;
         }
@@ -67,7 +67,7 @@ namespace DCSBravoLights
         {
             var lightExpression = (LightExpression)sender;
 
-            var lit = (e.NewValue is Exception) ? false : (bool)e.NewValue;
+            var lit = e.NewValue is not Exception && (bool)e.NewValue;
             lightsState.SetLight(lightExpression.LightName, lit);
         }
     }

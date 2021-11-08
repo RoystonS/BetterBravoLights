@@ -18,6 +18,11 @@ namespace BravoLights.Common.Ast
         protected abstract IConnection Connection { get; }
         public abstract string Identifier { get; }
 
+        public NodeDataType ValueType
+        {
+            get { return NodeDataType.Double; }
+        }
+
         private readonly Dictionary<EventHandler<ValueChangedEventArgs>, EventHandler<ValueChangedEventArgs>> handlerMappings
             = new();
 

@@ -36,6 +36,15 @@ namespace BravoLights.Common.Ast
         }
 
         protected abstract string OperatorText { get; }
+
+        public NodeDataType ValueType
+        {
+            get
+            {
+                return NodeDataTypeUtility.GetNodeDataType(typeof(TOutput));
+            }
+        }
+
         protected abstract object ComputeValue(object lhsValue, object rhsValue);
        
         private void HandleLhsValueChanged(object sender, ValueChangedEventArgs e)

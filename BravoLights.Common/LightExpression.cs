@@ -5,8 +5,19 @@ namespace BravoLights.Common
 {
     public class LightExpression
     {
-        public string LightName;
-        public IAstNode Expression;
+        public LightExpression(string lightName, IAstNode expression, bool errorIfNotBooleanExpression)
+        {
+            LightName = lightName;
+            Expression = expression;
+
+            if (errorIfNotBooleanExpression && expression.ValueType != NodeDataType.Boolean)
+            {
+                Expression = new ErrorNode($"A boolean expression is needed to drive a light, not a numeric one.");
+            }
+        }
+
+        public readonly string LightName;
+        public readonly IAstNode Expression;
 
         private EventHandler<ValueChangedEventArgs> handlers;
 

@@ -1,0 +1,23 @@
+{
+  "name": "simvarscanner",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "engines": {
+    "node": ">=16.13"
+  },
+  "volta": {
+    "node": "16.13.0",
+    "yarn": "1.22.17"
+  },
+  "dependencies": {
+    "jsdom": "^18.0.1",
+    "node-fetch": "^3.0.0"
+  }
+}

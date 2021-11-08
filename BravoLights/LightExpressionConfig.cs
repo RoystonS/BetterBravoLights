@@ -33,7 +33,7 @@ namespace BravoLights
 
                 var expression = MSFSExpressionParser.Parse(expressionText);
 
-                return new LightExpression { LightName = lightName, Expression = expression };
+                return new LightExpression(lightName, expression, true);
             });
 
             return lightExpressions;

@@ -18,7 +18,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <TextBlock FontWeight="Medium">Expression for selected light</TextBlock>
+        <TextBlock FontWeight="Medium">Expression</TextBlock>
         <TextBox Grid.Row="1" FontFamily="Courier New" Text="{Binding Path=ExpressionText, Mode=OneWay}"
                  Foreground="{Binding ExpressionErrored, Converter={StaticResource errorBrushConverter}}"
                  IsReadOnly="True" TextWrapping="Wrap" />

@@ -13,5 +13,10 @@ namespace BravoLights.Common.Ast
         event EventHandler<ValueChangedEventArgs> ValueChanged;
 
         IEnumerable<IVariable> Variables { get; }
+
+        /// <summary>
+        /// Gets the type of the overall value of this node.
+        /// </summary>
+        NodeDataType ValueType { get; }
     }
 }

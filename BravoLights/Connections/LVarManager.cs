@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using BravoLights.Ast;
 using BravoLights.Common;
 
@@ -199,9 +200,24 @@ namespace BravoLights.Connections
                     }
                 }
 
+                OnLVarListChanged?.Invoke(this, EventArgs.Empty);
+
                 SendAllValues();
             }
         }
+
+        public IList<string> LVarList
+        {
+            get
+            {
+                lock (this)
+                {
+                    return lvarIds.Keys.ToList();
+                }
+            }
+        }
+
+        public event EventHandler OnLVarListChanged;
 
         public void UpdateLVarValues(ILVarData data)
         {

@@ -83,6 +83,15 @@ namespace BravoLights
             this.sections = sections;
         }
 
+        public bool HasSection(string sectionName)
+        {
+            if (sections.TryGetValue(sectionName, out var section))
+            {
+                return !section.IsEmpty;
+            }
+            return false;
+        }
+
         public string GetValueOrNull(string sectionName, string key)
         {
             if (sections.TryGetValue(sectionName, out var section))
@@ -105,6 +114,10 @@ namespace BravoLights
         {
         }
 
+        public bool IsEmpty
+        {
+            get { return storage.Count == 0; }
+        }
 
         public void Set(string key, string value)
         {

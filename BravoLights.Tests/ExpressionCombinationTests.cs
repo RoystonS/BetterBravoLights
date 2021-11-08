@@ -9,7 +9,7 @@ namespace BravoLights.Tests
 {
     public class ExpressionCombinationTests
     {
-        private void SetupLVarManager()
+        private static void SetupLVarManager()
         {
             var mockWasmChannel = new Mock<IWASMChannel>();
             mockWasmChannel.SetupGet(c => c.SimState).Returns(SimState.SimRunning);
