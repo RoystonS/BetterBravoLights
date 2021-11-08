@@ -18,13 +18,6 @@ namespace DCSBravoLights
             return new DcsVariableExpression(category, identifier);
         }
 
-        [Operand]
-        [Production("group : LPAREN DcsExpressionParser_expressions RPAREN")]
-        public IAstNode Group(Token<ExpressionToken> lparen, IAstNode child, Token<ExpressionToken> rparen)
-        {
-            return child;
-        }
-
         public static IAstNode Parse(string expression)
         {
             return Parse<DcsExpressionParser>(expression);
