@@ -44,7 +44,6 @@ If applicable, add screenshots to help explain your problem.
 <!-- Which of these do you have installed? -->
 
 - MSFS: Windows Store edition or Steam?
-- FSUIPC: Do you use FSUIPC?
 
 **Additional context**
 
