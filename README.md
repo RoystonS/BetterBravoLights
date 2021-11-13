@@ -1,4 +1,6 @@
 # Better Bravo Lights
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FRoystonS%2FBetterBravoLights.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FRoystonS%2FBetterBravoLights?ref=badge_shield)
+
 
 This is the 'Better Bravo Lights' tool. It replaces the standard Honeycomb Bravo lights utility with a program which is easier to configure, more flexible and more responsive.
 
@@ -58,3 +60,7 @@ To work on installation/uninstallation you'll need a copy of the assembled WASM 
 11. Check new LVars
 12. Stop sim
 13. Check variables report no connection
+
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FRoystonS%2FBetterBravoLights.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2FRoystonS%2FBetterBravoLights?ref=badge_large)
