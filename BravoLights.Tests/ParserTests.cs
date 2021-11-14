@@ -42,6 +42,7 @@ namespace BravoLights.Tests
         [InlineData("1 | 2", 3.0)]
         [InlineData("3 | 5", 7.0)]
         [InlineData("1 + 3 | 3 - 1", 6.0)] // | binds lower than + and -
+        [InlineData("0x48 & 0x40 | 0x01", (double)0x41)]
         public void LiteralNumericExpressionsEvaluateCorrectly(string expression, object value)
         {
             // The expression parser only parses boolean expressions so we make a boolean expression

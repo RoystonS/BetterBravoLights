@@ -12,6 +12,7 @@ namespace BravoLights.Common
         private readonly TextParser<TextSpan> SimulationVariable = Span.Regex("A:[:A-Z_a-z0-9 ]+(,\\s*[A-Z_a-z0-9 ]+)?", RegexOptions.Compiled);
         private readonly TextParser<TextSpan> LVar = Span.Regex("L:[:A-Z_a-z0-9 ]+", RegexOptions.Compiled);
         private readonly TextParser<TextSpan> Double = Span.Regex("-?[0-9]+(\\.[0-9]+)?", RegexOptions.Compiled);
+        private readonly TextParser<TextSpan> HexInteger = Span.Regex("0x[0-9A-F]+", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
         protected virtual TokenizerBuilder<ExpressionToken> ConfigureTokenizerBuilder(TokenizerBuilder<ExpressionToken> builder)
         {
@@ -25,6 +26,7 @@ namespace BravoLights.Common
             var builder = new TokenizerBuilder<ExpressionToken>();
             builder = ConfigureTokenizerBuilder(builder);
             return builder
+                .Match(HexInteger, ExpressionToken.HEX_NUMBER)
                 .Match(Double, ExpressionToken.DECIMAL_NUMBER)
                 .Match(Span.EqualTo("ON"), ExpressionToken.ON)
                 .Match(Span.EqualTo("OFF"), ExpressionToken.OFF)
@@ -68,7 +70,7 @@ namespace BravoLights.Common
             var logicalOR = Token.EqualTo(ExpressionToken.LOGICAL_OR);
             var numericComparison = Token.EqualTo(ExpressionToken.COMPARISON).Apply(MakeComparison);
 
-            var numericOperand = Number.Or(this.VariableParser);
+            var numericOperand = HexNumberParser.Or(DecimalNumberParser).Or(this.VariableParser);
 
             var literalBool = Token.EqualTo(ExpressionToken.ON).Value(LiteralBoolNode.On).Or(Token.EqualTo(ExpressionToken.OFF).Value(LiteralBoolNode.Off));
 
@@ -112,13 +114,20 @@ namespace BravoLights.Common
 
         protected abstract TokenListParser<ExpressionToken, IAstNode> VariableParser { get; }
 
-        public readonly TokenListParser<ExpressionToken, IAstNode> Number = Token.EqualTo(ExpressionToken.DECIMAL_NUMBER)
+        private static readonly TextParser<double> HexParser = input =>
+        {
+            var num = long.Parse(input.ToStringValue()[2..], System.Globalization.NumberStyles.HexNumber);
+
+            return Result.Value((double)num, input, input.Skip(input.Length));
+        };
+
+        private readonly TokenListParser<ExpressionToken, IAstNode> DecimalNumberParser = Token.EqualTo(ExpressionToken.DECIMAL_NUMBER)
             .Apply(Numerics.DecimalDouble)
-            .Select(n =>
-            {
-                IAstNode node = new LiteralNumericNode(n);
-                return node;
-            });
+            .Select(LiteralNumericNode.Create);
+
+        private readonly TokenListParser<ExpressionToken, IAstNode> HexNumberParser = Token.EqualTo(ExpressionToken.HEX_NUMBER)
+            .Apply(HexParser)
+            .Select(LiteralNumericNode.Create);
 
         private Tokenizer<ExpressionToken> cachedTokenizer;
         public Tokenizer<ExpressionToken> GetTokenizer()

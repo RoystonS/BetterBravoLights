@@ -15,5 +15,10 @@ namespace BravoLights.Common.Ast
         {
             return Value.ToString(CultureInfo.InvariantCulture);
         }
+
+        public static IAstNode Create(double value)
+        {
+            return new LiteralNumericNode(value);
+        }
     }
 }
