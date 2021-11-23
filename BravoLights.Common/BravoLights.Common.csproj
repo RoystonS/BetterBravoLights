@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Authors>Royston Shufflebotham &lt;royston@shufflebotham.org&gt;</Authors>
@@ -9,7 +9,7 @@
 
   <ItemGroup>
     <PackageReference Include="HidSharp" Version="2.1.0" />
-    <PackageReference Include="sly" Version="2.7.0.5" />
+    <PackageReference Include="sly" Version="2.8.0" />
   </ItemGroup>
 
 </Project>
