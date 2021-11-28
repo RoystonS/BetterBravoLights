@@ -7,10 +7,9 @@ namespace BravoLights.Common.Ast
         [Lexeme("L:[A-Za-z0-9_]+")]
         LVAR = 50,
 
-        [Lexeme("A:[:A-Za-z0-9 ]+,\\s*([A-Za-z0-9 ]+)")]
+        [Lexeme("A:[:A-Za-z0-9 ]+(,\\s*([A-Za-z0-9 ]+))?")]
         SIMVAR = 52,
 
-        // [Lexeme("\\[[A-Z_0-9 ]+:[A-Z_0-9 ]+\\]")]
         [Lexeme("\\[[A-Za-z_0-9 ]+:[A-Za-z_0-9 ]+\\]")]
         DCS_VAR = 53,
 

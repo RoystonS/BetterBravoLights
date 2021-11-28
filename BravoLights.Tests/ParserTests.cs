@@ -151,7 +151,7 @@ namespace BravoLights.Tests
         }
 
         [Theory]
-        [InlineData("(2 + 3", "Syntax error: unexpected end of input, expected closing parenthesis ')'.")]
+        [InlineData("(2 + 3", "unexpected end of stream. Expecting <<EOS>>.")]
         [InlineData("A:SOME VARIABLE == 3", "Missing units for variable 'A:SOME VARIABLE'.")]
         public void ParsingErrors(string expression, string expectedError)
         {

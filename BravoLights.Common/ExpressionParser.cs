@@ -100,16 +100,21 @@ namespace BravoLights.Common
             // Similarly for <> which maps to !=
             expression = expression.Replace("<>", "!=");
 
-            var parseResult = cachedParser.Parse(expression);
-            if (parseResult.IsError)
+            try
             {
-                return new ErrorNode
+                var parseResult = cachedParser.Parse(expression);
+                if (parseResult.IsError)
                 {
-                    ErrorText = parseResult.Errors[0].ErrorMessage
-                };
+                    return new ErrorNode
+                    {
+                        ErrorText = parseResult.Errors[0].ErrorMessage
+                    };
+                }
+                return parseResult.Result;
+            } catch (Exception ex)
+            {
+                return new ErrorNode { ErrorText = ex.Message };
             }
-
-            return parseResult.Result;
         }
     }
     #pragma warning restore CA1822 // Mark members as static
