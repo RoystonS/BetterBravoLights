@@ -5,7 +5,7 @@ namespace BravoLights.Common.Ast
 {
     abstract class UnaryExpression<TChildren, TOutput> : IAstNode
     {
-        private readonly IAstNode Child;
+        protected readonly IAstNode Child;
 
         private object lastChildValue;
         private object lastReportedValue;
@@ -22,7 +22,6 @@ namespace BravoLights.Common.Ast
             get { return Child.Variables; }
         }
 
-        protected abstract string OperatorText { get; }
         protected abstract TOutput ComputeValue(TChildren child);
 
         private void HandleChildValueChanged(object sender, ValueChangedEventArgs e)
@@ -86,11 +85,6 @@ namespace BravoLights.Common.Ast
                     Child.ValueChanged -= HandleChildValueChanged;
                 }
             }
-        }
-
-        public override string ToString()
-        {
-            return $"({OperatorText} {Child})";
         }
     }
 }
