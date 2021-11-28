@@ -104,11 +104,14 @@ namespace BravoLights.Common.Ast
         {
         }
 
-        protected override string OperatorText => "NOT";
-
         protected override bool ComputeValue(bool child)
         {
             return !child;
+        }
+
+        public override string ToString()
+        {
+            return $"(NOT {Child})";
         }
     }
 }
