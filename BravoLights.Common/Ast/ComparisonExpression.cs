@@ -128,11 +128,14 @@ namespace BravoLights.Common.Ast
         {
         }
 
-        protected override string OperatorText => "-";
-
         protected override double ComputeValue(double child)
         {
             return -child;
+        }
+
+        public override string ToString()
+        {
+            return $"-{Child}";
         }
     }
 }

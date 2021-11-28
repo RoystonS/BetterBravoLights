@@ -13,5 +13,8 @@
         {
             return Value ? "ON" : "OFF";
         }
+
+        public static readonly IAstNode On = new LiteralBoolNode(true);
+        public static readonly IAstNode Off = new LiteralBoolNode(false);
     }
 }

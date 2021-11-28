@@ -97,6 +97,9 @@ namespace BravoLights.Common
             expression = expression.Replace("&&", " AND ");
             expression = expression.Replace("||", " OR ");
 
+            // Similarly for <> which maps to !=
+            expression = expression.Replace("<>", "!=");
+
             var parseResult = cachedParser.Parse(expression);
             if (parseResult.IsError)
             {
