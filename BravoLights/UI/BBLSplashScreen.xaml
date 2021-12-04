@@ -21,11 +21,17 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
             <TextBlock FontSize="36" FontFamily="Gill Sans MT" VerticalAlignment="Stretch" Text="{Binding ProductAndVersion}" />
             <TextBlock Grid.Row="1" Margin="0,8,0,0">by Royston Shufflebotham &lt;royston@shufflebotham.org&gt;</TextBlock>
-            <TextBlock Grid.Row="2" Margin="0,8,0,0" Height="32" VerticalAlignment="Bottom" TextWrapping="Wrap">
+            <TextBlock Grid.Row="2" Margin="0,8,0,0" HorizontalAlignment="Center">
+                <Hyperlink x:Name="NewVersionLink" NavigateUri="https://flightsim.to/file/21253/better-bravo-lights" Foreground="Red" RequestNavigate="NewVersionLink_RequestNavigate">
+                    <TextBlock x:Name="NewVersionLinkText" FontSize="18" />
+                </Hyperlink>
+            </TextBlock>
+            <TextBlock Grid.Row="3" Margin="0,8,0,0" Height="32" VerticalAlignment="Bottom" TextWrapping="Wrap">
                 Uses 
                 <Run FontStyle="Italic">HidSharp</Run> by James F. Bellinger
                 and

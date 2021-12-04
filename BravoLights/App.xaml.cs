@@ -145,7 +145,6 @@ namespace BravoLights
 
             splashScreen = new BBLSplashScreen();
             splashScreen.Show();
-            splashScreen.HideAfter(TimeSpan.FromSeconds(1.5));
 
             lightsWindow = new LightsWindow
             {
@@ -164,7 +163,10 @@ namespace BravoLights
             Connection_OnInMainMenuChanged(null, EventArgs.Empty);
 
             var toolStrip = new Forms.ContextMenuStrip();
-            toolStrip.Items.Add(new Forms.ToolStripLabel { Text = ProgramInfo.ProductNameAndVersion });
+            var productLabel = new Forms.ToolStripLabel { Text = ProgramInfo.ProductNameAndVersion };
+            toolStrip.Items.Add(productLabel);
+
+            CheckForNewVersionAsync(productLabel);
 
             var btnDebug = new Forms.ToolStripButton(BravoLights.Properties.Resources.TrayIconMenuDebugger)
             {
@@ -202,6 +204,14 @@ namespace BravoLights
             // Strictly speaking we only really need to connect once we have variable-based light expressions registered,
             // but in practice we want to know if the sim has exited, even if we never use it.
             SimConnectConnection.Connection.Start();
+        }
+
+        private async void CheckForNewVersionAsync(Forms.ToolStripLabel productLabel)
+        {
+            if (await ProgramInfo.IsNewVersionAvailableAsync())
+            {
+                productLabel.Text += $" (New version {await ProgramInfo.GetLatestVersionStringAsync()} available)";
+            }
         }
 
         private void Connection_OnInMainMenuChanged(object sender, EventArgs e)
