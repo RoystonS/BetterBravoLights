@@ -58,7 +58,10 @@
   </ItemGroup>
   
   <ItemGroup>
-    <None Update="Config.ini">
+    <None Update="Config.BuiltIn.ini">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Config.User.ini">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="LICENSES.md">

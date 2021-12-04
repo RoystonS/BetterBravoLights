@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Windows;
 using System.Windows.Interop;
 using Forms = System.Windows.Forms;
@@ -8,9 +7,7 @@ using BravoLights.Connections;
 using BravoLights.Installation;
 using BravoLights.UI;
 using System.Drawing;
-using BravoLights.Ast;
 using BravoLights.Common;
-using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace BravoLights
@@ -26,7 +23,7 @@ namespace BravoLights
         private MainViewModel viewModel;
         private UsbLogic usbLogic;
         private GlobalLightController globalLightController;
-        private Config config;
+        private IConfig config;
 
         private Forms.NotifyIcon notifyIcon;
 
@@ -197,9 +194,12 @@ namespace BravoLights
             notifyIcon.DoubleClick += BtnDebug_Click;
             UpdateTrayIconText();
 
-            config = new Config();
+            var userConfig = new FileConfig(FlightSimulatorPaths.UserConfigIniPath);
+            var builtInConfig = new FileConfig(FlightSimulatorPaths.BuiltInConfigIniPath);
+            config = new ConfigChain(userConfig, builtInConfig);
             config.OnConfigChanged += Config_OnConfigChanged;
-            config.Monitor();
+            userConfig.Monitor();
+            builtInConfig.Monitor();
 
             // Strictly speaking we only really need to connect once we have variable-based light expressions registered,
             // but in practice we want to know if the sim has exited, even if we never use it.

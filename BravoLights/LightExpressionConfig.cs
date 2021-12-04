@@ -13,7 +13,7 @@ namespace BravoLights
         /// <remarks>
         /// Returns an expression for every known light.
         /// </remarks>
-        public static IEnumerable<LightExpression> ComputeLightExpressions(Config config, string aircraft)
+        public static IEnumerable<LightExpression> ComputeLightExpressions(IConfig config, string aircraft)
         {
             var invert = config.GetConfig(aircraft, "Invert") ?? "";
             var lightNamesToInvert = new HashSet<string>(invert.Split(',', ' ').Select(n => n.Trim()));

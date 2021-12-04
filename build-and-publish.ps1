@@ -19,7 +19,7 @@ Copy-Item -Path "BravoLights\bin\Release\net5.0-windows\publish\*" -Destination 
 Copy-Item -Path "BravoLights\install.bat" -Destination "BetterBravoLights"
 Copy-Item -Path "BravoLights\uninstall.bat" -Destination "BetterBravoLights"
 Copy-Item -Path "BravoLights\LICENSES.md" -Destination "BetterBravoLights"
-Move-Item -Path "BetterBravoLights\Program\Config.ini" -Destination "BetterBravoLights"
+Move-Item -Path "BetterBravoLights\Program\Config.User.ini" -Destination "BetterBravoLights\Config.ini"
 
 $o = [system.diagnostics.fileversioninfo]::GetVersionInfo($path)
 Write-Output "Better Bravo Lights $($o.ProductVersion)" | Out-File -Encoding UTF8 BetterBravoLights\VERSION.txt
