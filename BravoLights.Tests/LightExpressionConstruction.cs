@@ -11,7 +11,7 @@ namespace BravoLights.Tests
         [Fact]
         public void ConstructsLightExpressionsFromBasicConfig()
         {
-            var config = new Config();
+            var config = new FileConfig("Config.ini");
             config.LoadConfig(new string[]
             {
                 "[Default]",
@@ -30,7 +30,7 @@ namespace BravoLights.Tests
         [Fact]
         public void CanInvertSelectedLights()
         {
-            var config = new Config();
+            var config = new FileConfig("Config.ini");
             config.LoadConfig(new string[]
             {
                 "[Default]",
@@ -53,7 +53,7 @@ namespace BravoLights.Tests
         [Fact]
         public void SupportsAircraftSpecificInversion()
         {
-            var config = new Config();
+            var config = new FileConfig("Config.ini");
             config.LoadConfig(new string[]
             {
                 "[Default]",

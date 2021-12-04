@@ -112,5 +112,25 @@ namespace BravoLights.Installation
         {
             get { return Path.Join(BetterBravoLightsPath, WasmModuleName); }
         }
+
+        public static string BuiltInConfigIniPath
+        {
+            get { return Path.Join(BetterBravoLightsPath, "Config.BuiltIn.ini"); }
+        }
+
+        public static string UserRuntimePath
+        {
+            get
+            {
+                return Path.Combine(new DirectoryInfo(BetterBravoLightsPath).Parent.FullName);
+            }
+        }
+        public static string UserConfigIniPath
+        {
+            get
+            {
+                return Path.Combine(UserRuntimePath, "Config.ini");
+            }
+        }
     }
 }

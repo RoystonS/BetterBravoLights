@@ -4,9 +4,9 @@ namespace BravoLights.Tests
 {
     public class ConfigTests
     {
-        private static Config CreateConfig(string file)
+        private static IConfig CreateConfig(string file)
         {
-            var config = new Config();
+            var config = new FileConfig("Config.ini");
             config.LoadConfig(file.Split('\r', '\n'));
             return config;
         }

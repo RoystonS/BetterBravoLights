@@ -2,11 +2,16 @@
 using System.Diagnostics;
 using System.IO;
 using System.Timers;
-using BravoLights.Installation;
 
 namespace BravoLights
 {
-    public class Config
+    public interface IConfig
+    {
+        string GetConfig(string aircraft, string key);
+        event EventHandler OnConfigChanged;
+    }
+
+    public class FileConfig : IConfig
     {
         /// <summary>
         /// A cooloff timer to prevent us reading the config file as soon as it changes.
@@ -16,10 +21,12 @@ namespace BravoLights
         private FileSystemWatcher fsWatcher;
 
         private readonly IniFile iniFile = new();
+        private readonly string filePath;
 
-        public Config()
+        public FileConfig(string filePath)
         {
             backoffTimer.Elapsed += BackoffTimer_Elapsed;
+            this.filePath = Path.GetFullPath(filePath);
         }
 
 
@@ -27,7 +34,7 @@ namespace BravoLights
 
         public void Monitor()
         {
-            fsWatcher = new FileSystemWatcher(Path.GetDirectoryName(ConfigIniPath));
+            fsWatcher = new FileSystemWatcher(Path.GetDirectoryName(filePath));
             fsWatcher.Changed += ConfigFileChanged;
             fsWatcher.Created += ConfigFileChanged;
             fsWatcher.EnableRaisingEvents = true;
@@ -42,33 +49,10 @@ namespace BravoLights
 
         private void ConfigFileChanged(object sender, FileSystemEventArgs e)
         {
-            if (e.FullPath == ConfigIniPath)
+            if (e.FullPath == filePath)
             {
                 backoffTimer.Stop();
                 backoffTimer.Start();
-            }
-        }
-
-        private string ConfigIniPath
-        {
-            get
-            {
-                var baseFilename = "Config.ini";
-
-                var candidates = new string[] {
-                    Path.Combine(FlightSimulatorPaths.BetterBravoLightsPath, baseFilename),
-                    Path.Combine(new DirectoryInfo(FlightSimulatorPaths.BetterBravoLightsPath).Parent.FullName, baseFilename)
-                };
-
-                foreach (var path in candidates)
-                {
-                    if (File.Exists(path))
-                    {
-                        return path;
-                    }
-                }
-
-                return candidates[0];
             }
         }
 
@@ -94,7 +78,7 @@ namespace BravoLights
             {
                 lock (this)
                 {
-                    iniFile.LoadConfigFromFile(ConfigIniPath);
+                    iniFile.LoadConfigFromFile(filePath);
                 }
                 OnConfigChanged?.Invoke(this, EventArgs.Empty);
             }
@@ -111,6 +95,48 @@ namespace BravoLights
             {
                 iniFile.LoadConfigLines(lines);
             }
+        }
+    }
+
+    public class ConfigChain : IConfig
+    {
+        private readonly IConfig[] configs;
+
+        public ConfigChain(params IConfig[] configs)
+        {
+            this.configs = configs;
+        }
+
+        public event EventHandler OnConfigChanged
+        {
+            add
+            {
+                foreach (var config in configs)
+                {
+                    config.OnConfigChanged += value;
+                }
+            }
+            remove
+            {
+                foreach (var config in configs)
+                {
+                    config.OnConfigChanged -= value;
+                }
+            }
+        }
+
+        public string GetConfig(string aircraft, string key)
+        {
+            foreach (var config in configs)
+            {
+                var result = config.GetConfig(aircraft, key);
+                if (result != null)
+                {
+                    return result;
+                }
+            }
+
+            return null;
         }
     }
 }
