@@ -132,7 +132,7 @@ namespace BravoLights.Connections
         {
             nameToId.TryGetValue(nameAndUnits, out var id);
 
-            // Do we already have a data definition and structure for this variable?
+            // Do we already have an id for this variable?
             if (id == 0)
             {
                 // No. Create one.
@@ -140,11 +140,10 @@ namespace BravoLights.Connections
 
                 idToName[id] = nameAndUnits;
                 nameToId[nameAndUnits] = id;
-
-                simconnect.AddToDataDefinition((DefineId)id, nameAndUnits.Name, nameAndUnits.Units, SIMCONNECT_DATATYPE.FLOAT64, 0, SimConnect.SIMCONNECT_UNUSED);
-                simconnect.RegisterDataDefineStruct<ContainerStruct>((DefineId)id);
             }
 
+            simconnect.AddToDataDefinition((DefineId)id, nameAndUnits.Name, nameAndUnits.Units, SIMCONNECT_DATATYPE.FLOAT64, 0, SimConnect.SIMCONNECT_UNUSED);
+            simconnect.RegisterDataDefineStruct<ContainerStruct>((DefineId)id);            
             simconnect.RequestDataOnSimObject((RequestId)id, (DefineId)id, 0, SIMCONNECT_PERIOD.SIM_FRAME, SIMCONNECT_DATA_REQUEST_FLAG.CHANGED, 0, 0, 0);
         }
 
@@ -157,9 +156,8 @@ namespace BravoLights.Connections
             // We're unsubscribing from this variable, so any value is going to be out of date, so remove the old value
             lastReportedValue.Remove(name);
 
-            // Note: some web pages say that the way to unsubscribe is to call ClearClientDataDefinition. That doesn't appear to be correct.
-            // Instead we use the (otherwise useless) 'NEVER' period
             simconnect.RequestDataOnSimObject((RequestId)id, (DefineId)id, 0, SIMCONNECT_PERIOD.NEVER, SIMCONNECT_DATA_REQUEST_FLAG.DEFAULT, 0, 0, 0);
+            simconnect.ClearDataDefinition((DefineId)id);
         }
 
         public void AddListener(IVariable variable, EventHandler<ValueChangedEventArgs> handler)
