@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "StartedBySimulator": {
+      "commandName": "Project",
+      "commandLineArgs": "/startedbysimulator"
+    },
+    "StartedManually": {
+      "commandName": "Project"
+    }
+  }
+}
