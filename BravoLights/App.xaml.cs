@@ -177,6 +177,16 @@ namespace BravoLights
             btnDebug.Click += BtnDebug_Click;          
             toolStrip.Items.Add(btnDebug);
 
+            var btnVariableList = new Forms.ToolStripButton("Variable List (Experimental)")
+            {
+                Dock = Forms.DockStyle.Fill,
+                TextAlign = ContentAlignment.MiddleLeft,
+                Image = BravoLights.Properties.Resources.TableImage,
+                ImageAlign = ContentAlignment.MiddleLeft
+            };
+            btnVariableList.Click += BtnVariableList_Click;
+            toolStrip.Items.Add(btnVariableList);
+
             var btnExit = new Forms.ToolStripButton(BravoLights.Properties.Resources.TrayIconMenuExit)
             {
                 Dock = Forms.DockStyle.Fill,
@@ -202,9 +212,6 @@ namespace BravoLights
             config.OnConfigChanged += Config_OnConfigChanged;
             userConfig.Monitor();
             builtInConfig.Monitor();
-
-            variableList = new VariableList();
-            variableList.Show();
 
             // Strictly speaking we only really need to connect once we have variable-based light expressions registered,
             // but in practice we want to know if the sim has exited, even if we never use it.
@@ -233,6 +240,20 @@ namespace BravoLights
         {
             lightsWindow.Show();
             lightsWindow.Activate();
+        }
+
+        private void BtnVariableList_Click(object sender, EventArgs e)
+        {
+            if (variableList == null)
+            {
+                variableList = new VariableList();
+                variableList.Show();
+
+                variableList.Closed += delegate
+                {
+                    variableList = null;
+                };
+            }
         }
 
         protected override void OnExit(ExitEventArgs e)
