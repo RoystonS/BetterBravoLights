@@ -2,13 +2,13 @@
 using System.Windows;
 using System.Windows.Interop;
 using Forms = System.Windows.Forms;
-
 using BravoLights.Connections;
 using BravoLights.Installation;
 using BravoLights.UI;
 using System.Drawing;
 using BravoLights.Common;
 using System.Diagnostics;
+using NLog;
 
 namespace BravoLights
 {
@@ -28,6 +28,7 @@ namespace BravoLights
         private Forms.NotifyIcon notifyIcon;
 
         private bool exitWhenSimulatorExits = false;
+        private static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         private VariableList variableList;
 
@@ -35,10 +36,14 @@ namespace BravoLights
         {
             base.OnStartup(e);
 
+            logger.Debug("Starting");
+
+            logger.Debug("Arguments {0}", string.Join(" ", e.Args));
+
             if (e.Args.Length == 1)
             {
                 var cmd = e.Args[0];
-                
+
                 try
                 {
                     switch (cmd)
@@ -47,6 +52,7 @@ namespace BravoLights
                             {
                                 var msg = Installer.Install();
                                 MessageBox.Show(msg, "Better Bravo Lights");
+                                logger.Debug("Install:Exit");
                                 Environment.Exit(0);
                                 break;
                             }
@@ -54,6 +60,7 @@ namespace BravoLights
                             {
                                 var msg = Installer.Uninstall();
                                 MessageBox.Show(msg, "Better Bravo Lights");
+                                logger.Debug("Uninstall:Exit");
                                 Environment.Exit(0);
                                 break;
                             }
@@ -76,29 +83,39 @@ namespace BravoLights
             }
             else
             {
+                logger.Debug("Run without arguments");
+
                 // Run without command arguments; detect whether it should automatically exit
                 if (Installer.IsSetToRunOnStartup && Installer.InstallationNeedsUpdating)
                 {
+                    logger.Debug("Need to update installation");
+
                     // We are set to run on simulator startup but the installation entries are out of date
                     try
                     {
                         Installer.Install();
-                    } catch { }
-                    
+                    }
+                    catch { }
+
                     // And for this run, assume we were run with the simulator
                     exitWhenSimulatorExits = true;
                 }
             }
 
+            logger.Debug("exitWhenSimulatorExits: {0}", exitWhenSimulatorExits);
+
             var processName = Process.GetCurrentProcess().ProcessName;
             if (Process.GetProcessesByName(processName).Length > 1)
             {
+                logger.Debug("Existing copy already running");
+
                 // There was already a copy running.
                 if (exitWhenSimulatorExits)
                 {
                     // It's being started by the simulator. Exit silently.
                     Environment.Exit(0);
-                } else
+                }
+                else
                 {
                     MessageBox.Show($"Another copy of Better Bravo Lights is already running.", "Better Bravo Lights", MessageBoxButton.OK);
                     Environment.Exit(0);
@@ -107,6 +124,8 @@ namespace BravoLights
 
             var includedWasmVersion = Installer.IncludedWasmModuleVersion;
             var installedWasmVersion = Installer.InstalledWasmModuleVersion;
+
+            logger.Debug("Installed WASM {0}, included WASM {1}", installedWasmVersion, includedWasmVersion);
 
             if (installedWasmVersion != includedWasmVersion)
             {
@@ -132,7 +151,8 @@ namespace BravoLights
                 {
                     Installer.InstallWasmModule();
                     MessageBox.Show("The Better Bravo Lights WASM module is now installed. If Flight Simulator was already running it will need to be restarted.", "Better Bravo Lights", MessageBoxButton.OK);
-                } else
+                }
+                else
                 {
                     LVarManager.Connection.DisableLVars = true;
                 }
@@ -149,7 +169,7 @@ namespace BravoLights
             {
                 ViewModel = viewModel
             };
-            
+
             // How can we get an HWnd without having to (briefly) show the lights window?
             var hwndWindow = splashScreen;
             var hwndSource = PresentationSource.FromVisual(hwndWindow) as HwndSource;
@@ -174,7 +194,7 @@ namespace BravoLights
                 Image = BravoLights.Properties.Resources.DebuggerImage,
                 ImageAlign = ContentAlignment.MiddleLeft
             };
-            btnDebug.Click += BtnDebug_Click;          
+            btnDebug.Click += BtnDebug_Click;
             toolStrip.Items.Add(btnDebug);
 
             var btnVariableList = new Forms.ToolStripButton("Variable List (Experimental)")
@@ -233,11 +253,14 @@ namespace BravoLights
 
         private void BtnExit_Click(object sender, EventArgs e)
         {
+            logger.Debug("User requested exit");
             ExitApplication();
         }
 
         private void BtnDebug_Click(object sender, EventArgs e)
         {
+            logger.Debug("User requested debugger UI");
+
             lightsWindow.Show();
             lightsWindow.Activate();
         }
@@ -258,6 +281,8 @@ namespace BravoLights
 
         protected override void OnExit(ExitEventArgs e)
         {
+            logger.Debug("OnExit");
+
             notifyIcon.Dispose();
             base.OnExit(e);
         }
@@ -281,6 +306,8 @@ namespace BravoLights
 
             globalLightController.SimulatorConnected = (e.SimState == SimState.SimRunning);
 
+            logger.Debug("SimState {0}", e.SimState);
+
             switch (e.SimState)
             {
                 case SimState.SimExited:
@@ -303,13 +330,15 @@ namespace BravoLights
         {
             var format = viewModel.SimState == SimState.SimRunning ? BravoLights.Properties.Resources.TrayIconConnectedToSimFormat : BravoLights.Properties.Resources.TrayIconWaitingForSimFormat;
 
-            notifyIcon.Text = String.Format(format, ProgramInfo.ProductNameAndVersion);
+            notifyIcon.Text = string.Format(format, ProgramInfo.ProductNameAndVersion);
         }
 
         private void Connection_OnAircraftLoaded(object sender, AircraftEventArgs e)
         {
             if (e.Aircraft != viewModel.Aircraft)
             {
+                logger.Debug("Aircraft loaded: {0}", e.Aircraft);
+
                 viewModel.Aircraft = e.Aircraft;
                 Config_OnConfigChanged(null, null);
             }
@@ -317,6 +346,8 @@ namespace BravoLights
 
         private void Config_OnConfigChanged(object sender, EventArgs e)
         {
+            logger.Debug("ConfigChanged");
+
             // Turn off the lights whilst we reconfigure everything
             globalLightController.ReadingConfiguration = true;
 
@@ -328,6 +359,7 @@ namespace BravoLights
 
         private void ExitApplication()
         {
+            logger.Debug("Application exiting");
             globalLightController.ApplicationExiting = true;
             notifyIcon.Dispose();
             Current.Shutdown();

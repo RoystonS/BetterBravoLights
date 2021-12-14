@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using BravoLights.Ast;
 using BravoLights.Common;
+using NLog;
 
 namespace BravoLights.Connections
 {
@@ -20,6 +21,7 @@ namespace BravoLights.Connections
     {
         public readonly static LVarManager Connection = new();
 
+        private readonly ILogger logger = LogManager.GetCurrentClassLogger();
         private readonly Dictionary<string, short> lvarIds = new();
         private readonly Dictionary<short, string> lvarNames = new();
         private readonly Dictionary<string, double> lvarValues = new();
@@ -112,10 +114,20 @@ namespace BravoLights.Connections
 
         private IWASMChannel wasmChannel;
 
+        private bool disableLVars;
+
         /// <summary>
         /// Gets or sets a value that disables LVar support. This is typically set if we know that the LVar module is missing or the wrong version.
         /// </summary>
-        public bool DisableLVars { get; internal set; }
+        public bool DisableLVars
+        {
+            get { return disableLVars; }
+            internal set
+            {
+                disableLVars = value;
+                logger.Debug("DisableLVars = {0}", value);
+            }
+        }
 
         public void SetWASMChannel(IWASMChannel wasmChannel)
         {

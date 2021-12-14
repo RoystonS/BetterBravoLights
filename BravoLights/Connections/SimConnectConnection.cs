@@ -10,6 +10,7 @@ using System.Threading;
 using BravoLights.Ast;
 using BravoLights.Common;
 using Microsoft.FlightSimulator.SimConnect;
+using NLog;
 
 namespace BravoLights.Connections
 {       
@@ -42,6 +43,8 @@ namespace BravoLights.Connections
 
     class SimConnectConnection : IConnection, IWASMChannel
     {
+        private static readonly Logger logger = LogManager.GetCurrentClassLogger();
+
         // Names of the client data areas established by the WASM module
         private const string CDA_NAME_SIMVAR = "BetterBravoLights.LVars";
         private const string CDA_NAME_REQUEST = "BetterBravoLights.Request";
@@ -117,6 +120,8 @@ namespace BravoLights.Connections
 
         public void Start()
         {
+            logger.Debug("Start");
+
             ConnectNow();
         }
 
@@ -258,6 +263,8 @@ namespace BravoLights.Connections
 
         private void ConnectNow()
         {
+            logger.Debug("ConnectNow");
+
             if (reconnectTimer != null)
             {
                 reconnectTimer.Dispose();
@@ -266,12 +273,15 @@ namespace BravoLights.Connections
 
             if (simconnect != null)
             {
+                logger.Debug("Already connected");
                 return;
             }
 
             try
             {
                 simconnect = new SimConnect("BravoLights", HWnd, WM_USER_SIMCONNECT, null, 0);
+                logger.Debug("SimConnect connected to simulator successfully");
+
                 simconnect.OnRecvSimobjectData += Simconnect_OnRecvSimobjectData;
                 simconnect.OnRecvQuit += Simconnect_OnRecvQuit;
 
@@ -289,8 +299,10 @@ namespace BravoLights.Connections
 
                 RegisterCurrentVariables();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                logger.Debug(ex, "ConnectNow Exception");
+
                 reconnectTimer = new(ReconnectTimerElapsed, null, TimeSpan.FromSeconds(30), Timeout.InfiniteTimeSpan);
 
                 if (simState == SimState.SimRunning)
@@ -350,6 +362,8 @@ namespace BravoLights.Connections
         {
             lock (this)
             {
+                logger.Debug("SimConnectOnRecvEvent {0}", data.uEventID);
+
                 switch ((RequestId)data.uEventID)
                 {
                     case RequestId.SimState:
@@ -378,6 +392,8 @@ namespace BravoLights.Connections
         {
             lock (this)
             {
+                logger.Debug("SimConnectOnRecvSystemState {0}", data.dwRequestID);
+
                 switch ((RequestId)data.dwRequestID)
                 {
                     case RequestId.SimState:
@@ -410,6 +426,8 @@ namespace BravoLights.Connections
                     // State is unchanged
                     return;
                 }
+
+                logger.Debug("SimStateChange {0}", state);
 
                 simState = state;
 
@@ -471,6 +489,8 @@ namespace BravoLights.Connections
 
         private void HandleAircraftChanged(string aircraftPath)
         {
+            logger.Debug("AircraftChanged {0}", aircraftPath);
+
             if (OnAircraftLoaded != null)
             {
                 // aircraftPath is something like
@@ -498,6 +518,8 @@ namespace BravoLights.Connections
             // C:\Users\royston\AppData\Local\Packages\Microsoft.FlightSimulator_8wekyb3d8bbwe\LocalState\MISSIONS\ACTIVITIES\ASOBO-BUSHTRIP-FINLAND_SAVE\ASOBO-BUSHTRIP-FINLAND_SAVE\ASOBO-BUSHTRIP-FINLAND_SAVE.FLT
             // C:\Users\royston\AppData\Local\Packages\Microsoft.FlightSimulator_8wekyb3d8bbwe\LocalState\MISSIONS\ACTIVITIES\ASOBO-BUSHTRIP-FINLAND_SAVE\AUTOSAVE\\BCKP\\ASOBO-BUSHTRIP-FINLAND_SAVE.FLT
             // missions\Asobo\Tutorials\VFRNavigation\LandmarkNavigation\03_Training_LandmarkNavigation.FLT
+
+            logger.Debug("FlightLoaded {0}", flightPath);
 
             InMainMenu = flightPath.EndsWith("flights\\other\\mainmenu.flt", StringComparison.InvariantCultureIgnoreCase);
             Debug.WriteLine($"HandleFlightLoaded. {flightPath}. Checking LVars");
@@ -545,6 +567,8 @@ namespace BravoLights.Connections
 #if DEBUG
             Debug.WriteLine("CheckForNewLVars");
 #endif
+            logger.Debug("CheckForNewLVars");
+
             if (hasEverCheckedForLVars)
             {
                 // Ask the WASM module to check for new lvars
@@ -581,6 +605,8 @@ namespace BravoLights.Connections
         // Called when MSFS quits
         private void Simconnect_OnRecvQuit(SimConnect sender, SIMCONNECT_RECV data)
         {
+            logger.Debug("SimConnectOnRecvQuit");
+
             RaiseSimStateChanged(SimState.SimExited);
         }
 

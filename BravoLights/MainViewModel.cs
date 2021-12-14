@@ -123,9 +123,4 @@ namespace BravoLights
 
 
     }
-
-    public class LightInfo : ViewModelBase
-    {
-
-    }
 }

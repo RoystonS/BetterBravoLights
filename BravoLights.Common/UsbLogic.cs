@@ -1,5 +1,6 @@
 ﻿using System;
 using HidSharp;
+using NLog;
 
 namespace BravoLights.Common
 {
@@ -10,6 +11,8 @@ namespace BravoLights.Common
 
     public class UsbLogic : IUsbLogic
     {
+        private static readonly Logger logger = LogManager.GetCurrentClassLogger();
+
         private static readonly int HoneycombVendorId = 0x294B;
         private static readonly int BravoProductId = 0x1901;
 
@@ -39,7 +42,7 @@ namespace BravoLights.Common
                 // There's either no Bravo or a different one. Drop the old connection.
                 if (bravoStream != null)
                 {
-                    Console.WriteLine("Disconnecting from Bravo");
+                    logger.Info("Disconnecting from Bravo");
                     bravoStream.Close();
                     bravoStream = null;
                     bravoDevice = null;
@@ -48,12 +51,11 @@ namespace BravoLights.Common
 
             if (device == null)
             {
-                Console.WriteLine("No Bravo found");
+                logger.Warn("No Honeycomb Bravo device found");
                 return;
             }
 
-            Console.WriteLine("Found Bravo");
-            Console.WriteLine(device.DevicePath);
+            logger.Debug("Found Honeycomb Bravo: {0}", device.DevicePath);
 
             bravoDevice = device;
             bravoStream = device.Open();
@@ -73,6 +75,8 @@ namespace BravoLights.Common
                 {
                     return;
                 }
+
+                logger.Debug("LightsEnabled = {0}", value);
 
                 lightsEnabled = value;
                 LightsState_Changed(null, EventArgs.Empty);

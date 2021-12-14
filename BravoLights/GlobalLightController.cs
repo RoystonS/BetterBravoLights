@@ -1,9 +1,12 @@
 ﻿using BravoLights.Common;
+using NLog;
 
 namespace BravoLights
 {
     public class GlobalLightController
     {
+        private static readonly Logger logger = LogManager.GetCurrentClassLogger();
+
         private readonly IUsbLogic usbLogic;
 
         public GlobalLightController(IUsbLogic usbLogic)
@@ -25,6 +28,9 @@ namespace BravoLights
 
         private void Check()
         {
+            logger.Debug("SimulatorInMainMenu={0}, ReadingConfiguration={1}, ApplicationExiting={2}, SimulatorConnected={3}",
+                SimulatorInMainMenu, ReadingConfiguration, ApplicationExiting, SimulatorConnected);
+
             var lightsShouldBeOn = !SimulatorInMainMenu && !ReadingConfiguration && !ApplicationExiting && SimulatorConnected;
             usbLogic.LightsEnabled = lightsShouldBeOn;
         }

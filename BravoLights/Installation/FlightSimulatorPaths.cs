@@ -39,6 +39,9 @@ namespace BravoLights.Installation
             }
         }
 
+        /// <summary>
+        /// Gets the path that the BBL .exe is running from.
+        /// </summary>
         public static string BetterBravoLightsPath
         {
             get

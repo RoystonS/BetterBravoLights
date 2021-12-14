@@ -33,9 +33,10 @@
             </TextBlock>
             <TextBlock Grid.Row="3" Margin="0,8,0,0" Height="32" VerticalAlignment="Bottom" TextWrapping="Wrap">
                 Uses 
-                <Run FontStyle="Italic">HidSharp</Run> by James F. Bellinger
+                <Run FontStyle="Italic">HidSharp</Run> by James F. Bellinger,
+                <Run FontStyle="Italic">sly</Run> by Olivier Duhart
                 and
-                <Run FontStyle="Italic">sly</Run> by Olivier Duhart.</TextBlock>
+                <Run FontStyle="Italic">NLog</Run> by Jaroslaw Kowalski, Kim Christensen &amp; Julian Verdurmen.</TextBlock>
         </Grid>
     </DockPanel>
 </Window>
