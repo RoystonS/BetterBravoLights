@@ -138,10 +138,53 @@ function extractUnits(unitsText, variableName) {
 
   unitsText = unitsText.replace('inch ()', 'inch');
   unitsText = unitsText.replace('feet ()', 'feet');
+  unitsText = unitsText.replace('feet (ft)', 'feet');
   unitsText = unitsText.replace('feet ( ', 'feet ');
+  unitsText = unitsText.replace('feet (ft per second', 'feet per second');
   unitsText = unitsText.replace('foot ()', 'foot');
+  unitsText = unitsText.replace('feet/minute', 'feet per minute');
+  unitsText = unitsText.replace(
+    'slugs per feet squared (slug sqft)',
+    'slugs per feet squared'
+  );
   unitsText = unitsText.replace('foot pounds ()', 'foot pounds');
   unitsText = unitsText.replace('feet squared ()', 'feet squared');
+  unitsText = unitsText.replace(
+    'pound force per square foot (psf)',
+    'pounds per square foot'
+  );
+  unitsText = unitsText.replace(
+    'pounds per square foot (psf)',
+    'pounds per square foot'
+  );
+  unitsText = unitsText.replace(
+    'pounds per square foot, psf',
+    'pounds per square foot'
+  );
+  unitsText = unitsText.replace(
+    'pounds per square inch (psi)',
+    'pounds per square inch'
+  );
+
+  unitsText = unitsText.replace(
+    'pounds per square inch (psi',
+    'pounds per square inch'
+  );
+
+  unitsText = unitsText.replace('psi scalar 16k (psi * 16384)', 'psi');
+  unitsText = unitsText.replace(
+    'percent scalar 16k (max load * 16384)',
+    'percent over 100'
+  );
+
+  // RETRACT x FLOAT EXTENDED
+  unitsText = unitsText.replace(/percent \(0 is fully.*\)/, 'percent over 100');
+
+  // SPOILERS x POSITION
+  unitsText = unitsText.replace(/percent over 100 or (.*)/, 'percent over 100');
+
+  // ENG PRESSURE RATIO:index
+  unitsText = unitsText.replace('ratio (0-16384)', 'ratio');
 
   if (unitsText.endsWith('(')) {
     // Stray ( on the end of the units!
@@ -158,6 +201,7 @@ function extractUnits(unitsText, variableName) {
 
   // These units are absolutely fine and can go straight through
   switch (unitsText) {
+    case 'scalar':
     case 'bool':
     case 'percent':
     case 'percent over 100':
@@ -173,12 +217,16 @@ function extractUnits(unitsText, variableName) {
     case 'number':
     case 'seconds':
     case 'celsius':
+    case 'rankine':
     case 'millibars':
     case 'kilo pascal':
+    case 'ratio':
     case 'volts':
     case 'amps':
     case 'amperes':
     case 'inhg':
+    case 'gallons':
+    case 'gallons per hour':
     case 'pounds':
     case 'pounds per hour':
     case 'hours':
@@ -188,11 +236,13 @@ function extractUnits(unitsText, variableName) {
     case 'mhz':
     case 'feet per minute':
     case 'feet per second':
+    case 'mach':
     case 'meters per second':
     case 'knots':
     case 'slugs per feet squared':
     case 'slugs per cubic feet':
     case 'feet per second squared':
+    case 'psi':
 
     case 'pound force per square foot':
     case 'per radian':
@@ -236,7 +286,7 @@ function extractUnits(unitsText, variableName) {
 
   switch (variableName) {
     case 'AIRSPEED MACH':
-      return 'number';
+      return 'mach';
     case 'GROUND VELOCITY':
       return 'knots';
     case 'CANOPY OPEN':
@@ -453,6 +503,10 @@ function writeEntry(heading, variableName, units, description) {
     } else if (variableBase === 'WING FLEX PCT') {
       start = 1;
       end = 2;
+    } else if (variableBase === 'LIGHT POTENTIOMETER') {
+      // Lights are indexed from 1-13
+      start = 1;
+      end = 13;
     }
 
     if (start < 0) {
