@@ -57,5 +57,10 @@ namespace BravoLights.Common.Ast
         {
             return Identifier.GetHashCode();
         }
+
+        public IAstNode Optimize()
+        {
+            return this;
+        }
     }
 }

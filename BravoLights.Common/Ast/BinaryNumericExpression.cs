@@ -52,6 +52,11 @@ namespace BravoLights.Common.Ast
                 _ => throw new Exception($"Unexpected operator: {op.Value}"),
             };
         }
+
+        public override IAstNode Optimize()
+        {
+            return this;
+        }
     }
 
     class PlusExpression : BinaryNumericExpression

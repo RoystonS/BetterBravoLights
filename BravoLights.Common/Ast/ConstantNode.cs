@@ -32,5 +32,10 @@ namespace BravoLights.Common.Ast
             add { value(this, new ValueChangedEventArgs { NewValue = Value }); }
             remove { }
         }
+
+        public IAstNode Optimize()
+        {
+            return this;
+        }
     }
 }

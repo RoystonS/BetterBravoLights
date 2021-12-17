@@ -15,7 +15,7 @@ namespace BravoLights.Common
         [Production("logical_literal: ON")]
         public IAstNode LiteralBool(Token<ExpressionToken> token)
         {
-            return new LiteralBoolNode(token.Value == "ON");
+            return token.Value == "ON" ? LiteralBoolNode.On : LiteralBoolNode.Off;
         }
 
         [Operand]

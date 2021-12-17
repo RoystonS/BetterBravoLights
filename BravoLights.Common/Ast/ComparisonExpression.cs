@@ -42,6 +42,11 @@ namespace BravoLights.Common.Ast
                 _ => throw new Exception($"Unexpected operator {token.Value}"),
             };
         }
+
+        public override IAstNode Optimize()
+        {
+            return this;
+        }
     }
 
     class LtComparison : ComparisonExpression
@@ -136,6 +141,11 @@ namespace BravoLights.Common.Ast
         public override string ToString()
         {
             return $"-{Child}";
+        }
+
+        public override IAstNode Optimize()
+        {
+            return new UnaryMinusExpression(Child.Optimize());
         }
     }
 }

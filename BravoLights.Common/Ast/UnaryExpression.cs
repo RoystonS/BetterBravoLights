@@ -62,6 +62,8 @@ namespace BravoLights.Common.Ast
             }
         }
 
+        public abstract IAstNode Optimize();
+
         private EventHandler<ValueChangedEventArgs> listeners;
 
         public event EventHandler<ValueChangedEventArgs> ValueChanged

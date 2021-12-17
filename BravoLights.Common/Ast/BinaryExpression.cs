@@ -114,5 +114,7 @@ namespace BravoLights.Common.Ast
         {
             return $"({Lhs} {OperatorText} {Rhs})";
         }
+
+        public abstract IAstNode Optimize();
     }
 }

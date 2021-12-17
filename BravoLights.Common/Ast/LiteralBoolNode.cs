@@ -5,7 +5,7 @@
     /// </summary>
     class LiteralBoolNode : ConstantNode<bool>
     {
-        public LiteralBoolNode(bool value) : base(value)
+        private LiteralBoolNode(bool value) : base(value)
         {
         }
 

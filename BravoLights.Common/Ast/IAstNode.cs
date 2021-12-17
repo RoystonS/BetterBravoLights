@@ -18,5 +18,10 @@ namespace BravoLights.Common.Ast
         /// Gets the type of the overall value of this node.
         /// </summary>
         NodeDataType ValueType { get; }
+
+        /// <summary>
+        /// Calculates an optimized version of this expression, e.g. converting "A AND ON" to "A" and "A OR ON" to "ON".
+        /// </summary>
+        IAstNode Optimize();
     }
 }

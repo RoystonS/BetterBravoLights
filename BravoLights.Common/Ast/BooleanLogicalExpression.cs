@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using sly.lexer;
 
 namespace BravoLights.Common.Ast
@@ -30,14 +29,14 @@ namespace BravoLights.Common.Ast
 
         protected override object ComputeValue(object lhsValue, object rhsValue)
         {
-            if (lhsValue is Boolean lhs)
+            if (lhsValue is bool lhs)
             {
                 if (lhs == false)
                 {
                     return false;
                 }
             }
-            if (rhsValue is Boolean rhs)
+            if (rhsValue is bool rhs)
             {
                 if (rhs == false)
                 {
@@ -57,6 +56,27 @@ namespace BravoLights.Common.Ast
             return true;
         }
 
+        public override IAstNode Optimize()
+        {
+            var optimizedLeft = Lhs.Optimize();
+            var optimizedRight = Rhs.Optimize();
+
+            if (optimizedLeft is LiteralBoolNode lhsNode)
+            {
+                // ON AND A -> A
+                // OFF AND A -> OFF
+                return lhsNode.Value ? optimizedRight : LiteralBoolNode.Off;
+            }
+            if (optimizedRight is LiteralBoolNode rhsNode)
+            {
+                // A AND ON -> A
+                // A AND OFF -> OFF
+                return rhsNode.Value ? optimizedLeft : LiteralBoolNode.Off;
+            }
+
+            return new AndExpression(optimizedLeft, optimizedRight);
+        }
+
         protected override string OperatorText => "AND";
     }
 
@@ -68,14 +88,14 @@ namespace BravoLights.Common.Ast
 
         protected override object ComputeValue(object lhsValue, object rhsValue)
         {
-            if (lhsValue is Boolean lhs)
+            if (lhsValue is bool lhs)
             {
                 if (lhs == true)
                 {
                     return true;
                 }
             }
-            if (rhsValue is Boolean rhs)
+            if (rhsValue is bool rhs)
             {
                 if (rhs == true)
                 {
@@ -95,6 +115,27 @@ namespace BravoLights.Common.Ast
             return false;
         }
 
+        public override IAstNode Optimize()
+        {
+            var optimizedLeft = Lhs.Optimize();
+            var optimizedRight = Rhs.Optimize();
+
+            if (optimizedLeft is LiteralBoolNode lhsNode)
+            {
+                // ON OR A -> ON
+                // OFF OR A -> A
+                return lhsNode.Value ? LiteralBoolNode.On : optimizedRight;
+            }
+            if (optimizedRight is LiteralBoolNode rhsNode)
+            {
+                // A OR ON -> ON
+                // A OR OFF -> A
+                return rhsNode.Value ? LiteralBoolNode.On : optimizedLeft;
+            }
+
+            return new OrExpression(optimizedLeft, optimizedRight);
+        }
+
         protected override string OperatorText => "OR";
     }
 
@@ -112,6 +153,18 @@ namespace BravoLights.Common.Ast
         public override string ToString()
         {
             return $"(NOT {Child})";
+        }
+
+        public override IAstNode Optimize()
+        {
+            if (Child is LiteralBoolNode node)
+            {
+                // NOT ON -> OFF
+                // NOT OFF -> ON
+                return node.Value ? LiteralBoolNode.Off : LiteralBoolNode.On;
+            }
+
+            return this;
         }
     }
 }

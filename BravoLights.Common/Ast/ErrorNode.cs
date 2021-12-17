@@ -31,5 +31,10 @@ namespace BravoLights.Common.Ast
         {
             return ErrorText;
         }
+
+        public IAstNode Optimize()
+        {
+            return this;
+        }
     }
 }

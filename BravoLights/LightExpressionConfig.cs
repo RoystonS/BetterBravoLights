@@ -16,6 +16,8 @@ namespace BravoLights
         public static IEnumerable<LightExpression> ComputeLightExpressions(IConfig config, string aircraft)
         {
             var invert = config.GetConfig(aircraft, "Invert") ?? "";
+            var masterEnable = config.GetConfig(aircraft, "MasterEnable") ?? "ON";
+
             var lightNamesToInvert = new HashSet<string>(invert.Split(',', ' ').Select(n => n.Trim()));
 
             var lightExpressions = LightNames.AllNames.Select(lightName =>
@@ -31,7 +33,9 @@ namespace BravoLights
                     expressionText = $"NOT({expressionText})";
                 }
 
-                var expression = MSFSExpressionParser.Parse(expressionText);
+                expressionText = $"({masterEnable}) AND ({expressionText})";
+
+                var expression = MSFSExpressionParser.Parse(expressionText).Optimize();
 
                 return new LightExpression(lightName, expression, true);
             });

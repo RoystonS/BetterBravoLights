@@ -105,49 +105,60 @@ namespace BravoLights.Tests
         }
 
         [Theory]
-        [InlineData("ON", "ON")]
-        [InlineData("ON AND OFF", "(ON AND OFF)")]
-        [InlineData("ON OR OFF", "(ON OR OFF)")]
-        [InlineData("OFF", "OFF")]
-        [InlineData("A:FOO, bool < 42", "(A:FOO, bool < 42)")]
-        [InlineData("L:BAR == 1", "(L:BAR == 1)")]
-        [InlineData("3 < 4", "(3 < 4)")]
-        [InlineData("(1 + 3) < (3 + 4)", "((1 + 3) < (3 + 4))")]
-        [InlineData("3 < 4 OR 4 < 5", "((3 < 4) OR (4 < 5))")]
-        [InlineData("(2 + 3) < (A:FOO,bool + 12)", "((2 + 3) < (A:FOO, bool + 12))")]
-        [InlineData("(2 + 3) <= (A:FOO,bool + 12)", "((2 + 3) <= (A:FOO, bool + 12))")]
-        [InlineData("(2 + 3) >= (A:FOO,bool + 12)", "((2 + 3) >= (A:FOO, bool + 12))")]
-        [InlineData("(2 + 3) > (A:FOO,bool + 12)", "((2 + 3) > (A:FOO, bool + 12))")]
-        [InlineData("3 == 4", "(3 == 4)")]
-        [InlineData("3 != 4", "(3 != 4)")]
-        [InlineData("1 + 2 < 3 + 4", "((1 + 2) < (3 + 4))")]
-        [InlineData("1 + 2 * 3 < 3 * 4 - 5", "((1 + (2 * 3)) < ((3 * 4) - 5))")]
-        [InlineData("1<2 AND 2>3", "((1 < 2) AND (2 > 3))")]
+        [InlineData("ON", "ON", "ON")]
+        [InlineData("ON AND OFF", "(ON AND OFF)", "OFF")]
+        [InlineData("ON OR OFF", "(ON OR OFF)", "ON")]
+        [InlineData("OFF", "OFF", "OFF")]
+        [InlineData("A:FOO, bool < 42", "(A:FOO, bool < 42)", "(A:FOO, bool < 42)")]
+        [InlineData("L:BAR == 1", "(L:BAR == 1)", "(L:BAR == 1)")]
+        [InlineData("3 < 4", "(3 < 4)", "(3 < 4)")]
+        [InlineData("(1 + 3) < (3 + 4)", "((1 + 3) < (3 + 4))", "((1 + 3) < (3 + 4))")]
+        [InlineData("3 < 4 OR 4 < 5", "((3 < 4) OR (4 < 5))", "((3 < 4) OR (4 < 5))")]
+        [InlineData("(2 + 3) < (A:FOO,bool + 12)", "((2 + 3) < (A:FOO, bool + 12))", "((2 + 3) < (A:FOO, bool + 12))")]
+        [InlineData("(2 + 3) <= (A:FOO,bool + 12)", "((2 + 3) <= (A:FOO, bool + 12))", "((2 + 3) <= (A:FOO, bool + 12))")]
+        [InlineData("(2 + 3) >= (A:FOO,bool + 12)", "((2 + 3) >= (A:FOO, bool + 12))", "((2 + 3) >= (A:FOO, bool + 12))")]
+        [InlineData("(2 + 3) > (A:FOO,bool + 12)", "((2 + 3) > (A:FOO, bool + 12))", "((2 + 3) > (A:FOO, bool + 12))")]
+        [InlineData("3 == 4", "(3 == 4)", "(3 == 4)")]
+        [InlineData("3 != 4", "(3 != 4)", "(3 != 4)")]
+        [InlineData("1 + 2 < 3 + 4", "((1 + 2) < (3 + 4))", "((1 + 2) < (3 + 4))")]
+        [InlineData("1 + 2 * 3 < 3 * 4 - 5", "((1 + (2 * 3)) < ((3 * 4) - 5))", "((1 + (2 * 3)) < ((3 * 4) - 5))")]
+        [InlineData("1<2 AND 2>3", "((1 < 2) AND (2 > 3))", "((1 < 2) AND (2 > 3))")]
 
         // Comparison operators
-        [InlineData("1 < 2 && 1 <= 2 && 1 == 2 && 1 >= 2 && 1 > 2 && 1 != 2 && 1 <> 2", "(((((((1 < 2) AND (1 <= 2)) AND (1 == 2)) AND (1 >= 2)) AND (1 > 2)) AND (1 != 2)) AND (1 != 2))")]
+        [InlineData("1 < 2 && 1 <= 2 && 1 == 2 && 1 >= 2 && 1 > 2 && 1 != 2 && 1 <> 2", "(((((((1 < 2) AND (1 <= 2)) AND (1 == 2)) AND (1 >= 2)) AND (1 > 2)) AND (1 != 2)) AND (1 != 2))",
+            "(((((((1 < 2) AND (1 <= 2)) AND (1 == 2)) AND (1 >= 2)) AND (1 > 2)) AND (1 != 2)) AND (1 != 2))")]
 
         // AND/OR precedence. (AND binds tighter)
-        [InlineData("ON AND OFF OR ON AND OFF", "((ON AND OFF) OR (ON AND OFF))")]
-        [InlineData("ON AND (OFF OR ON) AND OFF", "((ON AND (OFF OR ON)) AND OFF)")]
-        [InlineData("1==1 || 2==2 && 3==3 || 4==4", "(((1 == 1) OR ((2 == 2) AND (3 == 3))) OR (4 == 4))")]
+        [InlineData("ON AND OFF OR ON AND OFF", "((ON AND OFF) OR (ON AND OFF))", "OFF")]
+        [InlineData("ON AND (OFF OR ON) AND OFF", "((ON AND (OFF OR ON)) AND OFF)", "OFF")]
+        [InlineData("1==1 || 2==2 && 3==3 || 4==4", "(((1 == 1) OR ((2 == 2) AND (3 == 3))) OR (4 == 4))", "(((1 == 1) OR ((2 == 2) AND (3 == 3))) OR (4 == 4))")]
 
         // Alternate AND/OR
-        [InlineData("1==1 AND 2==2 && 3==3 OR 4==4 || 5==5", "(((((1 == 1) AND (2 == 2)) AND (3 == 3)) OR (4 == 4)) OR (5 == 5))")]
+        [InlineData("1==1 AND 2==2 && 3==3 OR 4==4 || 5==5", "(((((1 == 1) AND (2 == 2)) AND (3 == 3)) OR (4 == 4)) OR (5 == 5))", "(((((1 == 1) AND (2 == 2)) AND (3 == 3)) OR (4 == 4)) OR (5 == 5))")]
 
         // NOT checks. (NOT binds tightly to logicals and loosely to numerics
-        [InlineData("NOT ON", "(NOT ON)")]
-        [InlineData("NOT ON AND OFF", "((NOT ON) AND OFF)")]
-        [InlineData("NOT ON OR OFF", "((NOT ON) OR OFF)")]
-        [InlineData("NOT 1 == 2", "(NOT (1 == 2))")]
-        [InlineData("NOT ON AND NOT OFF OR NOT ON OR NOT OFF", "((((NOT ON) AND (NOT OFF)) OR (NOT ON)) OR (NOT OFF))")]
+        [InlineData("NOT ON", "(NOT ON)", "OFF")]
+        [InlineData("NOT ON AND OFF", "((NOT ON) AND OFF)", "OFF")]
+        [InlineData("NOT ON OR OFF", "((NOT ON) OR OFF)", "OFF")]
+        [InlineData("NOT 1 == 2", "(NOT (1 == 2))", "(NOT (1 == 2))")]
+        [InlineData("NOT ON AND NOT OFF OR NOT ON OR NOT OFF", "((((NOT ON) AND (NOT OFF)) OR (NOT ON)) OR (NOT OFF))", "ON")]
 
         // Unary minus checks
-        [InlineData("- A:FOO, bool > 3", "(-A:FOO, bool > 3)")]
-        [InlineData("-(A:FOO, bool) > 3", "(-A:FOO, bool > 3)")]
-        public void BooleanParser(string expression, string expected)
+        [InlineData("- A:FOO, bool > 3", "(-A:FOO, bool > 3)", "(-A:FOO, bool > 3)")]
+        [InlineData("-(A:FOO, bool) > 3", "(-A:FOO, bool > 3)", "(-A:FOO, bool > 3)")]
+
+        // Optimized cases
+        [InlineData("(A:FOO, bool > 3) AND (A:BAR, bool > 1 AND (ON OR OFF))",
+            "((A:FOO, bool > 3) AND ((A:BAR, bool > 1) AND (ON OR OFF)))",
+            "((A:FOO, bool > 3) AND (A:BAR, bool > 1))")]
+        [InlineData("(A:FOO, bool > 3) OR (A:BAR, bool > 1 OR (ON AND OFF))",
+            "((A:FOO, bool > 3) OR ((A:BAR, bool > 1) OR (ON AND OFF)))",
+            "((A:FOO, bool > 3) OR (A:BAR, bool > 1))")]
+        public void BooleanParser(string expression, string expected, string expectedOptimized)
         {
             CheckParserValue(expected, expression, ParseAsBoolean);
+
+            Assert.Equal(expectedOptimized, ParseAsBoolean(expression).Optimize().ToString());
         }
 
         [Theory]
