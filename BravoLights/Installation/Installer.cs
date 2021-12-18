@@ -236,7 +236,12 @@ namespace BravoLights.Installation
         {
             get
             {
-                return GetWasmModuleVersion(FlightSimulatorPaths.IncludedWasmModulePath);
+                var version = GetWasmModuleVersion(FlightSimulatorPaths.IncludedWasmModulePath);
+                if (version == null)
+                {
+                    throw new Exception("Missing included WASM module");
+                }
+                return version;
             }
         }
 

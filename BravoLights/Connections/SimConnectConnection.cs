@@ -263,7 +263,7 @@ namespace BravoLights.Connections
 
         private void ConnectNow()
         {
-            logger.Debug("ConnectNow");
+            logger.Debug("Attempting to connect to simulator");
 
             if (reconnectTimer != null)
             {
@@ -301,7 +301,7 @@ namespace BravoLights.Connections
             }
             catch (Exception ex)
             {
-                logger.Debug(ex, "ConnectNow Exception");
+                logger.Debug(ex, "Connection failure");
 
                 reconnectTimer = new(ReconnectTimerElapsed, null, TimeSpan.FromSeconds(30), Timeout.InfiniteTimeSpan);
 
