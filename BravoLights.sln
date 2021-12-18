@@ -18,6 +18,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.gitignore = .gitignore
 		assemble-wasm-for-ide.cmd = assemble-wasm-for-ide.cmd
 		MSFSWASMProject\PackageDefinitions\better-bravo-lights-lvar-module.xml = MSFSWASMProject\PackageDefinitions\better-bravo-lights-lvar-module.xml
+		BetterBravoLights.exe.nlog = BetterBravoLights.exe.nlog
 		MSFSWASMProject\BetterBravoLightsLVars.xml = MSFSWASMProject\BetterBravoLightsLVars.xml
 		build-and-publish.ps1 = build-and-publish.ps1
 		LICENSE = LICENSE
