@@ -14,10 +14,10 @@ namespace BravoLights.Installation
         {
             get
             {
-                var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+                var localAppData = (UnitTestRoot == null) ? Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) : Path.Join(UnitTestRoot, "LOCALAPPDATA");
                 var windowsStoreLocation = Path.Join(localAppData, "Packages", "Microsoft.FlightSimulator_8wekyb3d8bbwe", "LocalCache");
 
-                var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+                var appData = (UnitTestRoot == null) ? Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) : Path.Join(UnitTestRoot, "APPDATA");
                 var steamLocation = Path.Join(appData, "Microsoft Flight Simulator");
 
                 var pathsToTry = new[]
@@ -46,7 +46,12 @@ namespace BravoLights.Installation
         {
             get
             {
-                return Application.StartupPath;
+                if (UnitTestRoot == null)
+                {
+                    return Application.StartupPath;
+                }
+
+                return Path.Join(Application.StartupPath, "..", "..", "..", "..", "BravoLights", "bin", "Debug", "net5.0-windows");
             }
         }
 
@@ -135,5 +140,7 @@ namespace BravoLights.Installation
                 return Path.Combine(UserRuntimePath, "Config.ini");
             }
         }
+
+        internal static string UnitTestRoot = null;
     }
 }

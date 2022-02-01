@@ -6,6 +6,10 @@
     },
     "StartedManually": {
       "commandName": "Project"
+    },
+    "Install": {
+      "commandName": "Project",
+      "commandLineArgs": "/install"
     }
   }
 }

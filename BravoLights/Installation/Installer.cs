@@ -201,10 +201,13 @@ namespace BravoLights.Installation
         {
             foreach (var addonEl in document.Element("SimBase.Document").Elements("Launch.Addon"))
             {
-                var addonName = addonEl.Element("Name").Value;
-                if (addonName == name)
+                var addonNameElement = addonEl.Element("Name");
+                if (addonNameElement != null)
                 {
-                    return addonEl;
+                    if (addonNameElement.Value == name)
+                    {
+                        return addonEl;
+                    }
                 }
             }
             return null;
