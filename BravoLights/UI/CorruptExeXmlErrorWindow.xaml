@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:BravoLights.UI"
         mc:Ignorable="d"
-        Title="Better Bravo Lights - Installation Aborted" Height="420" Width="500"
+        Title="Better Bravo Lights - Installation Aborted" Height="420" Width="540"
         WindowStartupLocation="CenterScreen"
         DataContext="{Binding RelativeSource={RelativeSource Self}}">
     <DockPanel>
@@ -20,7 +20,8 @@
             </TextBlock>
 
             <TextBlock Margin="0,8,0,0">The file in question is the <Run FontFamily="Courier New">exe.xml</Run> file at:</TextBlock>
-            <TextBox IsReadOnly="True" Text="{Binding Path=XmlFilename}" TextWrapping="Wrap" />
+            <TextBox IsReadOnly="True" Text="{Binding Path=Exception.ExeXmlFilename, Mode=OneWay}" TextWrapping="Wrap" />
+            
             <TextBlock><Hyperlink NavigateUri="OPEN" RequestNavigate="ShowExeXmlLocation">Show me that folder</Hyperlink></TextBlock>
 
             <TextBlock Margin="0,32,0,0" TextWrapping="Wrap">

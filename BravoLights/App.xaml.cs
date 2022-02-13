@@ -9,6 +9,7 @@ using System.Drawing;
 using BravoLights.Common;
 using System.Diagnostics;
 using NLog;
+using System.IO;
 
 namespace BravoLights
 {
@@ -32,6 +33,55 @@ namespace BravoLights
 
         private VariableList variableList;
 
+        private void TryInstallOrUninstall(string cmd)
+        {
+            try
+            {
+                switch (cmd)
+                {
+                    case "/install":
+                        {
+                            var msg = Installer.Install();
+                            MessageBox.Show(msg, "Better Bravo Lights");
+                            logger.Debug("Install:Exit");
+                            Environment.Exit(0);
+                            break;
+                        }
+                    case "/uninstall":
+                        {
+                            var msg = Installer.Uninstall();
+                            MessageBox.Show(msg, "Better Bravo Lights");
+                            logger.Debug("Uninstall:Exit");
+                            Environment.Exit(0);
+                            break;
+                        }
+                }
+            }
+            catch (CorruptExeXmlException ex)
+            {
+                // The exe.xml file is broken. Maybe we can fix it?
+                if (ex.RepairedContent != null)
+                {
+                    // Yes! Fix the exe.xml file
+                    File.WriteAllText(ex.ExeXmlFilename, ex.RepairedContent);
+                    // Go try the install/uninstall again
+                    TryInstallOrUninstall(cmd);
+                    return;
+                }
+                else
+                {
+                    var window = new CorruptExeXmlErrorWindow() { Exception = ex };
+                    window.ShowDialog();
+                    Environment.Exit(0);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Operation failed: {ex.GetType().FullName}:{ex.Message}. Please report this to the application author.", "Better Bravo Lights", MessageBoxButton.OK, MessageBoxImage.Error);
+                Environment.Exit(0);
+            }
+        }
+
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
@@ -44,42 +94,13 @@ namespace BravoLights
             {
                 var cmd = e.Args[0];
 
-                try
+                if (cmd == "/startedbysimulator")
                 {
-                    switch (cmd)
-                    {
-                        case "/install":
-                            {
-                                var msg = Installer.Install();
-                                MessageBox.Show(msg, "Better Bravo Lights");
-                                logger.Debug("Install:Exit");
-                                Environment.Exit(0);
-                                break;
-                            }
-                        case "/uninstall":
-                            {
-                                var msg = Installer.Uninstall();
-                                MessageBox.Show(msg, "Better Bravo Lights");
-                                logger.Debug("Uninstall:Exit");
-                                Environment.Exit(0);
-                                break;
-                            }
-                        case "/startedbysimulator":
-                            exitWhenSimulatorExits = true;
-                            break;
-                    }
+                    exitWhenSimulatorExits = true;
                 }
-                catch (CorruptExeXmlException ex)
-                {
-                    var window = new CorruptExeXmlErrorWindow() { XmlFilename = ex.ExeXmlFilename, Exception = ex };
-                    window.ShowDialog();
-                    Environment.Exit(0);
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Operation failed: {ex.GetType().FullName}:{ex.Message}. Please report this to the application author.", "Better Bravo Lights", MessageBoxButton.OK, MessageBoxImage.Error);
-                    Environment.Exit(0);
-                }
+
+                TryInstallOrUninstall(cmd);
+
             }
             else
             {
@@ -283,7 +304,10 @@ namespace BravoLights
         {
             logger.Debug("OnExit");
 
-            notifyIcon.Dispose();
+            if (notifyIcon != null)
+            {
+                notifyIcon.Dispose();
+            }
             base.OnExit(e);
         }
 

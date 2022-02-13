@@ -2,7 +2,6 @@
 using System.IO;
 using System.Text;
 using System.Text.Json;
-using System.Windows.Forms;
 using System.Xml;
 using System.Xml.Linq;
 
@@ -10,20 +9,27 @@ namespace BravoLights.Installation
 {
     public class CorruptExeXmlException : Exception
     {
-        private readonly string exeXmlPath;
-
         public CorruptExeXmlException(string exeXmlPath, Exception innerException)
             :base("Existing exe.xml file is corrupt", innerException)
         {
-            this.exeXmlPath = exeXmlPath;
+            ExeXmlFilename = exeXmlPath;
+            try
+            {
+                OriginalContent = File.ReadAllText(exeXmlPath);
+                RepairedContent = ExeXmlFixer.TryFix(OriginalContent);
+            } catch
+            {
+            }
         }
 
-        public string ExeXmlFilename
+        public string ExeXmlFilename { get; private set; }
+
+        public string OriginalContent { get; private set; }
+        public string RepairedContent { get; private set; }
+
+        public override string ToString()
         {
-            get
-            {
-                return exeXmlPath;
-            }
+            return base.ToString();
         }
     }
 
