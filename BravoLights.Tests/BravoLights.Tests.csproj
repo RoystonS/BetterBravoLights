@@ -24,4 +24,10 @@
     <ProjectReference Include="..\BravoLights\BravoLights.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="GitHubReleasesSample.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

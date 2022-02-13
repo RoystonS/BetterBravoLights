@@ -1,4 +1,5 @@
-﻿using System.Net.Http;
+﻿using System;
+using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Reflection;
 using System.Text.Json;
@@ -29,14 +30,36 @@ namespace BravoLights.UI
             var client = new HttpClient();
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/vnd.github.v3+json"));
             client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("RoystonS-BetterBravoLights", VersionString));
-            var response = await client.GetStringAsync("https://api.github.com/repos/RoystonS/BetterBravoLights/releases");
-            var doc = JsonDocument.Parse(response);
-            var firstReleaseEntry = doc.RootElement[0];
 
-            // v0.6.0
-            var releaseName = firstReleaseEntry.GetProperty("name").GetString();
-            var versionString = releaseName[1..];
-            return versionString;
+            // We're not going to bother paging so we'll assume that the latest version is somewhere in the first page.
+            var response = await client.GetStringAsync("https://api.github.com/repos/RoystonS/BetterBravoLights/releases");
+            return ExtractLatestVersionFromGitHubReleasesJson(response);
+        }
+
+        internal static string ExtractLatestVersionFromGitHubReleasesJson(string json)
+        {
+            var doc = JsonDocument.Parse(json);
+
+            Version latestVersion = null;
+            foreach (var releaseEntry in doc.RootElement.EnumerateArray())
+            {
+                try
+                {
+                    // v0.6.0
+                    var releaseName = releaseEntry.GetProperty("name").GetString();
+                    var versionString = releaseName[1..];
+                    var version = new Version(versionString);
+                    if (latestVersion == null || version.CompareTo(latestVersion) > 0)
+                    {
+                        latestVersion = version;
+                    }
+                }
+                catch
+                {
+                }
+            }
+
+            return latestVersion.ToString();
         }
 
         private static Task<string> cachedLatestVersionFetch;
