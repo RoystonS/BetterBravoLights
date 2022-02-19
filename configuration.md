@@ -1,10 +1,21 @@
 # Better Bravo Lights - Configuration
 
-Configuring Better Bravo Lights (BBL) is simply a matter of editing the `Config.ini` file. You don't need to restart Better Bravo Lights or your flight. BBL monitors `Config.ini` for changes automatically reconfigures itself when the file is changed.
+Configuring Better Bravo Lights (BBL) is simply a matter of editing the `Config.ini` file. You don't need to restart Better Bravo Lights or your flight. BBL monitors `Config.ini` for changes live and automatically reconfigures itself when the file is changed.
 
 It's a good idea not to _guess_ at values such as the threshold for low oil pressure; instead, check the POH, or check in the actual aircraft module itself. (`panel.xml` or `cockpit.cfg` are good files to check as they describe annunciator configurations or the red/yellow/green ranges for panel gauges.)
 
 If you make some useful configuration entries, please [share it with us on GitHub](https://github.com/RoystonS/BetterBravoLights/issues/new/choose) and we'll look at adding them to the default configuration for others to use!
+
+## Configuration Files
+
+As of v0.7.0, BBL has _two_ configuration files for describing the behaviour of lights:
+
+1. an internal `Config.Builtin.ini` file which contains the configuration entries that BBL ships with; this lives in the `Program` folder.
+2. a user-modifiable `Config.ini` file which is for your personal overrides.
+
+Whenever BBL looks up a configuration value, entries in the user `Config.ini` file override those of the built-in `Config.Builtin.ini` file.
+
+The intention is that you should carry your `Config.ini` file from one release of BBL to another, and that file should contain as little as possible. If you find yourself maintaining a large set of configuration, please [contact the BBL authors to see if you can get some of that configuration adopted by the product](https://github.com/RoystonS/BetterBravoLights/issues/new/choose).
 
 ## Configuration Syntax
 
@@ -19,7 +30,7 @@ The configuration file `Config.ini` is a standard [.ini file](https://en.wikiped
 - The configuration file is broken up into sections, each beginning with a section name in square brackets. For example, `[Default]`.
 - Configuration for an aircraft is in a section named `[Aircraft.<aircraftname>]`
   - For instance: `[Aircraft.Asobo_TBM930]` or `[Aircraft.Asobo_Pitts]`
-  - You can find the name of the aircraft by looking in the BBL lighst debugging page; it appears at the top-right.
+  - You can find the name of the aircraft by looking in the BBL lights debugging page; it appears at the top-right.
 - Each light setting line is of the format
   - `lightname = expression`
 - Expression types:
@@ -32,9 +43,8 @@ The configuration file `Config.ini` is a standard [.ini file](https://en.wikiped
       - No units are needed for L: variables
       - Many L: variables are aircraft-specific
   - literal numbers
-    - decimal: 0, 1, 2.5
-      - N.B. negative literals are not yet supported. Coming soon!
-    - hexadecimal: 0x5678
+    - decimal: `0`, `1`, `2.5`, `-42`
+    - hexadecimal: `0x56d8`
   - fixed light values
     - `ON`
     - `OFF`
@@ -50,6 +60,9 @@ The configuration file `Config.ini` is a standard [.ini file](https://en.wikiped
     - `-` (subtract)
     - `*` (multiply)
     - `/` (divide)
+  - bitwise expressions (new in v0.7.0)
+    - `&` (bitwise AND); useful for checking sim vars which are masks ([`A:LIGHT ON STATES`](https://docs.flightsimulator.com/html/Programming_Tools/SimVars/Aircraft_SimVars/Aircraft_System_Variables.htm#LIGHT_ON_STATES) for example). `A:LIGHT ON STATES & 0x0008 == 0x0008` would check for the taxi lights being on.
+    - `|` (bitwise OR)
   - logical expressions
     - `AND` (can also be written as `&&`)
     - `OR` (can also be written as `||`)
@@ -111,6 +124,33 @@ The short-circuiting `OR` operator is particularly useful for generating configu
 
 As well as setting the configuration for lights (see the list of Light Names below), some other configuration settings can be made:
 
+- `MasterEnable` (New in v0.7.0)
+
+  - This is feature makes it easy to turn off all Bravo lights until a particular state has been reached, such as the master electrical bus or battery switch being on. `MasterEnable` should be given a standard light-enabled expression, which it then automatically `AND`s into every other light expression.
+
+    For example, if we want our lights to turn on only once the main flight controls panel is on, we could write this rather repetitive configuration:
+
+    ```
+    [Aircraft.Something]
+    MasterWarning = A:CIRCUIT GENERAL PANEL ON, bool == 1 AND L:Generic_Master_Warning_Active == 1
+    ParkingBrake = A:CIRCUIT GENERAL PANEL ON, bool == 1 AND A:BRAKE PARKING POSITION, bool == 1
+    Door = A:CIRCUIT GENERAL PANEL ON, bool == 1 AND (A:CANOPY OPEN, percent > 0 OR A:EXIT OPEN:0, percent > 0)
+    ```
+
+    or we can use `MasterEnable` to simplify it considerably:
+
+    ```
+    [Aircraft.Something]
+    MasterEnable = A:CIRCUIT GENERAL PANEL ON, bool == 1
+
+    MasterWarning = L:Generic_Master_Warning_Active == 1
+    ParkingBrake = A:BRAKE PARKING POSITION, bool == 1
+    Door = A:CANOPY OPEN, percent > 0 OR A:EXIT OPEN:0, percent > 0
+    ```
+
+    Note that when viewing light configurations in the debugger, expressions will show the `AND`ed `MasterEnable` configuration mixed
+    into the configuration.
+
 - `Invert` (New in v0.5.0)
 
   - This setting takes a comma-separated list of light names and arranges for their logic to be inverted.
@@ -122,6 +162,18 @@ As well as setting the configuration for lights (see the list of Light Names bel
     It _is_ possible to apply this setting for individual aircraft, but it makes most sense in the `[Default]` section.
 
     Note that when viewing inverted lights in the debugger, their expressions will be shown with an extra `NOT` prefix for the expression: this is how the inverting logic works.
+
+    The interaction between `MasterEnable` and `Invert` is such that `Invert`ing
+    behaviour only takes effect after the `MasterEnable` condition has been passed. That is, for a configuration of:
+
+    ```
+    MasterEnable = EXPRESSION1
+    Invert = HDG
+
+    HDG = EXPRESSION2
+    ```
+
+    the expression used for the HDG light is `EXPRESSION1 AND (NOT EXPRESSION2)`
 
 ## Examples of light configurations
 
@@ -176,3 +228,7 @@ In the above picture we can see:
   - we can see the light is using the expression `(A:ENG OIL PRESSURE:1, psi <= 60) OR (A:ENG OIL PRESSURE:2, psi <= 60)`
   - we can see the current value of `A:ENG OIL PRESSURE:1, psi` is 37.18. This is less than or equal to 60, which is why the light is lit
   - (that is, engine 2's oil is fine but we have a leak on engine 1, so the light is correctly lit)
+
+## I have a new aircraft that Better Bravo Lights doesn't know about. How do I find out what variables and values it uses?
+
+In BBL v0.7.0 there is a new _experimental_ 'Variable List' user interface. This shows _all_ known variables, both `A:` and `L:` variables
