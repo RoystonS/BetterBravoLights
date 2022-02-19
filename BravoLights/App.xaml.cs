@@ -28,7 +28,7 @@ namespace BravoLights
 
         private Forms.NotifyIcon notifyIcon;
 
-        private bool exitWhenSimulatorExits = false;
+        private bool startedBySimulator = false;
         private static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         private VariableList variableList;
@@ -96,11 +96,11 @@ namespace BravoLights
 
                 if (cmd == "/startedbysimulator")
                 {
-                    exitWhenSimulatorExits = true;
+                    startedBySimulator = true;
+                    logger.Debug("Started by simulator");
                 }
 
                 TryInstallOrUninstall(cmd);
-
             }
             else
             {
@@ -117,13 +117,8 @@ namespace BravoLights
                         Installer.Install();
                     }
                     catch { }
-
-                    // And for this run, assume we were run with the simulator
-                    exitWhenSimulatorExits = true;
                 }
             }
-
-            logger.Debug("exitWhenSimulatorExits: {0}", exitWhenSimulatorExits);
 
             var processName = Process.GetCurrentProcess().ProcessName;
             if (Process.GetProcessesByName(processName).Length > 1)
@@ -131,7 +126,7 @@ namespace BravoLights
                 logger.Debug("Existing copy already running");
 
                 // There was already a copy running.
-                if (exitWhenSimulatorExits)
+                if (startedBySimulator)
                 {
                     // It's being started by the simulator. Exit silently.
                     Environment.Exit(0);
@@ -335,16 +330,9 @@ namespace BravoLights
             switch (e.SimState)
             {
                 case SimState.SimExited:
-                    if (exitWhenSimulatorExits)
-                    {
-                        ExitApplication();
-                    } else
-                    {
-                        // Attempt to reconnect when the sim starts again
-                        SimConnectConnection.Connection.Start();
-                    }
-
-                    break;
+                    // MSFS has exited, so we will too.
+                    ExitApplication();
+                    return;
             }
 
             UpdateTrayIconText();
