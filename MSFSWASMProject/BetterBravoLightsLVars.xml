@@ -1,4 +1,5 @@
-<Project Version="2" Name="StandaloneModuleProject" FolderName="">
+<?xml version="1.0" encoding="utf-8"?>
+<Project Version="2" Name="BetterBravoLightsLVars" FolderName="Packages">
 	<OutputDirectory>.</OutputDirectory>
 	<TemporaryOutputDirectory>_PackageInt</TemporaryOutputDirectory>
 	<Packages>

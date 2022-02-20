@@ -7,7 +7,7 @@
 	</ItemSettings>
 	<Flags>
 		<VisibleInStore>true</VisibleInStore>
-		<CanBeReferenced>true</CanBeReferenced>
+		<CanBeReferenced>false</CanBeReferenced>
 	</Flags>
 	<AssetGroups>
 		<AssetGroup Name="ContentInfo">
