@@ -154,7 +154,10 @@ namespace BravoLights.Installation
 
             InstallWasmModule();
 
+            message.AppendLine();
             message.AppendLine($"Better Bravo Lights will run from {FlightSimulatorPaths.BetterBravoLightsPath}");
+
+            message.AppendLine();
             message.AppendLine($"WASM module installed to {FlightSimulatorPaths.InstalledWasmModulePath}");
 
             if (new WindowsPrincipal(WindowsIdentity.GetCurrent()).IsInRole(WindowsBuiltInRole.Administrator)) {
@@ -203,6 +206,7 @@ namespace BravoLights.Installation
             if (InstalledWasmModuleVersion != null)
             {
                 UninstallWasmModule();
+                message.AppendLine();
                 message.AppendLine($"WASM module uninstalled from {FlightSimulatorPaths.InstalledWasmModulePath}");
             }
 
