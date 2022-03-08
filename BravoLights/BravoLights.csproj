@@ -8,7 +8,7 @@
     <Version>0.7.0</Version>
     <Authors>Royston Shufflebotham &lt;royston@shufflebotham.org&gt;</Authors>
     <Product>Better Bravo Lights</Product>
-    <Copyright>(C) 2021 Royston Shufflebotham &lt;royston@shufflebotham.org&gt;</Copyright>
+    <Copyright>(C) 2021-2022 Royston Shufflebotham &lt;royston@shufflebotham.org&gt;</Copyright>
     <PackageId>BetterBravoLights</PackageId>
     <AssemblyName>BetterBravoLights</AssemblyName>
   </PropertyGroup>

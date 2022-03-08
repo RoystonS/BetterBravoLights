@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Authors>Royston Shufflebotham &lt;royston@shufflebotham.org&gt;</Authors>
     <Product>Better Bravo Lights</Product>
-    <Copyright>(C) 2021 Royston Shufflebotham &lt;royston@shufflebotham.org&gt;</Copyright>
+    <Copyright>(C) 2021-2022 Royston Shufflebotham &lt;royston@shufflebotham.org&gt;</Copyright>
     <TargetFramework>net5.0</TargetFramework>
   </PropertyGroup>
 
