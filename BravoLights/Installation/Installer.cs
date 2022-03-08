@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Security.Principal;
 using System.Text;
 using System.Text.Json;
 using System.Xml;
@@ -155,6 +156,11 @@ namespace BravoLights.Installation
 
             message.AppendLine($"Better Bravo Lights will run from {FlightSimulatorPaths.BetterBravoLightsPath}");
             message.AppendLine($"WASM module installed to {FlightSimulatorPaths.InstalledWasmModulePath}");
+
+            if (new WindowsPrincipal(WindowsIdentity.GetCurrent()).IsInRole(WindowsBuiltInRole.Administrator)) {
+                message.AppendLine();
+                message.AppendLine($"(By the way, you don't need to run this installer as Administrator!)");
+            }
 
             return message.ToString();
         }
