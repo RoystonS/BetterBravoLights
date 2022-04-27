@@ -136,6 +136,7 @@ function extractUnits(unitsText, variableName) {
   // Remove NBSPs
   unitsText = unitsText.replace(/\u00A0/g, ' ');
 
+  unitsText = unitsText.replace('degrees.', 'degrees');
   unitsText = unitsText.replace('inch ()', 'inch');
   unitsText = unitsText.replace('feet ()', 'feet');
   unitsText = unitsText.replace('feet (ft)', 'feet');
@@ -148,6 +149,7 @@ function extractUnits(unitsText, variableName) {
     'slugs per feet squared'
   );
   unitsText = unitsText.replace('foot pounds ()', 'foot pounds');
+  unitsText = unitsText.replace('foot pounds (ftlbs)', 'foot pounds');
   unitsText = unitsText.replace('feet squared ()', 'feet squared');
   unitsText = unitsText.replace(
     'pound force per square foot (psf)',
@@ -299,6 +301,11 @@ function extractUnits(unitsText, variableName) {
   if (variableName.match(/WATER.*POSITION/)) {
     return 'postion';
   }
+  
+  if (variableName === 'SLIGHT OBJECT ATTACHED') {
+	  // supports both bool + string; we only support bool
+    return 'bool';
+  }
 
   if (
     variableName.endsWith(' PCT') ||
@@ -396,21 +403,25 @@ function writeEntry(heading, variableName, units, description) {
       start = 1;
       end = 4;
     } else if (
-      ((heading === 'COM' || heading === 'NAV') &&
-        variableBase.endsWith('FREQUENCY')) ||
+      (heading === 'COM' && variableBase.endsWith('FREQUENCY')) ||
       variableBase === 'COM AVAILABLE' ||
       variableBase === 'COM RECEIVE' ||
       variableBase === 'COM RECEIVE EX1' ||
       variableBase === 'COM SPACING MODE' ||
       variableBase === 'COM STATUS' ||
       variableBase === 'COM TEST' ||
-      variableBase === 'COM TRANSMIT'
+      variableBase === 'COM TRANSMIT' ||
+	  variableBase.startsWith('COM ACTIVE ')
     ) {
-      // The MSFS page says these index from 1-2 but they're actually from 1-3
-      // as there are 3 COM radios on the A320
       start = 1;
       end = 3;
-    } else if (heading === 'TACAN') {
+    } else if (
+	  ((heading === 'NAV') && variableBase.endsWith('FREQUENCY')) ||
+	  variableBase.startsWith('NAV CLOSE ')
+	) {
+      start = 1;
+      end = 4;
+	} else if (heading === 'TACAN') {
       start = 1;
       end = 2;
       // TODO: CHECK
@@ -507,7 +518,7 @@ function writeEntry(heading, variableName, units, description) {
       // Lights are indexed from 1-13
       start = 1;
       end = 13;
-    }
+	}
 
     if (start < 0) {
       throw new Error(`What indexes for ${heading}/${variableName}?`);
