@@ -2,7 +2,13 @@
 
 This is the 'Better Bravo Lights' tool. It replaces the standard Honeycomb Bravo lights utility with a program which is easier to configure, more flexible and more responsive.
 
-Full details and documentation are available at: https://roystons.github.io/BetterBravoLights/
+If you want to _use_ Better Bravo Lights, all the documentation is available at the Better Bravo Lights wiki:
+
+https://github.com/RoystonS/BetterBravoLights/wiki
+
+---
+
+If you want to work on the Better Bravo Lights code, read on:
 
 ## Developer Documentation
 
