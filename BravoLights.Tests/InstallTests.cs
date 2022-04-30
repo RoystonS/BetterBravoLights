@@ -13,8 +13,7 @@ namespace BravoLights.Tests
             {
                 var steamFolder = paths.SteamPath;
 
-                Directory.CreateDirectory(steamFolder);
-                File.WriteAllText(Path.Join(steamFolder, "UserCfg.opt"), $"InstalledPackagesPath \"{paths.FSDataPath}\"");
+                paths.EstablishAsMSFSRoot(steamFolder);
                 File.WriteAllText(Path.Join(steamFolder, "exe.xml"),
                     @"<?xml version=""1.0"" encoding=""Windows-1252""?>
 <SimBase.Document Type=""SimConnect"" version=""1,0"">
@@ -28,7 +27,6 @@ namespace BravoLights.Tests
             }
         }
 
-
         [Fact]
         public void DisablesAFCBridgeAtInstall()
         {
@@ -36,8 +34,7 @@ namespace BravoLights.Tests
             {
                 var steamFolder = paths.SteamPath;
 
-                Directory.CreateDirectory(steamFolder);
-                File.WriteAllText(Path.Join(steamFolder, "UserCfg.opt"), $"InstalledPackagesPath \"{paths.FSDataPath}\"");
+                paths.EstablishAsMSFSRoot(steamFolder);
                 File.WriteAllText(Path.Join(steamFolder, "exe.xml"),
                     @"<?xml version=""1.0"" encoding=""Windows-1252""?>
 <SimBase.Document Type=""SimConnect"" version=""1,0"">
@@ -56,6 +53,104 @@ namespace BravoLights.Tests
   <Launch.Addon>
     <Name>AFCBridge</Name>
     <Disabled>True</Disabled>", finalXml);
+            }
+        }
+
+        [Fact]
+        public void CanComplainAboutCorruptExeXml()
+        {
+            using (var paths = BuildTestFileSystem())
+            {
+                var appFolder = paths.StorePath;
+
+                paths.EstablishAsMSFSRoot(appFolder);
+
+                // Establish an exe.xml file that contains our 
+                File.WriteAllText(Path.Join(appFolder, "exe.xml"),
+                    @"<?xml version=""1.0"" encoding=""windows-1252""?>
+<Descr>Auto launch external applications on MSFS start</Descr>
+<Filename>exe.xml</Filename>
+<Disabled>False</Disabled>
+<Name>BravoLights</Name>
+<Path>C:\Users\royston\OneDrive\Desktop\BetterBravoLights WtiJo\Program\BetterBravoLights.exe</Path>
+<CommandLine>/startedbysimulator</CommandLine>
+<NewConsole>False</ NewConsole>
+</Launch.Addon>
+</SimBase.Document>");
+
+                var message = Installation.Installer.InstallationProblem;
+                Assert.Contains("BetterBravoLights was installed", message);
+            }
+        }
+
+        private void EstablishLegalBBLExeXml(Paths paths, string appFolder, string supposedBblExecPath, bool bblDisabled)
+        {
+            paths.EstablishAsMSFSRoot(appFolder);
+
+            File.WriteAllText(Path.Join(appFolder, "exe.xml"),
+                $@"<?xml version=""1.0"" encoding=""windows-1252""?>
+<SimBase.Document Type=""SimConnect"" version=""1,0"">
+  <Descr>Auto launch external applications on MSFS start</Descr>
+  <Filename>exe.xml</Filename>
+  <Launch.Addon>
+    <Disabled>{bblDisabled}</Disabled>
+    <Name>BravoLights</Name>
+    <Path>{supposedBblExecPath}</Path>
+    <CommandLine>/startedbysimulator</CommandLine>
+    <NewConsole>False</NewConsole>
+  </Launch.Addon>
+</SimBase.Document>");
+        }
+
+        [Fact]
+        public void ComplainsAboutMissingInstallationLocation()
+        {
+            using (var paths = BuildTestFileSystem())
+            {
+                var supposedBblExecPath = Path.Join(paths.TestRoot, "Somewhere\\BetterBravoLights.exe");
+
+                var appFolder = paths.StorePath;
+
+                EstablishLegalBBLExeXml(paths, appFolder, supposedBblExecPath, false);
+
+                var message = Installation.Installer.InstallationProblem;
+                Assert.Contains("BetterBravoLights was installed", message);
+                Assert.Contains(supposedBblExecPath, message);
+                Assert.Contains("file no longer exists", message);
+            }
+        }
+
+        [Fact]
+        public void DoesNotComplainAboutMissingInstallationLocationIfBBLIsDisabled()
+        {
+            using (var paths = BuildTestFileSystem())
+            {
+                var supposedBblExecPath = Path.Join(paths.TestRoot, "Somewhere\\BetterBravoLights.exe");
+
+                var appFolder = paths.StorePath;
+
+                EstablishLegalBBLExeXml(paths, appFolder, supposedBblExecPath, true);
+
+                Assert.Null(Installation.Installer.InstallationProblem);
+            }
+        }
+
+        [Fact]
+        public void DoesNotComplainAboutInstallationLocationIfNotMissing()
+        {
+            using (var paths = BuildTestFileSystem())
+            {
+                var supposedBblExecPath = Path.Join(paths.TestRoot, "Somewhere\\BetterBravoLights.exe");
+
+                var appFolder = paths.StorePath;
+
+                EstablishLegalBBLExeXml(paths, appFolder, supposedBblExecPath, true);
+
+                // Create a dummy BBL exe file; that should be enough to satisfy the installation check
+                Directory.CreateDirectory(Path.GetDirectoryName(supposedBblExecPath));
+                File.WriteAllBytes(supposedBblExecPath, new byte[] { 1, 2, 3, 4, 5 });
+
+                Assert.Null(Installation.Installer.InstallationProblem);
             }
         }
 
@@ -81,13 +176,16 @@ namespace BravoLights.Tests
 
             return new Paths
             {
+                TestRoot = folder,
                 StorePath = windowsStoreFolder,
                 SteamPath = steamFolder,
                 FSDataPath = fsDataFolder,
-                Disposer = () => {
+                Disposer = () =>
+                {
                     Installation.FlightSimulatorPaths.UnitTestRoot = null;
 
-                    Directory.Delete(folder, true); }
+                    Directory.Delete(folder, true);
+                }
             };
         }
     }
@@ -95,13 +193,20 @@ namespace BravoLights.Tests
 
     internal delegate void Disposer();
 
-        class Paths : IDisposable
-        {
-            public Disposer Disposer { get; set; }
+    class Paths : IDisposable
+    {
+        public Disposer Disposer { get; set; }
 
-            public string StorePath { get; set; }
-            public string SteamPath { get; set; }
-            public string FSDataPath { get; set; }
+        public string TestRoot { get; set; }
+        public string StorePath { get; set; }
+        public string SteamPath { get; set; }
+        public string FSDataPath { get; set; }
+
+        public void EstablishAsMSFSRoot(string folder)
+        {
+            Directory.CreateDirectory(folder);
+            File.WriteAllText(Path.Join(folder, "UserCfg.opt"), $"InstalledPackagesPath \"{FSDataPath}\"");
+        }
 
         void IDisposable.Dispose()
         {

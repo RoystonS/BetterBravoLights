@@ -118,6 +118,24 @@ namespace BravoLights
                     }
                     catch { }
                 }
+                else
+                {
+                    // We're being run manually. Are we in a situation where the user has previously installed BBL but now it isn't working
+                    // and they're running it manually? Let's check.
+                    var problem = Installer.InstallationProblem;
+                    if (problem != null)
+                    {
+                        // Yes!  Tell the user.
+                        // Do we carry on, or exit?
+                        logger.Warn("Installation problem detected on manual startup: {0}", problem);
+
+                        var result = MessageBox.Show($"BetterBravoLights has detected a problem with its installation:\n\n{problem}\n\n\n\nDo you want this manually-launched BetterBravoLights to continue running (Yes) or exit (No)?", "Better Bravo Lights Installation Problem Detected", MessageBoxButton.YesNo);
+                        if (result == MessageBoxResult.No)
+                        {
+                            Environment.Exit(0);
+                        }
+                    }
+                }
             }
 
             var processName = Process.GetCurrentProcess().ProcessName;

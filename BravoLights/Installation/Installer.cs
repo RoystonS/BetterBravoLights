@@ -11,14 +11,15 @@ namespace BravoLights.Installation
     public class CorruptExeXmlException : Exception
     {
         public CorruptExeXmlException(string exeXmlPath, Exception innerException)
-            :base("Existing exe.xml file is corrupt", innerException)
+            : base("Existing exe.xml file is corrupt", innerException)
         {
             ExeXmlFilename = exeXmlPath;
             try
             {
                 OriginalContent = File.ReadAllText(exeXmlPath);
                 RepairedContent = ExeXmlFixer.TryFix(OriginalContent);
-            } catch
+            }
+            catch
             {
             }
         }
@@ -160,7 +161,8 @@ namespace BravoLights.Installation
             message.AppendLine();
             message.AppendLine($"WASM module installed to {FlightSimulatorPaths.InstalledWasmModulePath}");
 
-            if (new WindowsPrincipal(WindowsIdentity.GetCurrent()).IsInRole(WindowsBuiltInRole.Administrator)) {
+            if (new WindowsPrincipal(WindowsIdentity.GetCurrent()).IsInRole(WindowsBuiltInRole.Administrator))
+            {
                 message.AppendLine();
                 message.AppendLine($"(By the way, you don't need to run this installer as Administrator!)");
             }
@@ -273,6 +275,73 @@ namespace BravoLights.Installation
         public static void UninstallWasmModule()
         {
             FileUtils.RemoveDirectoryRecursively(FlightSimulatorPaths.InstalledWasmModulePath);
+        }
+
+        /// <summary>
+        /// Tests whether MSFS's exe.xml file contains some entry for BBL. Doesn't test
+        /// whether it's enabled or disabled.
+        /// </summary>
+        public static bool IsBBLMentionedInExeXml
+        {
+            get
+            {
+                try
+                {
+                    var exeXmlContents = File.ReadAllText(FlightSimulatorPaths.ExeXmlPath);
+                    return exeXmlContents.Contains("BetterBravoLights.exe");
+                }
+                catch (Exception)
+                {
+                    return false;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether there's a problem with the installation configuration; this should
+        /// be used when starting up the app normally, to check if something has been broken in the installation.
+        /// </summary>
+        public static string InstallationProblem
+        {
+            get
+            {
+                try
+                {
+                    var xdoc = LoadExeXml();
+                    var lightsEl = FindAddon(xdoc, BravoLightsAddonName);
+                    if (lightsEl != null)
+                    {
+                        var disabledElem = lightsEl.Element("Disabled");
+                        if (disabledElem != null && disabledElem.Value == "True")
+                        {
+                            // It's installed but disabled. Don't bother checking the file path
+                            return null;
+                        }
+                        var pathElem = lightsEl.Element("Path");
+                        if (pathElem != null)
+                        {
+                            var installedBblPath = pathElem.Value;
+                            if (!File.Exists(installedBblPath))
+                            {
+                                return $"BetterBravoLights was installed into Flight Simulator at the path\n{installedBblPath}\nbut that file no longer exists.\n\nAs a result, BetterBravoLights will not currently run automatically when MSFS starts.\n\nTo fix this, restore the original path or re-run the BBL installer from the new path.";
+                            }
+                        }
+                    }
+                }
+                catch (CorruptExeXmlException)
+                {
+                    // Right now, the exe.xml file is corrupted. If we haven't been installed, that's okay.
+                    if (IsBBLMentionedInExeXml)
+                    {
+                        // We're in a situation where we HAVE been installed previously but now the exe.xml file is
+                        // corrupt. Presumably we've been started up manually because the user is trying to get
+                        // BBL working.
+                        return "After BetterBravoLights was installed, some other installation has broken the file that controls the programs that Flight Simulator launches when it starts.\n\nAs a result, BetterBravoLights (and some other programs) will not currently run automatically when MSFS starts.\n\nRun the BetterBravoLights installer and it will either automatically fix the problem or help you get it fixed.";
+                    }
+                }
+
+                return null;
+            }
         }
     }
 }

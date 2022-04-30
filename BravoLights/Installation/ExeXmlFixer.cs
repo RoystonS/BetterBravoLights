@@ -17,7 +17,7 @@ namespace BravoLights.Installation
         /// </returns>
         public static string TryFix(string exeXml)
         {
-            if (!exeXml.Contains("<SimBase.Document>"))
+            if (!exeXml.Contains("<SimBase.Document"))
             {
                 // This is a well-known corruption. Something has trashed the opening <SimBase.Document>
                 // line. We just need to insert one back in, which is straightforward.
