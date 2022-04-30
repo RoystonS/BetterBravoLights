@@ -118,7 +118,7 @@ namespace BravoLights.Installation
         }
         public static string IncludedWasmModulePath
         {
-            get { return Path.Join(BetterBravoLightsPath, WasmModuleName); }
+            get { return Path.Join(BetterBravoLightsPath, "Packages", WasmModuleName); }
         }
 
         public static string BuiltInConfigIniPath
