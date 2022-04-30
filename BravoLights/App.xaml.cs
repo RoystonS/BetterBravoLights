@@ -322,20 +322,22 @@ namespace BravoLights
         private void Connection_OnSimStateChanged(object sender, SimStateEventArgs e)
         {
             viewModel.SimState = e.SimState;
-
-            globalLightController.SimulatorConnected = (e.SimState == SimState.SimRunning);
-
-            logger.Debug("SimState {0}", e.SimState);
-
-            switch (e.SimState)
+            Dispatcher.Invoke(delegate
             {
-                case SimState.SimExited:
-                    // MSFS has exited, so we will too.
-                    ExitApplication();
-                    return;
-            }
+                globalLightController.SimulatorConnected = (e.SimState == SimState.SimRunning);
 
-            UpdateTrayIconText();
+                logger.Debug("SimState {0}", e.SimState);
+
+                switch (e.SimState)
+                {
+                    case SimState.SimExited:
+                        // MSFS has exited, so we will too.
+                        ExitApplication();
+                        return;
+                }
+
+                UpdateTrayIconText();
+            });
         }
 
         private void UpdateTrayIconText()

@@ -9,6 +9,5 @@ namespace BravoLights.Connections
         void Unsubscribe(short id);
 
         SimState SimState { get; }
-        event EventHandler<SimStateEventArgs> OnSimStateChanged;
     }
 }

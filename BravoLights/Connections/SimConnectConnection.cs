@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -111,6 +112,16 @@ namespace BravoLights.Connections
         public static SimConnectConnection Connection = new();
 
         private Timer reconnectTimer = null;
+        private Timer detectExitTimer = null;
+
+        // MSFS does use SimConnect to tell us when it's exited, but some users have reported that
+        // BBL sometimes doesn't exit. So as well as exiting when the sim tells us it's exited,
+        // we'll also exit if we haven't heard anything from the sim for a while. We'll also
+        // prod the sim every so often, to ensure that we _should_ hear something.
+        private DateTime lastReceivedResponseFromSim = DateTime.MinValue;
+        private static readonly TimeSpan ExitWhenNotHeardFromSimFor = TimeSpan.FromSeconds(15);
+        private static readonly TimeSpan SimLivenessPollPeriod = ExitWhenNotHeardFromSimFor / 2;
+
         private SimState simState = SimState.SimExited;
 
         private SimConnectConnection()
@@ -363,6 +374,7 @@ namespace BravoLights.Connections
             lock (this)
             {
                 logger.Debug("SimConnectOnRecvEvent {0}", data.uEventID);
+                lastReceivedResponseFromSim = DateTime.UtcNow;
 
                 switch ((RequestId)data.uEventID)
                 {
@@ -393,6 +405,7 @@ namespace BravoLights.Connections
             lock (this)
             {
                 logger.Debug("SimConnectOnRecvSystemState {0}", data.dwRequestID);
+                lastReceivedResponseFromSim = DateTime.UtcNow;
 
                 switch ((RequestId)data.dwRequestID)
                 {
@@ -441,6 +454,13 @@ namespace BravoLights.Connections
                 {
                     periodicLVarTimer = new(PeriodicLVarTimerElapsed, null, TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
                     ScheduleLVarCheck();
+
+                    if (detectExitTimer == null)
+                    {
+                        // This is the first time we've connected to the sim. Start an interval timer which 
+                        detectExitTimer = new(ExitDetectionTimerElapsed, null, TimeSpan.Zero, SimLivenessPollPeriod);
+
+                    }
                 }
 
                 if (simState == SimState.SimExited)
@@ -728,6 +748,35 @@ namespace BravoLights.Connections
         {
             var message = $"UNSUBSCRIBE {id.ToString(CultureInfo.InvariantCulture)}";
             SendLVarRequest(message);
+        }
+
+
+        private void ExitDetectionTimerElapsed(object sender)
+        {
+            if (simconnect != null)
+            {
+                try
+                {
+                    simconnect.RequestSystemState(RequestId.SimState, "Sim");
+                }
+                catch (Exception)
+                {
+                    // Sim has probably exited, but wait for the timer to expire, to make sure
+                    // it's not just a temporary glitch.
+                }
+            }
+
+            if (lastReceivedResponseFromSim < DateTime.UtcNow.Subtract(ExitWhenNotHeardFromSimFor))
+            {
+                // It's been a while since we received anything from the sim. Assume it's exited.
+                // But don't auto-exit if the debugger is attached, as that slows everything down.
+
+                if (!Debugger.IsAttached)
+                {
+                    detectExitTimer.Dispose();
+                    RaiseSimStateChanged(SimState.SimExited);
+                }
+            }
         }
     }
 

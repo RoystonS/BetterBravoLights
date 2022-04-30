@@ -132,29 +132,11 @@ namespace BravoLights.Connections
         public void SetWASMChannel(IWASMChannel wasmChannel)
         {
             this.wasmChannel = wasmChannel;
-            wasmChannel.OnSimStateChanged += WasmChannel_OnSimStateChanged;
-        }
-
-        private void WasmChannel_OnSimStateChanged(object sender, SimStateEventArgs e)
-        {
-            if (e.SimState == SimState.SimExited)
-            {
-                this.ResetKnownLVars();
-            }
         }
 
         private void SendNoSuchLVarError(EventHandler<ValueChangedEventArgs> handler)
         {
             handler(this, new ValueChangedEventArgs { NewValue = new Exception("LVar does not exist yet; this aircraft may not support it") });
-        }
-
-        private void ResetKnownLVars()
-        {
-            lvarIds.Clear();
-            lvarNames.Clear();
-            lvarValues.Clear();
-
-            SendAllValues();
         }
 
         private void SendAllValues()
