@@ -1,0 +1,64 @@
+name: "🧑‍🔧 Help me fix my corrupt `exe.xml` file"
+description: BetterBravoLights told me my existing `exe.xml` file is corrupt and I'd like some help.
+labels: exe-xml-help
+assignees:
+  - RoystonS
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form if you've tried to install BetterBravoLights but it refused to attempt to install because your MSFS `exe.xml` file was corrupt.
+
+        However, rather than filling this form out by hand, BetterBravoLights v0.3.1 and above comes with a one-click option that will fill it all in for you automatically.
+
+  - type: input
+    id: bbl_version
+    attributes:
+      label: Software version
+      description: Please indicate which version of BetterBravoLights you have
+      placeholder: 0.7.0
+    validations:
+      required: true
+      
+  - type: input
+    id: bbl_exe_xml_path
+    attributes:
+      label: Location of my exe.xml file
+      placeholder: C:\Users\myuser\AppData\Local\Packages\Microsoft.FlightSimulator_8wekyb3d8bbwe\LocalCache
+    validations:
+      required: false
+      
+  - type: textarea
+    id: bbl_exe_xml_contents
+    attributes:
+      label: Contents of my exe.xml file
+      description: Paste the contents of your corrupted exe.xml file here
+      render: xml
+      placeholder: |
+        <?xml version="1.0" encoding="windows-1252"?>
+        <Descr>Auto launch external applications on MSFS start</Descr>
+        <Filename>exe.xml</Filename>
+  
+        </Launch.Addon>
+         
+         </SimBase.Document>
+    validations:
+      required: true
+
+  - type: textarea
+    id: bbl_error
+    attributes:
+      label: The installation error
+      description: Paste here the error that Better Bravo Lights gave you when attempting to install
+      render: text
+      placeholder: |
+        Corrupt XML
+        
+    validations:
+      required: false
+
+  - type: markdown
+    attributes:
+      value: |
+        I understand that BetterBravoLights didn't corrupt the file and that it's simply warning
+        about the corrupted file. But could you help me fix it?
