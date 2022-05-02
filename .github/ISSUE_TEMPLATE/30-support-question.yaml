@@ -1,0 +1,54 @@
+name: "❓ Ask a support question"
+description: I can't figure out how to make BetterBravoLights do something in particular.
+labels: needs-triage
+assignees: RoystonS
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please fill out this form with all the relevant information so we can help you out.
+        
+        We appreciate your questions as we can use them to improve the software and documentation!
+
+  - type: dropdown
+    id: bbl_version
+    attributes:
+      label: Software version
+      description: Which version of BetterBravoLights are you using?
+      options:
+        - 0.7.0
+        - 0.6.0
+    validations:
+      required: true
+
+  - type: textarea
+    id: bbl_what_doing
+    attributes:
+      label: What are you trying to do?
+      description: Please tell us what you're trying to achieve
+      placeholder: I can't figure out how to get the HDG light to light up in the Concorde.
+    validations:
+      required: true
+    
+  - type: textarea
+    id: bbl_problem
+    attributes:
+      label: What's the problem?
+      description: What is (or isn't) happening as you'd expect?
+      placeholder: BBL is reporting that my HDG configuration line isn't valid
+      
+  - type: textarea
+    id: bbl_tried
+    attributes:
+      label: What have you tried already?
+      description: It'll save us some effort if you tell us the alternative approaches you've already tried.
+      placeholder: I've tried setting `HDG` to be `L:CONC_HDG = 1` and `L:CONC_HDG` but both are reported as "not valid"
+
+  - type: textarea
+    id: bbl_extra
+    attributes:
+      label: Other information
+      description: |
+        Add other information here, such as other relevant software you have installed.
+        

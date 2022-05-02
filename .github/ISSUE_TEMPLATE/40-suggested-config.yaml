@@ -1,0 +1,68 @@
+name: "🔨 Share configuration"
+description: I've developed some cool BetterBravoLights configuration and would like to share it with the world.
+labels: needs-triage
+assignees: RoystonS
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form if you've developed some BetterBravoLights configuration that you think would be useful for others.  If we use your configuration we'll give you credit, of course!
+        
+        If you're submitting multiple separate pieces of configuration for separate aircraft, please submit this form once for each aircraft so that we can keep the changes and discussions separate.
+
+  - type: dropdown
+    id: bbl_version
+    attributes:
+      label: Software version
+      description: Which version of BetterBravoLights are you using?
+      options:
+        - 0.7.0
+        - 0.6.0
+    validations:
+      required: true
+
+  - type: dropdown
+    id: bbl_type
+    attributes:
+      label: Change type
+      description: Is this adding a new aircraft or modifying one that BetterBravoLights already knows about?
+      options:
+        - New aircraft
+        - Modify existing aircraft
+    validations:
+      required: true
+      
+  - type: textarea
+    id: bbl_aircrafts
+    attributes:
+      label: Aircrafts
+      description: |
+        "Which aircrafts are you modifying/adding?"
+        "Please include the manufacturer of the simulated aircraft, not just the aircraft name, and for separately-installed addons, the version, if possible."
+      placeholder: "DC Designs Stearman 1.0.3"
+  
+  - type: textarea
+    id: bbl_config
+    attributes:
+      label: Configuration
+      description: |
+        Please add your configuration here.
+        It's really helpful if each configuration line is preceded with a comment explaining where that line comes from.  This helps us figure out how 'authoritative' the configuration is.
+
+        Checking the source code of the aircraft is _really_ reliable. Checking the documentation/POH is _quite_ reliable. Other educated guesses are _fairly_ reliable.
+
+        See https://github.com/RoystonS/BetterBravoLights/blob/f4574ea871ac09f1936b48478ef1f9be8ea13ff9/BravoLights/Config.ini#L110-L117 for examples.
+      render: ini
+      placeholder: |
+        ;; Cool New Aircraft
+        [Aircraft.Cool_New_Aircraft, Aircraft.Cool_New_Aircraft_Variant1]        
+        ; From cool-new-aircraft\html_ui\Pages\VCockpit\Instruments\NavSystems\CoolNew\NavSystem.js
+        HDG = L:CNA_AUTOPILOT_HDG == 1
+
+  - type: textarea
+    id: bbl_extra
+    attributes:
+      label: Other information
+      description: |
+        Add other information here, such as what they do, where you got these values from and how confident you are that they're correct.
+        (I can't buy every possible addon aircraft and am only an amateur simulator pilot.)

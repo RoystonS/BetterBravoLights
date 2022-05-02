@@ -1,0 +1,53 @@
+name: "💡 Suggest a feature"
+description: I've got a great idea to help improve BetterBravoLights.
+labels: needs-triage
+assignees: RoystonS
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please fill out this form with all the relevant information to help us figure out how to improve the software.
+        
+        We appreciate all suggestions!
+
+  - type: dropdown
+    id: bbl_version
+    attributes:
+      label: Software version
+      description: Which version of BetterBravoLights are you using?
+      options:
+        - 0.7.0
+        - 0.6.0
+    validations:
+      required: true
+
+  - type: textarea
+    id: bbl_problem
+    attributes:
+      label: Problem
+      description: Is your feature request related to a problem? Please describe the problem you'd like to solve.
+      placeholder: Manually reticulating splines in BBL takes a long time. Could BBL do it automatically?
+    validations:
+      required: true
+    
+  - type: textarea
+    id: bbl_solution
+    attributes:
+      label: Suggested solution
+      description: Do you have a suggested solution in mind?
+      placeholder: BBL could automatically reticulate splines by passing them through an external spline reticulation service when it starts up.
+
+  - type: textarea
+    id: bbl_tried
+    attributes:
+      label: What alternatives are there?
+      description: Are there alternative solutions or features you've considered?
+      placeholder: It would be even better if BBL didn't have to reticulate splines at all, but it obviously needs to do that given the limitations of MSFS.
+
+  - type: textarea
+    id: bbl_extra
+    attributes:
+      label: Other information
+      description: |
+        Add any other context or screenshots about the feature request here. 

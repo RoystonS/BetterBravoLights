@@ -1,0 +1,67 @@
+name: "🐛 Report a bug"
+description: I'd like to report a problem with BetterBravoLights.
+labels: needs-triage
+assignees: RoystonS
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please fill out this form with all the relevant information to so we can understand what's going on and fix the issue quickly.
+        
+        We appreciate all bugs filed and Pull Requests submitted!
+
+  - type: dropdown
+    id: bbl_version
+    attributes:
+      label: Software version
+      description: Which version of BetterBravoLights are you using? If you don't have the latest version, please give that a try.
+      options:
+        - 0.7.0
+        - 0.6.0
+    validations:
+      required: true
+
+  - type: dropdown
+    id: bbl_msfs_edition
+    attributes:
+      label: Flight Simulator installation type
+      description: Are you using the Windows Store version of Microsoft Flight Simulator 2020 or the Steam version?
+      options:
+        - Windows Store
+        - Steam    
+
+  - type: textarea
+    id: bbl_problem
+    attributes:
+      label: Problem
+      description: Please describe what the problem is.
+      placeholder: Program shows the error "JUYED AWK YACC" doesn't find any results when I search for certain terms in the experimental variable list.
+    validations:
+      required: true
+
+  - type: textarea
+    id: bbl_reproduce
+    attributes:
+      label: How to reproduce the problem
+      description: If you can indicate how to reproduce the problem, it's much easier for us to fix!
+      placeholder: |
+        Steps to reproduce the behavior:
+
+        1. Open the experimental variable list
+        2. Search for "Etaoin Shrdlu" or "Foobie Bletch"
+        3. BBL shows the error "JUYED AWK YACC"
+        4. BBL doesn't show any variables that match my search
+
+  - type: textarea
+    id: bbl_expected
+    attributes:
+      label: Expected behaviour
+      description: What behaviour are you expecting from BetterBravoLights?
+      placeholder: BBL should show all the variables that match my search term. I'm sure there are some.
+
+  - type: textarea
+    id: bbl_extra
+    attributes:
+      label: Other information
+      description: |
+        Add any other context or screenshots about the issue here. 
