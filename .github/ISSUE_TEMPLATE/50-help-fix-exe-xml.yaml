@@ -1,5 +1,5 @@
-name: "🧑‍🔧 Help me fix my corrupt `exe.xml` file"
-description: BetterBravoLights told me my existing `exe.xml` file is corrupt and I'd like some help.
+name: "🧑‍🔧 Help me fix my corrupt exe.xml file"
+description: BetterBravoLights told me my existing exe.xml file is corrupt and I'd like some help.
 labels: exe-xml-help
 assignees:
   - RoystonS
@@ -52,7 +52,7 @@ body:
       description: Paste here the error that Better Bravo Lights gave you when attempting to install
       render: text
       placeholder: |
-        Corrupt XML
+        The 'SimBase.Document' start tag on line 2 position 2 does not match the end tag of 'Launch.Addon'. Line 12, position 5.
         
     validations:
       required: false
