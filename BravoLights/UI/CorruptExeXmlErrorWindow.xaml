@@ -24,8 +24,8 @@
             
             <TextBlock><Hyperlink NavigateUri="OPEN" RequestNavigate="ShowExeXmlLocation">Show me that folder</Hyperlink></TextBlock>
 
-            <TextBlock Margin="0,32,0,0" TextWrapping="Wrap">
-                Your file is unfortunately not a valid XML file. You can find <Hyperlink NavigateUri="http://www.youtube.com">full details at our GitHub</Hyperlink> if you want to know more.
+            <TextBlock Margin="0,24,0,0" TextWrapping="Wrap">
+                Your file is unfortunately not a valid XML file. You can find <Hyperlink NavigateUri="https://github.com/RoystonS/BetterBravoLights/wiki/I-can't-install-because-of-a-%22corrupt-%60exe.xml%60-file%22%3F">full details at our GitHub</Hyperlink> if you want to know more.
             </TextBlock>
                                   
             <TextBlock Margin="0,8" TextWrapping="Wrap"><Run FontWeight="Medium">If you're not sure how to repair the file, we may be able to help you:</Run>
