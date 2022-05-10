@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NLog;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Timers;
@@ -19,6 +20,7 @@ namespace BravoLights
         private readonly Timer backoffTimer = new() { AutoReset = false, Interval = 100 };
 
         private FileSystemWatcher fsWatcher;
+        private static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         private readonly IniFile iniFile = new();
         private readonly string filePath;
@@ -51,6 +53,7 @@ namespace BravoLights
         {
             if (e.FullPath == filePath)
             {
+                logger.Debug("Detected change to config file {0}", filePath);
                 backoffTimer.Stop();
                 backoffTimer.Start();
             }
@@ -73,7 +76,7 @@ namespace BravoLights
 
         private void ReadConfig()
         {
-            Debug.WriteLine("Reading config file");
+            logger.Debug("Reading config file {0}", filePath);
             try
             {
                 lock (this)
@@ -84,7 +87,7 @@ namespace BravoLights
             }
             catch
             {
-                Debug.WriteLine("Failed to read file");
+                logger.Warn("Failed to read config file {0}", filePath);
                 return;
             }
         }
