@@ -28,10 +28,10 @@
                 Your file is unfortunately not a valid XML file. You can find <Hyperlink NavigateUri="https://github.com/RoystonS/BetterBravoLights/wiki/I-can't-install-because-of-a-%22corrupt-%60exe.xml%60-file%22%3F">full details at our GitHub</Hyperlink> if you want to know more.
             </TextBlock>
                                   
-            <TextBlock Margin="0,8" TextWrapping="Wrap"><Run FontWeight="Medium">If you're not sure how to repair the file, we may be able to help you:</Run>
+            <TextBlock Margin="0,16" TextWrapping="Wrap"><Run FontWeight="Medium">If you're not sure how to repair the file, that's fine: we may be able to help you.</Run>
                 <LineBreak />
                 Please <Hyperlink NavigateUri="FIX" RequestNavigate="RaiseExeXmlIssue">raise a support question at our GitHub</Hyperlink> and
-                we'll see if we can help you fix it. You'll need a GitHub account to raise the issue, but that link will automatically populate
+                we'll try to help you fix it. You'll need a GitHub account to raise the issue, but that link will automatically populate
                 the entire issue for you, complete with the error details and contents of your file.
             </TextBlock>
 
