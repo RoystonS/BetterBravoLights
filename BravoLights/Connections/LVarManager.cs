@@ -221,13 +221,22 @@ namespace BravoLights.Connections
                 {
                     var id = data.Ids[i];
                     var value = data.Values[i];
-                    var name = lvarNames[id];
-
-                    lvarValues[name] = value;
-
-                    if (handlers.TryGetValue(name, out var handler))
+                    try
                     {
-                        SendLastValue(name, handler);
+                        var name = lvarNames[id];
+
+                        lvarValues[name] = value;
+
+                        if (handlers.TryGetValue(name, out var handler))
+                        {
+                            SendLastValue(name, handler);
+                        }
+                    }
+                    catch (Exception)
+                    {
+                        // When starting up with a running sim we might get lvar updates
+                        // before we have a full list of lvars, so we might not be able
+                        // to find them
                     }
                 }
             }
