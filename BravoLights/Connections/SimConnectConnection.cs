@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -14,7 +13,7 @@ using Microsoft.FlightSimulator.SimConnect;
 using NLog;
 
 namespace BravoLights.Connections
-{       
+{
     enum DefineId : uint
     {
         WASMRequestResponse = 1,
@@ -169,6 +168,8 @@ namespace BravoLights.Connections
 
             var id = nameToId[name];
 
+            logger.Debug("UnsubscribeFromSimConnect:{0} ({1})", name, id);
+
             // We're unsubscribing from this variable, so any value is going to be out of date, so remove the old value
             lastReportedValue.Remove(name);
 
@@ -180,6 +181,8 @@ namespace BravoLights.Connections
         {
             var simvar = (SimVarExpression)variable;
             var nau = simvar.NameAndUnits;
+
+            logger.Debug("AddListener {0}. Existing: {1}", variable.Identifier, variableHandlers.Count);
 
             lock (this)
             {
@@ -222,11 +225,12 @@ namespace BravoLights.Connections
             }
         }
 
-
         public void RemoveListener(IVariable variable, EventHandler<ValueChangedEventArgs> handler)
         {
             var simvar = (SimVarExpression)variable;
             var nau = simvar.NameAndUnits;
+
+            logger.Debug("RemoveListener {0}", variable.Identifier);
 
             lock (this)
             {
@@ -260,7 +264,8 @@ namespace BravoLights.Connections
                 try
                 {
                     simconnect.ReceiveMessage();
-                } catch (Exception)
+                }
+                catch (Exception)
                 {
                     // Just squash. Sim's probably about to exit.
                 }
@@ -379,9 +384,7 @@ namespace BravoLights.Connections
                 switch ((RequestId)data.uEventID)
                 {
                     case RequestId.SimState:
-#if DEBUG
-                        Debug.WriteLine($"SimState {data.dwData}");
-#endif
+                        logger.Trace("SimState {0}", data.dwData);
                         RaiseSimStateChanged(data.dwData == 1 ? SimState.SimRunning : SimState.SimStopped);
                         break;
                     case RequestId.AircraftLoaded:
@@ -593,7 +596,8 @@ namespace BravoLights.Connections
             {
                 // Ask the WASM module to check for new lvars
                 SendLVarRequest($"CHECKLVARS");
-            } else
+            }
+            else
             {
                 hasEverCheckedForLVars = true;
                 // Ask the WASM module for ALL lvars
@@ -602,11 +606,12 @@ namespace BravoLights.Connections
         }
 
         public event EventHandler OnInMainMenuChanged;
-        
+
         private bool inMainMenu = true;
         public bool InMainMenu
         {
-            get {
+            get
+            {
                 return inMainMenu;
             }
             private set
@@ -671,7 +676,7 @@ namespace BravoLights.Connections
                     }
                     break;
                 case RequestId.WASMLVars:
-                    { 
+                    {
                         var lvarUpdate = ((LVarData)data.dwData[0]);
                         LVarManager.Connection.UpdateLVarValues(lvarUpdate);
                     }
@@ -688,6 +693,8 @@ namespace BravoLights.Connections
                     var dataContainer = data.dwData[0] as ContainerStruct?;
                     var newValue = dataContainer.Value.doubleValue;
 
+                    logger.Trace("RecvSimObjectData for {0} ({1}) = {2}", nau, data.dwRequestID, newValue);
+
                     variableHandlers.TryGetValue(nau, out var handlers);
 
                     if (handlers != null)
@@ -696,6 +703,10 @@ namespace BravoLights.Connections
                         var e = new ValueChangedEventArgs { NewValue = newValue };
                         handlers(this, e);
                     }
+                }
+                else
+                {
+                    logger.Trace("RecvSimObjectData for unexpected id {0}", data.dwRequestID);
                 }
             }
         }
@@ -711,9 +722,7 @@ namespace BravoLights.Connections
 
         private void SendLVarRequest(string message)
         {
-#if DEBUG
-            Debug.WriteLine($"Sending LVarRequest {message}");
-#endif
+            logger.Trace("Sending LVarRequest {0}", message);
 
             var cmd = new RequestString(message);
             try
@@ -811,7 +820,7 @@ namespace BravoLights.Connections
         }
     }
 
-    public class SimStateEventArgs: EventArgs
+    public class SimStateEventArgs : EventArgs
     {
         public SimState SimState;
     }

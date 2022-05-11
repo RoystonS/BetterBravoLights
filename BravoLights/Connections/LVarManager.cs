@@ -33,6 +33,8 @@ namespace BravoLights.Connections
             var lvar = (LvarExpression)variable;
             var name = lvar.LVarName;
 
+            logger.Trace("AddListener {0}", variable.Identifier);
+
             lock (this)
             {
                 handlers.TryGetValue(name, out var existingHandlersForDefinition);
@@ -56,6 +58,8 @@ namespace BravoLights.Connections
         {
             var lvar = (LvarExpression)variable;
             var name = lvar.LVarName;
+
+            logger.Trace("RemoveListener {0}", variable.Identifier);
 
             lock (this)
             {
@@ -82,6 +86,8 @@ namespace BravoLights.Connections
 
         private void SendLastValue(string name, EventHandler<ValueChangedEventArgs> handler)
         {
+            logger.Trace("SendLastValue:{0}", name);
+
             if (DisableLVars)
             {
                 handler(this, new ValueChangedEventArgs { NewValue = new Exception("The LVars module is not installed") });
@@ -96,6 +102,7 @@ namespace BravoLights.Connections
 
             if (lvarValues.TryGetValue(name, out var lastValue))
             {
+                logger.Trace("SendLastValue:{0}:{1}", name, lastValue);
                 handler(this, new ValueChangedEventArgs { NewValue = lastValue });
                 return;
             }
@@ -104,10 +111,12 @@ namespace BravoLights.Connections
             // because it's not being used for _this_ aircraft?
             if (lvarIds.ContainsKey(name))
             {
+                logger.Trace("SendLastValue:{0}:NoValue", name);
                 VariableHandlerUtils.SendNoValueError(this, handler);
             }
             else
             {
+                logger.Trace("SendLastValue:{0}:NoSuchVar", name);
                 SendNoSuchLVarError(handler);
             }
         }
@@ -172,14 +181,14 @@ namespace BravoLights.Connections
                 lvarIds.Clear();
                 lvarNames.Clear();
 
-                Debug.WriteLine($"Incoming lvars: {newLVars.Count}");
+                logger.Debug($"Incoming lvars: {newLVars.Count}");
                 for (short id = 0; id < newLVars.Count; id++)
                 {
                     var name = newLVars[id];
 
                     if (id >= oldCount)
                     {
-                        Debug.WriteLine($"Received new lvar {name}");
+                        logger.Debug($"Received new lvar: {name}");
                     }
 
                     if (!lvarIds.ContainsKey(name))
@@ -215,6 +224,8 @@ namespace BravoLights.Connections
 
         public void UpdateLVarValues(ILVarData data)
         {
+            logger.Trace("UpdateLVarValues");
+
             lock (this)
             {
                 for (var i = 0; i < data.ValueCount; i++)
@@ -237,6 +248,7 @@ namespace BravoLights.Connections
                         // When starting up with a running sim we might get lvar updates
                         // before we have a full list of lvars, so we might not be able
                         // to find them
+                        logger.Warn("Avoided race condition in UpdateLVarValues for {0}:{1}", data.Ids[i], data.Values[i]);
                     }
                 }
             }
