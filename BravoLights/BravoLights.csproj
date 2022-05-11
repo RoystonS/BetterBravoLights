@@ -60,7 +60,7 @@
   
   <ItemGroup>
     <None Update="Config.BuiltIn.ini">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Config.User.ini">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
