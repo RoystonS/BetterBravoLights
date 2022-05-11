@@ -158,7 +158,7 @@ namespace BravoLights.Connections
             }
 
             simconnect.AddToDataDefinition((DefineId)id, nameAndUnits.Name, nameAndUnits.Units, SIMCONNECT_DATATYPE.FLOAT64, 0, SimConnect.SIMCONNECT_UNUSED);
-            simconnect.RegisterDataDefineStruct<ContainerStruct>((DefineId)id);            
+            simconnect.RegisterDataDefineStruct<double>((DefineId)id);            
             simconnect.RequestDataOnSimObject((RequestId)id, (DefineId)id, 0, SIMCONNECT_PERIOD.SIM_FRAME, SIMCONNECT_DATA_REQUEST_FLAG.CHANGED, 0, 0, 0);
         }
 
@@ -690,8 +690,7 @@ namespace BravoLights.Connections
             {
                 if (idToName.TryGetValue(data.dwRequestID, out NameAndUnits nau))
                 {
-                    var dataContainer = data.dwData[0] as ContainerStruct?;
-                    var newValue = dataContainer.Value.doubleValue;
+                    var newValue = (double)data.dwData[0];
 
                     logger.Trace("RecvSimObjectData for {0} ({1}) = {2}", nau, data.dwRequestID, newValue);
 
@@ -828,12 +827,5 @@ namespace BravoLights.Connections
     class AircraftEventArgs : EventArgs
     {
         public string Aircraft;
-    }
-
-    [StructLayout(LayoutKind.Explicit, CharSet = CharSet.Ansi, Pack = 1)]
-    struct ContainerStruct
-    {
-        [FieldOffset(0)]
-        public double doubleValue;
     }
 }
