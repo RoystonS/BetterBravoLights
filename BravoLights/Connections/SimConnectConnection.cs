@@ -429,7 +429,7 @@ namespace BravoLights.Connections
 
         private void PeriodicLVarTimerElapsed(object state)
         {
-            Debug.WriteLine("PeriodicLVarTimerElapsed");
+            logger.Debug("PeriodicLVarTimerElapsed");
             ScheduleLVarCheck();
         }
 
@@ -554,9 +554,7 @@ namespace BravoLights.Connections
         /// </summary>
         private void ScheduleLVarCheck()
         {
-#if DEBUG
-            Debug.WriteLine("ScheduleLVarCheck");
-#endif
+            logger.Debug("ScheduleLVarCheck");
 
             if (lvarCheckTimer == null)
             {
@@ -571,9 +569,7 @@ namespace BravoLights.Connections
         /// </summary>
         private void LVarCheckTimerElapsed(object state)
         {
-#if DEBUG
-            Debug.WriteLine("LVarCheckTimerElapsed");
-#endif
+            logger.Debug("LVarCheckTimerElapsed");
             lvarCheckTimer.Dispose();
             lvarCheckTimer = null;
 
@@ -587,9 +583,6 @@ namespace BravoLights.Connections
         /// </summary>
         private void CheckForNewLVars()
         {
-#if DEBUG
-            Debug.WriteLine("CheckForNewLVars");
-#endif
             logger.Debug("CheckForNewLVars");
 
             if (hasEverCheckedForLVars)
