@@ -1,11 +1,16 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <nlog xmlns="http://www.nlog-project.org/schemas/NLog.xsd"
-      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-	<targets>
-        <target name="logfile" xsi:type="File" fileName="../Diagnostics.log"
-			layout="${longdate} ${processid} ${level:uppercase=true} [${logger:shortName=true}] ${message:exceptionSeparator=\r\n:withException=true}" />
-    </targets>
-    <rules>
-        <logger name="*" minlevel="Debug" writeTo="logfile" />
-    </rules>
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <targets>
+	<target name="debugger" xsi:type="debugger" layout="${logger}::${message}"/>
+    <target name="logfile" xsi:type="File"
+			fileName="${basedir}/BetterBravoLights.log" archiveFileName="${basedir}/BetterBravoLights.{#}.log"
+			archiveAboveSize="1048576" maxArchiveFiles="5"
+			layout="${longdate} ${processid} ${level:uppercase=true} [${logger:shortName=true}] ${message:exceptionSeparator=\r\n:withException=true}"
+			/>
+  </targets>
+  <rules>
+    <logger name="*" minlevel="Info" writeTo="logfile" />
+	<logger name="*" minlevel="Debug" writeTo="debugger" />
+  </rules>
 </nlog>
