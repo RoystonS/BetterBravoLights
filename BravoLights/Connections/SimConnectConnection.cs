@@ -776,10 +776,12 @@ namespace BravoLights.Connections
 
             if (lastReceivedResponseFromSim < DateTime.UtcNow.Subtract(ExitWhenNotHeardFromSimFor))
             {
-                // It's been a while since we received anything from the sim. Assume it's exited.
-                // But don't auto-exit if the debugger is attached, as that slows everything down.
+                // It's been a while since we received anything from the sim.
+                // At the very least it's not responding.
+                // If the FS .exe has also gone, it's time for us to exit.
+                var fsRunning = Process.GetProcessesByName("FlightSimulator").Length > 0;
 
-                if (!Debugger.IsAttached)
+                if (!fsRunning)
                 {
                     detectExitTimer.Dispose();
                     RaiseSimStateChanged(SimState.SimExited);
