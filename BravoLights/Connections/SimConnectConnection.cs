@@ -714,7 +714,7 @@ namespace BravoLights.Connections
 
         private void SendLVarRequest(string message)
         {
-            logger.Trace("Sending LVarRequest {0}", message);
+            logger.Debug("Sending LVarRequest {0}", message);
 
             var cmd = new RequestString(message);
             try
@@ -769,13 +769,20 @@ namespace BravoLights.Connections
 
             if (lastReceivedResponseFromSim < DateTime.UtcNow.Subtract(ExitWhenNotHeardFromSimFor))
             {
+                logger.Info("No response from the simulator for a while. Checking if it's still running.");
+
                 // It's been a while since we received anything from the sim.
                 // At the very least it's not responding.
                 // If the FS .exe has also gone, it's time for us to exit.
                 var fsRunning = Process.GetProcessesByName("FlightSimulator").Length > 0;
 
-                if (!fsRunning)
+                if (fsRunning)
                 {
+                    logger.Info("Simulator is still running.");
+                }
+                else
+                {
+                    logger.Info("Simulator has exited (crashed?)");
                     detectExitTimer.Dispose();
                     RaiseSimStateChanged(SimState.SimExited);
                 }
