@@ -1,6 +1,8 @@
 name: "🐛 Report a bug"
 description: I'd like to report a problem with BetterBravoLights.
-labels: needs-triage
+labels:
+  - needs-triage
+  - bug
 assignees: RoystonS
 body:
   - type: markdown

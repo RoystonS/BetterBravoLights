@@ -1,6 +1,8 @@
 name: "💡 Suggest a feature"
 description: I've got a great idea to help improve BetterBravoLights.
-labels: needs-triage
+labels:
+  - needs-triage
+  - enhancement
 assignees: RoystonS
 
 body:
