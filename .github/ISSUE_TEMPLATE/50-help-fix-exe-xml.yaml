@@ -16,7 +16,7 @@ body:
     attributes:
       label: Software version
       description: Please indicate which version of BetterBravoLights you have
-      placeholder: 0.7.0
+      placeholder: 0.8.0
     validations:
       required: true
       
