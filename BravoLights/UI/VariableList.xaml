@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:BravoLights.UI"
+        xmlns:Behaviors="http://schemas.microsoft.com/xaml/behaviors"
         mc:Ignorable="d"
         DataContext="{Binding RelativeSource={RelativeSource Self}, Path=ViewModel}"
         Topmost="True"
@@ -23,7 +24,7 @@
             The Filter box can be used to filter down the list of variables.
             </TextBlock>
             <TextBlock DockPanel.Dock="Top" Foreground="MediumVioletRed" TextWrapping="Wrap">
-                WARNING: this user interface is experimental and may cause the simulator to run more slowly or cause stability issues.
+                WARNING: this user interface is experimental and may cause the simulator to run more slowly or even crash.
                 Note that the list of A: variables may be incomplete; please provide feedback if there are important ones missing.
             </TextBlock>
         </DockPanel>
@@ -32,7 +33,7 @@
             <TextBox x:Name="txtFilter" Text="{Binding Mode=TwoWay, Path=FilterText, UpdateSourceTrigger=PropertyChanged}" />
         </DockPanel>
         <DataGrid Grid.Row="2" ItemsSource="{Binding Items}" AutoGenerateColumns="False" IsReadOnly="True"                          
-                          EnableRowVirtualization="True" LoadingRow="DataGrid_LoadingRow" UnloadingRow="DataGrid_UnloadingRow">
+                  EnableRowVirtualization="True" LoadingRow="DataGrid_LoadingRow" UnloadingRow="DataGrid_UnloadingRow">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Category" Binding="{Binding DataDefinition.Group}" />
                 <DataGridTextColumn Header="Identifier" Binding="{Binding DataDefinition.VariableName}" />
@@ -40,7 +41,11 @@
                 <DataGridTemplateColumn Header="Value">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <TextBlock Foreground="{Binding IsError, Converter={StaticResource errorBrushConverter}}" Text="{Binding ValueText}" />
+                            <TextBlock Foreground="{Binding IsError, Converter={StaticResource errorBrushConverter}}" Text="{Binding ValueText}">
+                                <Behaviors:Interaction.Behaviors>
+                                    <local:HighlightValueChangeBehavior />
+                                </Behaviors:Interaction.Behaviors>
+                            </TextBlock>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>

@@ -168,7 +168,10 @@ namespace BravoLights.UI
             if (isSubscribed)
             {
                 DataDefinition.Variable.ValueChanged -= Variable_ValueChanged;
-                Value = new Exception("Not subscribed");
+
+                // We deliberately don't advertise a property change, but we want to remember
+                // that the current value is no longer valid.
+                mValue = new Exception("Not subscribed");
                 isSubscribed = false;
             }
         }
