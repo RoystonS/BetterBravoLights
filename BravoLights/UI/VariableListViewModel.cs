@@ -86,6 +86,16 @@ namespace BravoLights.UI
             }
         }
 
+        private int textSize = 12;
+        public int TextSize
+        {
+            get { return textSize; }
+            set
+            {
+                SetProperty(ref textSize, value);
+            }
+        }
+
         public void Dispose()
         {
             GC.SuppressFinalize(this);

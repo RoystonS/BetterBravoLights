@@ -17,6 +17,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <DockPanel Grid.Row="0" Margin="4,0,4,0">
             <TextBlock DockPanel.Dock="Top" TextWrapping="Wrap">
@@ -33,6 +34,7 @@
             <TextBox x:Name="txtFilter" Text="{Binding Mode=TwoWay, Path=FilterText, UpdateSourceTrigger=PropertyChanged}" />
         </DockPanel>
         <DataGrid Grid.Row="2" ItemsSource="{Binding Items}" AutoGenerateColumns="False" IsReadOnly="True"                          
+                  FontSize="{Binding TextSize}"
                   EnableRowVirtualization="True" LoadingRow="DataGrid_LoadingRow" UnloadingRow="DataGrid_UnloadingRow">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Category" Binding="{Binding DataDefinition.Group}" />
@@ -52,5 +54,10 @@
                 <DataGridTextColumn Header="Description" Binding="{Binding DataDefinition.Description}" />
             </DataGrid.Columns>
         </DataGrid>
+        <DockPanel Grid.Row="3">
+            <TextBlock Text="Text size: " />
+            <TextBlock Text="{Binding TextSize}" />
+            <Slider HorizontalAlignment="Left" Margin="8,4,4,0" Value="{Binding TextSize}" Minimum="6" Maximum="14" Width="100" />
+        </DockPanel>
     </Grid>
 </Window>
