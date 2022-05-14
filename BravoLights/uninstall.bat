@@ -1,1 +1,1 @@
-%~dp0Program\BetterBravoLights /uninstall
+"%~dp0Program\BetterBravoLights" /uninstall
