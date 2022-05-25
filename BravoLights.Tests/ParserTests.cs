@@ -82,6 +82,7 @@ namespace BravoLights.Tests
         [InlineData("A:MULTI WORD SIMVAR, pounds per square inch", "A:MULTI WORD SIMVAR, pounds per square inch")]
         [InlineData("A:MULTI WORD SIMVAR, pounds per square inch + 1", "(A:MULTI WORD SIMVAR, pounds per square inch + 1)")]
         [InlineData("L:XMLVAR_Something", "L:XMLVAR_Something")]
+        [InlineData("L:LVAR WITH SPACES IN THE NAME < 50", "(L:LVAR WITH SPACES IN THE NAME < 50)")] // https://github.com/RoystonS/BetterBravoLights/issues/47
         [InlineData("L:XMLVAR_Something + 1", "(L:XMLVAR_Something + 1)")]
         [InlineData("1 + 2", "(1 + 2)")]
         [InlineData("1 + 2 - 3", "((1 + 2) - 3)")]

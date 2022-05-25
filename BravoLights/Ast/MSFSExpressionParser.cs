@@ -17,7 +17,7 @@ namespace BravoLights.Ast
 
             return new LvarExpression
             {
-                LVarName = text
+                LVarName = text.Trim()
             };
         }
 
