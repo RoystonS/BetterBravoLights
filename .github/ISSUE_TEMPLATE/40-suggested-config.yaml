@@ -16,6 +16,7 @@ body:
       label: Software version
       description: Which version of BetterBravoLights are you using?
       options:
+        - 0.9.0
         - 0.8.2
         - 0.8.1
         - 0.8.0
