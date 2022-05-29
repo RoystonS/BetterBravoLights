@@ -31,6 +31,8 @@ namespace BravoLights
 
             var sections = new Dictionary<string, IniSection>();
 
+            var continuation = "";
+
             foreach (var rawLine in configLines)
             {
                 var line = rawLine.Trim();
@@ -40,6 +42,16 @@ namespace BravoLights
                     // Comment
                     continue;
                 }
+
+                if (line.EndsWith("\\"))
+                {
+                    // Line has continuation marker, to join it to the next line
+                    var trimmedLineWithoutMarker = line.Substring(0, line.Length - 1).Trim();
+                    continuation = (continuation + " " + trimmedLineWithoutMarker).Trim();
+                    continue;
+                }
+
+                line = (continuation + " " + line).Trim();
 
                 if (line.Length == 0)
                 {

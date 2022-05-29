@@ -101,5 +101,23 @@ LowFuelPressure = OFF
             Assert.Equal("OFF", config.GetConfig("Aircraft1", "LowFuelPressure"));
             Assert.Null(config.GetConfig("Aircraft1", "EngineFire"));
         }
+
+        [Fact]
+        public void SupportsBackslashLineContinuationCharacters()
+        {
+            // We'll insert some extra spaces in to check that continuations work even if there's trailing whitespace,
+            // and that whitespace is all trimmed out (and re-inserted) correctly.
+            var extraSpaces = "   ";
+
+            var config = CreateConfig($@"
+[Default]
+LowFuelPressure = {extraSpaces}\{extraSpaces}
+       L:I_OH_FUEL_CENTER_1_L == 1 \{extraSpaces}
+    OR L:I_OH_FUEL_CENTER_1_U == 1 {extraSpaces}\
+    {extraSpaces} OR L:I_OH_FUEL_CENTER_2_L == 1 \
+    OR L:I_OH_FUEL_CENTER_2_U == 1{extraSpaces}");
+
+            Assert.Equal("L:I_OH_FUEL_CENTER_1_L == 1 OR L:I_OH_FUEL_CENTER_1_U == 1 OR L:I_OH_FUEL_CENTER_2_L == 1 OR L:I_OH_FUEL_CENTER_2_U == 1", config.GetConfig("Aircraft", "LowFuelPressure"));
+        }
     }
 }
