@@ -1,15 +1,26 @@
 ﻿using System;
+using System.ComponentModel;
 using HidSharp;
 using NLog;
 
 namespace BravoLights.Common
 {
-    public interface IUsbLogic
+    public interface IUsbLogic : INotifyPropertyChanged
     {
+        /// <summary>
+        /// Gets or sets a value indicating whether we should be showing lights on the Bravo.
+        /// If false, all lights will be switched off. If true, lights will be shown based on
+        /// the contents of the <see cref="ILightsState"/>.
+        /// </summary>
         bool LightsEnabled { get; set; }
+
+        /// <summary>
+        /// Gets a value indicating whether a Bravo Throttle is actually present.
+        /// </summary>
+        bool BravoPresent { get; }
     }
 
-    public class UsbLogic : IUsbLogic
+    public class UsbLogic : ViewModelBase, IUsbLogic
     {
         private static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
@@ -52,6 +63,7 @@ namespace BravoLights.Common
             if (device == null)
             {
                 logger.Warn("No Honeycomb Bravo device found");
+                this.BravoPresent = false;
                 return;
             }
 
@@ -59,14 +71,28 @@ namespace BravoLights.Common
 
             bravoDevice = device;
             bravoStream = device.Open();
+
+            LightsState_Changed(null, EventArgs.Empty);
+            this.BravoPresent = true;
         }
 
         private void DeviceList_Changed(object sender, DeviceListChangedEventArgs e)
         {
             this.CheckBravo();
         }
+        
+        private bool bravoPresent = false;
+        public bool BravoPresent
+        {
+            get { return bravoPresent; }
+            private set
+            {
+                SetProperty(ref bravoPresent, value);
+            }
+        }
 
         private bool lightsEnabled = false;
+
         public bool LightsEnabled
         {
             get { return lightsEnabled; }
@@ -78,7 +104,7 @@ namespace BravoLights.Common
 
                 logger.Debug("LightsEnabled = {0}", value);
 
-                lightsEnabled = value;
+                SetProperty(ref lightsEnabled, value);
                 LightsState_Changed(null, EventArgs.Empty);
             }
         }

@@ -10,6 +10,7 @@ using BravoLights.Common;
 using System.Diagnostics;
 using NLog;
 using System.IO;
+using System.ComponentModel;
 
 namespace BravoLights
 {
@@ -194,6 +195,17 @@ namespace BravoLights
 
             viewModel = new MainViewModel();
             usbLogic = new UsbLogic(viewModel);
+            usbLogic.PropertyChanged += delegate (object sender, PropertyChangedEventArgs e)
+            {
+                if (e.PropertyName == nameof(IUsbLogic.BravoPresent))
+                {
+                    Dispatcher.Invoke(delegate
+                    {
+                        UpdateTrayIconText();
+                    });
+                }
+            };
+
             globalLightController = new GlobalLightController(usbLogic);
 
             splashScreen = new BBLSplashScreen();
@@ -358,9 +370,14 @@ namespace BravoLights
             });
         }
 
+
         private void UpdateTrayIconText()
         {
-            var format = viewModel.SimState == SimState.SimRunning ? BravoLights.Properties.Resources.TrayIconConnectedToSimFormat : BravoLights.Properties.Resources.TrayIconWaitingForSimFormat;
+            var format = usbLogic.BravoPresent ?
+                viewModel.SimState == SimState.SimRunning ?
+                    BravoLights.Properties.Resources.TrayIconConnectedToSimFormat
+                    : BravoLights.Properties.Resources.TrayIconWaitingForSimFormat
+                    : BravoLights.Properties.Resources.TrayIconNoBravoThrottleConnectedFormat;
 
             notifyIcon.Text = string.Format(format, ProgramInfo.ProductNameAndVersion);
         }

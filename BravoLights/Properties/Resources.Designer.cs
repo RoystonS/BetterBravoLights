@@ -128,6 +128,15 @@ namespace BravoLights.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to {0} - No Bravo Throttle detected.
+        /// </summary>
+        internal static string TrayIconNoBravoThrottleConnectedFormat {
+            get {
+                return ResourceManager.GetString("TrayIconNoBravoThrottleConnectedFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to {0} - Waiting for simulator.
         /// </summary>
         internal static string TrayIconWaitingForSimFormat {
