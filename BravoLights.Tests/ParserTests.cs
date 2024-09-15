@@ -84,6 +84,7 @@ namespace BravoLights.Tests
         [InlineData("L:XMLVAR_Something", "L:XMLVAR_Something")]
         [InlineData("L:LVAR WITH SPACES IN THE NAME < 50", "(L:LVAR WITH SPACES IN THE NAME < 50)")] // https://github.com/RoystonS/BetterBravoLights/issues/47
         [InlineData("L:XMLVAR_Something + 1", "(L:XMLVAR_Something + 1)")]
+        [InlineData("L:B748_Engine_AntiIce_Switch_State:1 == 1", "(L:B748_Engine_AntiIce_Switch_State:1 == 1)")] // https://github.com/RoystonS/BetterBravoLights/issues/76
         [InlineData("1 + 2", "(1 + 2)")]
         [InlineData("1 + 2 - 3", "((1 + 2) - 3)")]
         [InlineData("1 + 2 & 3 + 4", "((1 + 2) & (3 + 4))")]

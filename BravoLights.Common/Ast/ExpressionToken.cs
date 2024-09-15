@@ -4,7 +4,7 @@ namespace BravoLights.Common.Ast
 {
     public enum ExpressionToken
     {
-        [Lexeme("L:[A-Za-z0-9_ ]+")]
+        [Lexeme("L:[A-Za-z0-9_ :]+")]
         LVAR = 50,
 
         [Lexeme("A:[:A-Za-z0-9 ]+(,\\s*([A-Za-z0-9 ]+))?")]
